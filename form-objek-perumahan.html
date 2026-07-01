@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulir Isian Pengembang Perumahan FLPP</title>
+<style>
+
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500&display=swap');
+  :root {
+    --navy:#0E5B73; --navy-light:#084C61; --gold:#D5C58A; --gold-light:#e8d9a8;
+    --cream:#F2EEDF; --white:#FFFFFF; --gray-50:#F7F5EE; --gray-100:#EDE9DA;
+    --gray-200:#DDD8C6; --gray-400:#A09880; --gray-600:#5C5440; --gray-800:#2C2A22;
+    --red:#DC2626; --green:#059669;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--gray-800);min-height:100vh}
+  .site-header{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+  .header-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px}
+  .header-logo{width:48px;height:48px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;color:var(--navy);flex-shrink:0}
+  .header-text h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--white);line-height:1.2}
+  .header-text p{font-size:12px;color:var(--gold-light);margin-top:2px}
+
+  .tabs-wrapper{background:var(--navy-light);overflow-x:auto;scrollbar-width:none}
+  .tabs-wrapper::-webkit-scrollbar{display:none}
+  .tabs-nav{max-width:1100px;margin:0 auto;display:flex;padding:0 24px}
+  .tab-btn{padding:12px 18px;border:none;background:none;color:rgba(255,255,255,.65);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;letter-spacing:.02em;text-transform:uppercase}
+  .tab-btn:hover{color:var(--white)}
+  .tab-btn.active{color:var(--gold-light);border-bottom-color:var(--gold)}
+  .main{max-width:1100px;margin:0 auto;padding:32px 24px 110px}
+  .form-panel{visibility:hidden;position:absolute;top:-9999px;left:-9999px;width:100%;pointer-events:none}
+  .form-panel.active{visibility:visible;position:relative;top:auto;left:auto;pointer-events:auto;animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .panel-body{background:var(--white);border-radius:24px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+  .surveyor-bar{background:linear-gradient(135deg,#F0EAD0,#E8D9A8);border:1.5px solid var(--gold);border-radius:20px;padding:16px 20px;margin-bottom:28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .surveyor-bar label{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;color:var(--navy);white-space:nowrap}
+  .surveyor-bar input{flex:1;min-width:200px;padding:8px 16px;border:1.5px solid var(--gold);border-radius:999px;font-size:14px;background:var(--white);outline:none}
+  .surveyor-bar input:focus{border-color:var(--navy)}
+  .section{margin-bottom:28px;border:1.5px solid var(--gray-200);border-radius:20px;overflow:hidden}
+  .section-header{background:var(--gray-50);padding:16px 18px;border-bottom:1.5px solid var(--gray-200);display:flex;align-items:center;gap:10px}
+  .section-num{background:var(--navy);color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:11px;padding:3px 10px;border-radius:999px}
+  .section-header h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--navy)}
+  .section-body{padding:20px;display:grid;gap:16px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field>label{font-size:13px;font-weight:500;color:var(--gray-600)}
+  .field input[type=text],.field input[type=date],.field input[type=time],.field input[type=number],.field input[type=tel],.field select,.field textarea{padding:9px 16px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:14px;font-family:'Inter',sans-serif;color:var(--gray-800);background:var(--white);outline:none;width:100%;transition:border-color .15s}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
+  .field textarea{resize:vertical;min-height:80px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field-row.three{grid-template-columns:1fr 1fr 1fr}
+  .field-row.five{grid-template-columns:repeat(5,1fr)}
+  @media(max-width:760px){.field-row.five{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.field-row,.field-row.three,.field-row.five{grid-template-columns:1fr}}
+  .radio-group,.check-group{display:flex;flex-wrap:wrap;gap:8px}
+  .radio-group label,.check-group label{display:flex;align-items:center;gap:7px;padding:7px 16px;border:1.5px solid var(--gray-200);border-radius:999px;cursor:pointer;font-size:13px;color:var(--gray-800);background:var(--white);transition:all .15s;user-select:none}
+  .radio-group label:hover,.check-group label:hover{border-color:var(--navy);background:var(--gray-50)}
+  .radio-group input[type=radio],.check-group input[type=checkbox]{accent-color:var(--navy);width:14px;height:14px}
+  .radio-group label:has(input:checked),.check-group label:has(input:checked){border-color:var(--navy);background:#E0F0F5;color:var(--navy);font-weight:500}
+  .kondisi-group{display:flex;flex-wrap:wrap;gap:8px}
+  .kondisi-opt{flex:1;min-width:130px}
+  .kondisi-opt input{display:none}
+  .kondisi-opt label{display:block;text-align:center;padding:10px 8px;border:1.5px solid var(--gray-200);border-radius:999px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+  .kondisi-opt label .dot{display:block;width:10px;height:10px;border-radius:50%;margin:0 auto 6px}
+  .kondisi-opt.baik label{color:#065F46}.kondisi-opt.baik .dot{background:#10B981}.kondisi-opt.baik input:checked+label{background:#ECFDF5;border-color:#10B981}
+  .kondisi-opt.sedang label{color:#92400E}.kondisi-opt.sedang .dot{background:#F59E0B}.kondisi-opt.sedang input:checked+label{background:#FFFBEB;border-color:#F59E0B}
+  .kondisi-opt.buruk label{color:#7F1D1D}.kondisi-opt.buruk .dot{background:#EF4444}.kondisi-opt.buruk input:checked+label{background:#FEF2F2;border-color:#EF4444}
+  .kondisi3-group{display:flex;gap:10px;flex-wrap:wrap}
+  .kondisi3-group input[type=radio]{display:none}
+  .kondisi3-group .k3-label{display:flex;flex-direction:column;align-items:center;padding:10px 20px;border:1.5px solid var(--gray-200);border-radius:999px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;min-width:140px;text-align:center;background:var(--white)}
+  .kondisi3-group .k3-dot{display:block;width:10px;height:10px;border-radius:50%;margin:0 auto 6px}
+  .kondisi3-group .k3-label:hover{border-color:var(--navy)}
+  .kondisi3-group input[type=radio]:checked + .k3-label.k3-baik{background:#ECFDF5;border-color:#10B981;color:#065F46;font-weight:700}
+  .kondisi3-group input[type=radio]:checked + .k3-label.k3-sedang{background:#FFFBEB;border-color:#F59E0B;color:#92400E;font-weight:700}
+  .kondisi3-group input[type=radio]:checked + .k3-label.k3-buruk{background:#FEF2F2;border-color:#EF4444;color:#7F1D1D;font-weight:700}
+  .subsection{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:18px;padding:14px 16px;display:grid;gap:12px}
+  .subsection-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--navy-light);border-bottom:1px solid var(--gray-200);padding-bottom:8px;margin-bottom:4px}
+  .foto-upload{background:var(--gray-50);border:2px dashed var(--gray-200);border-radius:18px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+  .foto-upload:hover{border-color:var(--navy);background:var(--gray-100)}
+  .foto-upload p{font-size:12px;color:var(--gray-400);margin-top:4px}
+  .foto-upload .ico{font-size:22px}
+  .foto-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .foto-preview img,.foto-preview-inline img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1.5px solid var(--gray-200)}
+  .foto-preview-inline{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 8px}
+  .foto-thumb{position:relative;display:inline-block;line-height:0}
+  .foto-badge{position:absolute;bottom:-4px;right:-4px;background:var(--white);border-radius:50%;font-size:12px;padding:1px 4px;box-shadow:0 1px 4px rgba(0,0,0,.3);line-height:1.3}
+  .upload-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border:1.5px dashed var(--gray-200);border-radius:999px;cursor:pointer;font-size:12px;color:var(--gray-400);white-space:nowrap;background:var(--gray-50);transition:all .2s;flex-shrink:0;font-family:'Inter',sans-serif}
+  .upload-btn:hover{border-color:var(--navy);color:var(--navy)}
+  .send-inline{margin-top:28px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:20px;padding:20px;display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:wrap}
+  .send-area{
+    position:fixed;left:0;right:0;bottom:0;z-index:150;
+    background:var(--white);border-top:1.5px solid var(--gray-200);
+    box-shadow:0 -6px 20px rgba(0,0,0,.08);
+    padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  }
+  .btn-home-bar{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;padding:11px 10px;border:1.5px solid var(--gray-200);border-radius:999px;background:var(--white);color:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;transition:all .2s}
+  .btn-home-bar:hover{background:var(--gray-50)}
+
+  .foto-status{font-size:12px;color:var(--gray-600);margin-right:auto}
+  .btn-send{padding:11px 28px;background:var(--navy);color:var(--white);border:none;border-radius:999px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;white-space:nowrap}
+  .btn-send:hover{background:var(--navy-light);transform:translateY(-1px);box-shadow:0 4px 12px rgba(11,35,66,.25)}
+  .btn-send:active{transform:translateY(0)}
+  .btn-send:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .btn-draft{padding:11px 22px;background:var(--white);color:var(--navy);border:2px solid var(--navy);border-radius:999px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;white-space:nowrap}
+  .btn-draft:hover{background:var(--gray-50);transform:translateY(-1px);box-shadow:0 4px 12px rgba(11,35,66,.12)}
+  .btn-draft:active{transform:translateY(0)}
+  .btn-draft:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .draft-info{font-size:11px;color:var(--gray-400);margin-right:auto;display:flex;flex-direction:column;gap:2px}
+  .draft-info .draft-ts{color:var(--green);font-weight:600}
+  #toast{position:fixed;bottom:28px;right:28px;background:var(--green);color:var(--white);padding:14px 20px;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:999;display:none;align-items:center;gap:10px}
+  #toast.show{display:flex}
+  #toast.error{background:var(--red)}
+  .progress-bar-wrap{height:4px;background:var(--gray-200);border-radius:2px;margin-bottom:24px;overflow:hidden}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--navy),var(--gold));border-radius:2px;transition:width .4s ease}
+  .req{color:var(--red);margin-left:2px}
+  .separator{border:none;border-top:1.5px solid var(--gray-100);margin:8px 0}
+  .chip-label{display:inline-block;background:#E0F0F5;color:var(--navy);font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+  .divider-banner{background:var(--navy);border-radius:20px;padding:16px 20px;margin:16px 0 4px;display:flex;align-items:center;gap:12px}
+  .divider-badge{background:var(--gold);color:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px}
+  .divider-banner h3{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;font-size:16px;font-weight:700}
+  .divider-banner p{color:rgba(255,255,255,.6);font-size:12px;margin-top:3px}
+  .util-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-100)}
+  /* util-row2 PASCA PENYALURAN: label | tersedia | kondisi | foto (keberfungsian dihapus) */
+  .util-row2{display:grid;grid-template-columns:180px auto auto auto;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--gray-100)}
+  @media(max-width:768px){.util-row2{grid-template-columns:1fr;gap:8px}}
+  .util-col-hdr{display:grid;grid-template-columns:180px auto auto auto;gap:10px;padding:8px 0;border-bottom:2px solid var(--navy);margin-bottom:4px}
+  .util-col-hdr span{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em}
+  @media(max-width:768px){.util-col-hdr{display:none}}
+  .check-foto-wrap{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .doc-wrapper{border-bottom:1px solid var(--gray-100);padding:10px 0 8px}
+  .doc-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .doc-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .doc-item{display:flex;align-items:center;gap:6px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:999px;padding:5px 12px;font-size:11px;max-width:220px}
+  .doc-item img{width:36px;height:36px;object-fit:cover;border-radius:4px;flex-shrink:0}
+  .doc-del{cursor:pointer;color:var(--gray-400);margin-left:auto;flex-shrink:0;font-size:12px}
+  .geo-field-row{display:flex;gap:8px;align-items:flex-start}
+  .geo-field-row input[type=text]{flex:1}
+  .geo-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:var(--white);border:none;border-radius:999px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
+  .geo-btn:hover{background:var(--navy-light)}
+  .geo-btn:disabled{opacity:.6;cursor:not-allowed}
+  .geo-status{font-size:11px;margin-top:2px;min-height:14px}
+  .geo-status.ok{color:var(--green)}
+  .geo-status.err{color:var(--red)}
+  .geo-status.busy{color:var(--gray-600)}
+
+  /* Alasan "Tidak Ada" dokumen */
+  .alasan-wrap{display:none;margin-top:8px;width:100%}
+  .alasan-wrap.show{display:block}
+  .alasan-wrap textarea{
+    width:100%;padding:9px 14px;border:1.5px solid var(--red);border-radius:14px;
+    font-size:13px;font-family:'Inter',sans-serif;color:var(--gray-800);
+    background:#FFF8F8;outline:none;resize:vertical;min-height:64px;
+    transition:border-color .15s;
+  }
+  .alasan-wrap textarea:focus{border-color:var(--navy);background:var(--white);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
+  .alasan-wrap .alasan-hint{font-size:11px;color:var(--red);margin-top:4px;display:flex;align-items:center;gap:4px}
+  .alasan-wrap .alasan-hint.filled{color:var(--green)}
+
+</style>
+</head>
+<body>
+
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-text">
+      <h1>Form Isian Pengembang Perumahan FLPP</h1>
+      <p>Identitas dan Data Fisik Perumahan Beserta Dokumen Pendukung</p>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="form-panel active" id="panel-0">
+    <div class="panel-body">
+      <div class="section">
+        <div class="section-header"><span class="section-num">INFO</span><h3>Identitas Perumahan</h3></div>
+        <div class="section-body">
+          <div class="field"><label>ID Lokasi SIKUMBANG</label><input type="text" id="t1_id_sikumbang"></div>
+          <div class="field-row">
+            <div class="field"><label>Nama Perumahan <span class="req">*</span></label><input type="text" id="t1_nama_perumahan"></div>
+            <div class="field"><label>Nama PT</label><input type="text" id="t1_nama_pt"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Nama Asosiasi</label><input type="text" id="t1_asosiasi"></div>
+            <div class="field"><label>Nama Kontraktor</label><input type="text" id="t1_kontraktor"></div>
+          </div>
+          <div class="field"><label>Alamat Perumahan</label><input type="text" id="t1_alamat"></div>
+          <div class="field-row">
+            <div class="field">
+              <label>Koordinat (lat, lng)</label>
+              <div class="geo-field-row">
+                <input type="text" id="t1_koordinat" placeholder="-6.200000, 106.816666">
+                <button type="button" class="geo-btn" id="geoBtn_t1_koordinat">📍 Ambil Lokasi</button>
+              </div>
+              <div class="geo-status" id="geoStatus_t1_koordinat"></div>
+            </div>
+            <div class="field"><label>Luas Perumahan (m²)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_luas_perumahan"></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><span class="section-num">I</span><h3>Tipe Rumah</h3></div>
+        <div class="section-body">
+          <div class="subsection"><div class="subsection-title">1. Rumah Subsidi</div>
+            <div class="field-row three"><div class="field"><label>1. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_1" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_1"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_1"></div></div>
+            <div class="field-row three"><div class="field"><label>2. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_2" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_2"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_2"></div></div>
+            <div class="field-row three"><div class="field"><label>3. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_3" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_3"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_3"></div></div>
+          </div>
+          <div class="subsection"><div class="subsection-title">2. Rumah Komersil</div>
+            <div class="field-row three"><div class="field"><label>1. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_1" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_1"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_1"></div></div>
+            <div class="field-row three"><div class="field"><label>2. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_2" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_2"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_2"></div></div>
+            <div class="field-row three"><div class="field"><label>3. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_3" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_3"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_3"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><span class="section-num">II</span><h3>Status Rumah di Perumahan</h3></div>
+        <div class="section-body">
+          <div class="subsection"><div class="subsection-title">1. Rumah Komersil</div>
+            <div class="field-row five">
+              <div class="field"><label>Kavling</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_kavling"></div>
+              <div class="field"><label>Pembangunan</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_pembangunan"></div>
+              <div class="field"><label>Ready Stock</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_readystock"></div>
+              <div class="field"><label>Dipesan</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_dipesan"></div>
+              <div class="field"><label>Terjual</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_terjual"></div>
+            </div>
+          </div>
+          <div class="subsection"><div class="subsection-title">2. Rumah Subsidi</div>
+            <div class="field-row five">
+              <div class="field"><label>Kavling</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_kavling"></div>
+              <div class="field"><label>Pembangunan</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_pembangunan"></div>
+              <div class="field"><label>Ready Stock</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_readystock"></div>
+              <div class="field"><label>Proses Bank</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_prosesbank"></div>
+              <div class="field"><label>Terjual</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_terjual"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><span class="section-num">III</span><h3>Data Dukung / Dokumen</h3></div>
+        <div class="section-body">
+          <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Pilih ketersediaan dan kesesuaian setiap dokumen</p>
+          <div id="dokumen-list"></div>
+        </div>
+      </div>
+      <div class="send-inline">
+        <div class="draft-info" id="draft-info-panel-0">
+          <span id="draft-label-panel-0" style="display:none">Draft tersimpan</span>
+          <span class="draft-ts" id="draft-ts-panel-0"></span>
+        </div>
+        <div class="foto-status" id="foto-status-panel-0"></div>
+        <button class="btn-draft" id="btnDraft" data-panel="panel-0">Simpan Draft</button>
+        <button class="btn-send" id="btnKirim" data-panel="panel-0" data-form="Data Objek Perumahan - Pengembang">Kirim Data</button>
+      </div>
+      <div class="send-area">
+        <a class="btn-home-bar" href="index.html"><span class="label">Home</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwL_U155tjBT1nim0SxD4Qu4LM2EsWc7wlWTEcokU-SfAiglJlhG4Qt7iBJ6X5sEgfr6A/exec';
+
+var fotoState   = {};
+var sessionTime = {};
+function getSessionTimestamp(panelId) {
+  if (!sessionTime[panelId]) sessionTime[panelId] = new Date().toLocaleString('id-ID');
+  return sessionTime[panelId];
+}
+function getFormNameForPanel(panelId) {
+  var panel = document.getElementById(panelId);
+  var btn = panel ? panel.querySelector('.btn-send') : null;
+  return btn ? btn.getAttribute('data-form') : 'Umum';
+}
+function ensureFotoState(panelId) {
+  if (!fotoState[panelId]) fotoState[panelId] = [];
+  return fotoState[panelId];
+}
+
+function el(tag, attrs, children) {
+  var e = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(function(k) {
+    if (k === 'style') e.style.cssText = attrs[k];
+    else if (k === 'cls') e.className = attrs[k];
+    else if (k === 'text') e.textContent = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  });
+  if (children) children.forEach(function(c) { if (c) e.appendChild(c); });
+  return e;
+}
+function makeRadioGroup(name, opts) {
+  var grp = el('div', {cls:'radio-group'});
+  opts.forEach(function(o) {
+    var inp = el('input'); inp.type='radio'; inp.name=name; inp.value=o;
+    var lbl = el('label', {}, [inp, document.createTextNode(' '+o)]);
+    grp.appendChild(lbl);
+  });
+  return grp;
+}
+function makeField(labelText, child) {
+  var f = el('div', {cls:'field'});
+  f.appendChild(el('label', {text: labelText}));
+  f.appendChild(child);
+  return f;
+}
+function makeDocUploadBtn(previewEl, fieldName) {
+  var inp = el('input'); inp.type='file'; inp.accept='image/*,.pdf,.doc,.docx,.xls,.xlsx'; inp.multiple=true;
+  inp.style.display='none';
+  var btn = el('button', {cls:'upload-btn', type:'button'});
+  btn.textContent = '📎 Upload Foto/Dokumen';
+  btn.appendChild(inp);
+  btn.addEventListener('click', function() { inp.click(); });
+  inp.addEventListener('change', function() { previewDoc(inp, previewEl, fieldName); inp.value=''; });
+  return btn;
+}
+
+function setupGeoButton(inputId) {
+  var input  = document.getElementById(inputId);
+  var btn    = document.getElementById('geoBtn_' + inputId);
+  var status = document.getElementById('geoStatus_' + inputId);
+  if (!input || !btn) return;
+  btn.addEventListener('click', function() {
+    if (!('geolocation' in navigator)) { setGeoStatus(status,'err','❌ Browser tidak mendukung GPS.'); return; }
+    btn.disabled = true;
+    var orig = btn.textContent;
+    btn.textContent = '⏳ Mencari lokasi...';
+    setGeoStatus(status,'busy','⏳ Mengambil koordinat GPS, mohon tunggu...');
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        input.value = pos.coords.latitude.toFixed(6) + ', ' + pos.coords.longitude.toFixed(6);
+        var akurasi = pos.coords.accuracy ? ' (akurasi ±'+Math.round(pos.coords.accuracy)+' m)' : '';
+        setGeoStatus(status,'ok','✅ Lokasi berhasil diambil'+akurasi);
+        btn.disabled=false; btn.textContent=orig;
+      },
+      function(err) {
+        var msg = err.code===err.PERMISSION_DENIED ? '❌ Izin lokasi ditolak.' : err.code===err.POSITION_UNAVAILABLE ? '❌ Lokasi tidak tersedia.' : '❌ Waktu habis. Coba di area terbuka.';
+        setGeoStatus(status,'err',msg); btn.disabled=false; btn.textContent=orig;
+      },
+      {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+    );
+  });
+}
+function setGeoStatus(statusEl, cls, text) {
+  if (!statusEl) return;
+  statusEl.className = 'geo-status ' + cls;
+  statusEl.textContent = text;
+}
+
+function processAndUploadFiles(files, fieldName, panelId, previewEl, isDocMode) {
+  var formName = getFormNameForPanel(panelId);
+  var ts       = getSessionTimestamp(panelId);
+  var list     = ensureFotoState(panelId);
+  Array.from(files).forEach(function(file) {
+    var isImg = file.type.startsWith('image/');
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var dataUrl = e.target.result;
+      var base64  = dataUrl.split(',')[1];
+      var badge, itemEl;
+      if (isDocMode) {
+        itemEl = el('div', {cls:'doc-item'});
+        if (isImg) { var img = el('img'); img.src=dataUrl; itemEl.appendChild(img); }
+        else { itemEl.appendChild(el('span',{text:file.name.endsWith('.pdf')?'📄':'📊',style:'font-size:20px'})); }
+        var nm = file.name.length>18 ? file.name.substring(0,16)+'…' : file.name;
+        itemEl.appendChild(el('span',{text:nm,style:'color:var(--gray-600);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px'}));
+        badge = el('span',{text:'⏳',style:'font-size:12px'});
+        itemEl.appendChild(badge);
+        var del = el('span',{cls:'doc-del',text:'✕'});
+        del.addEventListener('click', function(){ itemEl.remove(); removeFromState(list,entry); refreshFotoStatus(panelId); });
+        itemEl.appendChild(del);
+      } else {
+        itemEl = el('div',{cls:'foto-thumb'});
+        var img2=el('img'); img2.src=dataUrl; itemEl.appendChild(img2);
+        badge = el('span',{cls:'foto-badge',text:'⏳'});
+        itemEl.appendChild(badge);
+      }
+      previewEl.appendChild(itemEl);
+      // Buat payloadString sekali di sini, saat base64 sudah pasti tersedia.
+      // Jangan buat ulang di dalam doUpload() karena closure bisa stale saat retry.
+      var payloadString = JSON.stringify({
+        fieldName : fieldName,
+        fileName  : file.name,
+        mimeType  : file.type || 'image/jpeg',
+        base64    : base64,
+        formName  : formName,
+        timestamp : ts
+      });
+      var entry = {fieldName:fieldName,fileName:file.name,mimeType:file.type||'image/jpeg',base64:base64,status:'uploading',url:null};
+      list.push(entry);
+      refreshFotoStatus(panelId);
+      function doUpload() {
+        entry.status='uploading'; badge.textContent='⏳'; badge.title='Mengupload ke Google Drive...'; badge.style.cursor='default'; badge.onclick=null;
+        refreshFotoStatus(panelId);
+        if (typeof google==='undefined'||!google.script||!google.script.run) {
+          entry.status='pending'; badge.textContent='📦'; badge.title='Akan diupload saat Kirim Data ditekan';
+          refreshFotoStatus(panelId); return;
+        }
+        google.script.run
+          .withSuccessHandler(function(res){ entry.status='success'; entry.url=res&&res.url?res.url:null; badge.textContent='✅'; badge.title='Tersimpan di Google Drive'; refreshFotoStatus(panelId); })
+          .withFailureHandler(function(err){ entry.status='error'; badge.textContent='❌'; badge.title='Gagal upload — klik untuk coba lagi'; badge.style.cursor='pointer'; badge.onclick=function(ev){ev.stopPropagation();doUpload();}; refreshFotoStatus(panelId); })
+          .uploadFotoLangsung(payloadString);
+      }
+      doUpload();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function removeFromState(list, entry) { var idx=list.indexOf(entry); if(idx>-1) list.splice(idx,1); }
+function refreshFotoStatus(panelId) {
+  var holder = document.getElementById('foto-status-'+panelId);
+  if (!holder) return;
+  var list = fotoState[panelId]||[];
+  var ok=list.filter(function(i){return i.status==='success';}).length;
+  var busy=list.filter(function(i){return i.status==='uploading';}).length;
+  var err=list.filter(function(i){return i.status==='error';}).length;
+  var pend=list.filter(function(i){return i.status==='pending';}).length;
+  var parts=[];
+  if(ok) parts.push('✅ '+ok+' foto tersimpan di Drive');
+  if(busy) parts.push('⏳ '+busy+' mengupload');
+  if(err) parts.push('❌ '+err+' gagal');
+  if(pend) parts.push('📦 '+pend+' menunggu kirim');
+  holder.textContent=parts.join(' • ');
+}
+function previewInto(inp, previewEl, fieldName) {
+  var panel=inp.closest('.form-panel'); var panelId=panel?panel.id:'unknown';
+  processAndUploadFiles(inp.files,fieldName,panelId,previewEl,false);
+}
+function previewDoc(inp, previewEl, fieldName) {
+  var panel=inp.closest('.form-panel'); var panelId=panel?panel.id:'unknown';
+  processAndUploadFiles(inp.files,fieldName,panelId,previewEl,true);
+}
+
+window.addEventListener('load', function() {
+  setupGeoButton('t1_koordinat');
+  document.querySelectorAll('input[type=date]').forEach(function(d){ d.value=new Date().toISOString().split('T')[0]; });
+
+  document.getElementById('btnKirim').addEventListener('click', function() {
+    submitForm('panel-0', 'Data Objek Perumahan - Pengembang', this);
+  });
+
+  document.getElementById('btnDraft').addEventListener('click', function() {
+    saveDraft('panel-0', this);
+  });
+
+  // Muat draft otomatis saat halaman dibuka
+  loadDraftIfExists('panel-0');
+
+  // ---- DOKUMEN LIST ----
+  var dokumenGroups=[
+    {tahap:'Tahap Perencanaan', items:[
+      'Gambar Site Plan Perumahan',
+      'DED (Detailed Engineering Design) Perumahan',
+      'Rencana Kerja dan Syarat-syarat (RKS)',
+      'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)'
+    ]},
+    {tahap:'Tahap Perizinan', items:[
+      'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL atau Dokumen Lain Sesuai Ketentuan)',
+      'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)'
+    ]},
+    {tahap:'Tahap Pelaksanaan', items:[
+      'As Built Drawing'
+    ]},
+    {tahap:'Tahap Pasca Konstruksi', items:[
+      'Sertifikat Laik Fungsi (SLF)',
+      'Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi'
+    ]}
+  ];
+  var dokContainer=document.getElementById('dokumen-list');
+  var dokIdx=0;
+  dokumenGroups.forEach(function(group){
+    dokContainer.appendChild(el('div',{cls:'subsection-title',text:group.tahap,style:'margin-top:14px'}));
+    group.items.forEach(function(dok){
+      var i=dokIdx++;
+      var wrapper=el('div',{cls:'doc-wrapper'});
+      var row=el('div',{cls:'doc-row'});
+      row.appendChild(el('span',{text:dok,style:'flex:1;font-size:13px;font-weight:500;min-width:160px'}));
+
+      // Radio group dengan handler untuk "Tidak Ada"
+      var radioName = 'dok_ada_'+i;
+      var grp = el('div',{cls:'radio-group'});
+      ['Ada','Tidak Ada'].forEach(function(o){
+        var inp = el('input'); inp.type='radio'; inp.name=radioName; inp.value=o;
+        var lbl = el('label',{},[inp, document.createTextNode(' '+o)]);
+        grp.appendChild(lbl);
+      });
+      row.appendChild(grp);
+
+      // Upload button (hanya tampil saat "Ada")
+      var prev=el('div',{cls:'doc-preview'});
+      var uploadBtn=makeDocUploadBtn(prev,dok);
+      row.appendChild(uploadBtn);
+
+      // Kotak alasan "Tidak Ada"
+      var alasanWrap = el('div',{cls:'alasan-wrap'});
+      var alasanId = 'alasan_dok_'+i;
+      var alasanTa = el('textarea');
+      alasanTa.id = alasanId;
+      alasanTa.placeholder = 'Wajib diisi: tuliskan alasan dokumen tidak ada...';
+      var alasanHint = el('div',{cls:'alasan-hint'});
+      alasanHint.innerHTML = '⚠️ Kolom alasan wajib diisi sebelum dapat mengirim data';
+      alasanWrap.appendChild(alasanTa);
+      alasanWrap.appendChild(alasanHint);
+
+      // Update hint saat textarea diisi
+      alasanTa.addEventListener('input', function(){
+        if(alasanTa.value.trim()){
+          alasanHint.className='alasan-hint filled';
+          alasanHint.innerHTML='✅ Alasan tercatat';
+          alasanTa.style.borderColor='var(--green)';
+        } else {
+          alasanHint.className='alasan-hint';
+          alasanHint.innerHTML='⚠️ Kolom alasan wajib diisi sebelum dapat mengirim data';
+          alasanTa.style.borderColor='var(--red)';
+        }
+      });
+
+      // Logika toggle saat radio berubah
+      grp.addEventListener('change', function(ev){
+        var val = ev.target.value;
+        if(val==='Tidak Ada'){
+          alasanWrap.classList.add('show');
+          uploadBtn.style.display='none';
+          prev.innerHTML='';
+        } else {
+          alasanWrap.classList.remove('show');
+          alasanTa.value='';
+          alasanHint.className='alasan-hint';
+          alasanHint.innerHTML='⚠️ Kolom alasan wajib diisi sebelum dapat mengirim data';
+          alasanTa.style.borderColor='var(--red)';
+          uploadBtn.style.display='';
+        }
+      });
+
+      wrapper.appendChild(row);
+      wrapper.appendChild(alasanWrap);
+      wrapper.appendChild(prev);
+      dokContainer.appendChild(wrapper);
+    });
+  });
+});
+
+/* ===== FORMAT RIBUAN UNTUK ISIAN ANGKA (1.000 / 1.234,56) ===== */
+function formatRibuan_toRaw(val) {
+  // Ubah teks terformat (mis. "1.234,56") jadi angka mentah (mis. "1234.56") untuk disimpan/dikirim
+  if (val === undefined || val === null) return '';
+  var s = String(val).trim();
+  if (s === '') return '';
+  s = s.replace(/\./g, '').replace(',', '.');
+  return s;
+}
+function formatRibuan_toDisplay(raw) {
+  // Ubah angka mentah jadi teks terformat dengan titik pemisah ribuan
+  if (raw === undefined || raw === null) return '';
+  var s = String(raw).trim();
+  if (s === '') return '';
+  s = s.replace(/[^0-9.,]/g, '');
+  var sepIdx = s.indexOf(',') > -1 ? s.indexOf(',') : s.indexOf('.');
+  var intPart = sepIdx > -1 ? s.slice(0, sepIdx) : s;
+  var decPart = sepIdx > -1 ? s.slice(sepIdx + 1).replace(/[.,]/g, '').slice(0, 2) : null;
+  intPart = intPart.replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '');
+  var grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return grouped + (decPart !== null ? ',' + decPart : '');
+}
+function formatRibuan_onInput(el) {
+  var cursorPos = el.selectionStart;
+  var raw = el.value;
+  var digitsBeforeCursor = 0;
+  for (var i = 0; i < cursorPos; i++) { if (/[0-9]/.test(raw[i])) digitsBeforeCursor++; }
+
+  var cleaned = raw.replace(/[^0-9,]/g, '');
+  var commaIdx = cleaned.indexOf(',');
+  var intPart, decPart = null;
+  if (commaIdx > -1) {
+    intPart = cleaned.slice(0, commaIdx);
+    decPart = cleaned.slice(commaIdx + 1).replace(/,/g, '').slice(0, 2);
+  } else {
+    intPart = cleaned;
+  }
+  intPart = intPart.replace(/^0+(?=\d)/, '');
+  var grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  var newValue = grouped + (decPart !== null ? ',' + decPart : (commaIdx > -1 ? ',' : ''));
+  el.value = newValue;
+
+  var count = 0, pos = newValue.length;
+  if (digitsBeforeCursor === 0) { pos = 0; }
+  else {
+    for (var j = 0; j < newValue.length; j++) {
+      if (/[0-9]/.test(newValue[j])) count++;
+      if (count === digitsBeforeCursor) { pos = j + 1; break; }
+    }
+  }
+  el.setSelectionRange(pos, pos);
+}
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.classList && e.target.classList.contains('numfmt')) {
+    formatRibuan_onInput(e.target);
+  }
+});
+
+function collectData(panelId) {
+  var panel = document.getElementById(panelId);
+  var data = { Timestamp: new Date().toLocaleString('id-ID') };
+  panel.querySelectorAll('input[type=text],input[type=date],input[type=time],input[type=number],input[type=tel],textarea').forEach(function(e){ if(e.id) data[e.id]= e.classList.contains('numfmt') ? formatRibuan_toRaw(e.value) : e.value; });
+  var rNames = new Set();
+  panel.querySelectorAll('input[type=radio]').forEach(function(e){ rNames.add(e.name); });
+  rNames.forEach(function(n){ var c=panel.querySelector('input[type=radio][name="'+n+'"]:checked'); data[n]=c?c.value:''; });
+  var cNames = new Set();
+  panel.querySelectorAll('input[type=checkbox]').forEach(function(e){ if(e.name) cNames.add(e.name); });
+  cNames.forEach(function(n){ var vals=[]; panel.querySelectorAll('input[type=checkbox][name="'+n+'"]:checked').forEach(function(e){ vals.push(e.value); }); data[n]=vals.join(', '); });
+  return data;
+}
+
+function buildFotoPayload(panelId) {
+  var list = fotoState[panelId] || [];
+  var fotoUrls = {}, fotosFallback = [];
+  list.forEach(function(item) {
+    if(item.status==='success'&&item.url){ if(!fotoUrls[item.fieldName]) fotoUrls[item.fieldName]=[]; fotoUrls[item.fieldName].push(item.url); }
+    else fotosFallback.push({fieldName:item.fieldName,fileName:item.fileName,mimeType:item.mimeType,base64:item.base64});
+  });
+  return {fotoUrls:fotoUrls, fotos:fotosFallback, total:list.length};
+}
+
+function resetFotoState(panelId) {
+  delete fotoState[panelId]; delete sessionTime[panelId];
+  var panel = document.getElementById(panelId);
+  if(panel) panel.querySelectorAll('.foto-preview,.foto-preview-inline,.doc-preview').forEach(function(p){p.innerHTML='';});
+  refreshFotoStatus(panelId);
+}
+
+async function submitForm(panelId, formName, btn) {
+  var namaPerumahan = document.getElementById('t1_nama_perumahan');
+  if (!namaPerumahan || !namaPerumahan.value.trim()) {
+    showToast('⚠️ Harap isi Nama Perumahan terlebih dahulu!', true);
+    if(namaPerumahan) namaPerumahan.focus();
+    return;
+  }
+
+  // Validasi: semua dokumen "Tidak Ada" harus ada alasannya
+  var panel = document.getElementById(panelId);
+  var alasanKosong = [];
+  panel.querySelectorAll('.alasan-wrap.show textarea').forEach(function(ta) {
+    if (!ta.value.trim()) {
+      ta.style.borderColor = 'var(--red)';
+      alasanKosong.push(ta);
+    }
+  });
+  if (alasanKosong.length > 0) {
+    showToast('⚠️ Harap isi alasan untuk setiap dokumen yang tidak ada ('+alasanKosong.length+' kolom belum diisi)!', true);
+    alasanKosong[0].scrollIntoView({behavior:'smooth', block:'center'});
+    alasanKosong[0].focus();
+    return;
+  }
+  btn.textContent = '⏳ Mengumpulkan data...'; btn.disabled = true;
+  try {
+    var ts = getSessionTimestamp(panelId);
+    var data = collectData(panelId);
+    data['Timestamp'] = ts; data['Form'] = formName;
+    var fotoPayload = buildFotoPayload(panelId);
+    var sudahDiUpload = Object.keys(fotoPayload.fotoUrls).reduce(function(a,k){return a+fotoPayload.fotoUrls[k].length;},0);
+    var belumSiap = fotoPayload.fotos.length;
+    btn.textContent = belumSiap>0 ? ('⏳ Mengirim data + '+belumSiap+' foto cadangan...') : ('⏳ Mengirim data ('+sudahDiUpload+' foto sudah di Drive)...');
+    var payload = {data:data, fotoUrls:fotoPayload.fotoUrls, fotos:fotoPayload.fotos};
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(result){ var msg=result&&result.message?result.message:'Data berhasil dikirim!'; showToast('✅ '+msg); btn.textContent='📤 Kirim Data'; btn.disabled=false; resetFormFields(panelId); window.scrollTo({top:0,behavior:'smooth'}); })
+        .withFailureHandler(function(err){ showToast('❌ Gagal: '+(err.message||err),true); btn.textContent='📤 Kirim Data'; btn.disabled=false; })
+        .processFormData(JSON.stringify(payload));
+    } else {
+      var gsUrl = GAS_URL;
+      if (!gsUrl || gsUrl.indexOf('GANTI_DENGAN_URL_ANDA') > -1) { showToast('⚠️ URL Apps Script belum dikonfigurasi.', true); btn.textContent='📤 Kirim Data'; btn.disabled=false; return; }
+      var iid='ifr_'+Date.now(); var ifr=el('iframe'); ifr.name=iid; ifr.style.display='none';
+      var frm=el('form'); frm.method='POST'; frm.action=gsUrl; frm.target=iid; frm.style.display='none';
+      var inp2=el('input'); inp2.type='hidden'; inp2.name='payload'; inp2.value=JSON.stringify(payload);
+      frm.appendChild(inp2); document.body.appendChild(ifr); document.body.appendChild(frm);
+      ifr.onload=function(){ showToast('✅ Data & foto berhasil dikirim!'); btn.textContent='📤 Kirim Data'; btn.disabled=false; resetFormFields(panelId); window.scrollTo({top:0,behavior:'smooth'}); setTimeout(function(){try{document.body.removeChild(frm);document.body.removeChild(ifr);}catch(e){}},1000); };
+      setTimeout(function(){try{document.body.removeChild(frm);document.body.removeChild(ifr);}catch(e){} showToast('✅ Data terkirim!'); btn.textContent='📤 Kirim Data'; btn.disabled=false; resetFormFields(panelId); },30000);
+      frm.submit();
+    }
+  } catch(err) { console.error(err); showToast('❌ Gagal: '+err.message,true); btn.textContent='📤 Kirim Data'; btn.disabled=false; }
+}
+
+function showToast(msg, isErr) {
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('error',!!isErr); t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 4000);
+}
+
+/* ===== SIMPAN & MUAT DRAFT (localStorage) ===== */
+var DRAFT_KEY_PREFIX = 'draft_form_perumahan_';
+
+function saveDraft(panelId, btn) {
+  try {
+    var data = collectData(panelId);
+    var savedAt = new Date().toLocaleString('id-ID');
+    var draft = { data: data, savedAt: savedAt };
+    localStorage.setItem(DRAFT_KEY_PREFIX + panelId, JSON.stringify(draft));
+
+    // Update UI
+    updateDraftInfo(panelId, savedAt);
+    showToast('Draft berhasil disimpan di perangkat ini!');
+    if (btn) {
+      var orig = btn.textContent;
+      btn.textContent = 'Tersimpan';
+      btn.disabled = true;
+      setTimeout(function() { btn.textContent = orig; btn.disabled = false; }, 1500);
+    }
+  } catch(e) {
+    showToast('❌ Gagal menyimpan draft: ' + e.message, true);
+  }
+}
+
+function loadDraftIfExists(panelId) {
+  try {
+    var raw = localStorage.getItem(DRAFT_KEY_PREFIX + panelId);
+    if (!raw) return;
+    var draft = JSON.parse(raw);
+    if (!draft || !draft.data) return;
+
+    // Tampilkan konfirmasi sebelum memuat
+    var tsSafe = draft.savedAt || 'waktu tidak diketahui';
+    var muat = confirm('Ditemukan draft yang tersimpan (' + tsSafe + ').\n\nApakah Anda ingin melanjutkan dari draft ini?');
+    if (!muat) return;
+
+    restoreDraft(panelId, draft.data);
+    updateDraftInfo(panelId, tsSafe);
+    showToast('Draft berhasil dimuat!');
+  } catch(e) {
+    console.warn('Gagal memuat draft:', e);
+  }
+}
+
+function restoreDraft(panelId, data) {
+  var panel = document.getElementById(panelId);
+  if (!panel) return;
+
+  // Isian teks / number / tanggal / tel
+  panel.querySelectorAll('input[type=text],input[type=date],input[type=time],input[type=number],input[type=tel],textarea').forEach(function(inp) {
+    if (inp.id && data[inp.id] !== undefined) {
+      inp.value = inp.classList.contains('numfmt') ? formatRibuan_toDisplay(data[inp.id]) : data[inp.id];
+    }
+  });
+
+  // Select
+  panel.querySelectorAll('select').forEach(function(sel) {
+    if (sel.id && data[sel.id] !== undefined) sel.value = data[sel.id];
+  });
+
+  // Radio buttons
+  var rNames = new Set();
+  panel.querySelectorAll('input[type=radio]').forEach(function(r) { rNames.add(r.name); });
+  rNames.forEach(function(n) {
+    if (data[n] !== undefined && data[n] !== '') {
+      var target = panel.querySelector('input[type=radio][name="'+n+'"][value="'+data[n]+'"]');
+      if (target) target.checked = true;
+    }
+  });
+
+  // Checkboxes
+  var cNames = new Set();
+  panel.querySelectorAll('input[type=checkbox]').forEach(function(c) { if(c.name) cNames.add(c.name); });
+  cNames.forEach(function(n) {
+    if (data[n] !== undefined && data[n] !== '') {
+      var vals = data[n].split(', ');
+      panel.querySelectorAll('input[type=checkbox][name="'+n+'"]').forEach(function(c) {
+        c.checked = vals.indexOf(c.value) > -1;
+      });
+    }
+  });
+}
+
+function updateDraftInfo(panelId, savedAt) {
+  var label = document.getElementById('draft-label-' + panelId);
+  var ts    = document.getElementById('draft-ts-' + panelId);
+  if (label) label.style.display = 'inline';
+  if (ts)    ts.textContent = savedAt;
+}
+
+function clearDraft(panelId) {
+  try { localStorage.removeItem(DRAFT_KEY_PREFIX + panelId); } catch(e) {}
+  var label = document.getElementById('draft-label-' + panelId);
+  var ts    = document.getElementById('draft-ts-' + panelId);
+  if (label) label.style.display = 'none';
+  if (ts)    ts.textContent = '';
+}
+
+/* ===== RESET SEMUA ISIAN FORM (dipanggil otomatis setelah submit sukses) ===== */
+function resetFormFields(panelId) {
+  var panel = document.getElementById(panelId);
+  if (!panel) return;
+  panel.querySelectorAll('input[type=text], input[type=date], input[type=time], input[type=number], input[type=tel], textarea').forEach(function(el) { el.value = ''; });
+  panel.querySelectorAll('input[type=radio]').forEach(function(el) { el.checked = false; });
+  panel.querySelectorAll('input[type=checkbox]').forEach(function(el) { el.checked = false; });
+  panel.querySelectorAll('select').forEach(function(el) { el.selectedIndex = 0; });
+  resetFotoState(panelId);
+  clearDraft(panelId); // Hapus draft setelah data berhasil terkirim
+}
+</script>
+</body>
+</html>
