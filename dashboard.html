@@ -1,11 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Pengendalian Perumahan FLPP</title>
-<script src="xlsx.full.min.js"></script>
-<script src="exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.umd.min.js"></script>
 <style>
@@ -378,6 +379,10 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 .chv-tbl td{padding:7px 9px;border:1px solid var(--g100);vertical-align:middle}
 .chv-tbl tr:hover td{background:var(--g50)}
 .chv-grp-hdr td{background:var(--navy2)!important;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:5px 9px}
+.chv-rek-row td{background:#FFF7E0;padding:8px 9px;border:1px solid var(--g100)}
+.chv-rek-row .chv-rek-label{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.chv-rek-row textarea{width:100%;font-size:11px;border:1.5px solid var(--g200);border-radius:6px;padding:6px 8px;resize:vertical;background:#fff;color:var(--g900,#222);font-family:inherit;min-height:44px}
+.chv-rek-row textarea:focus{outline:none;border-color:var(--navy2)}
 .chv-no{text-align:center;color:var(--g400);font-size:10px;width:32px}
 .chv-center{text-align:center}
 .chv-lbl{font-weight:700;color:var(--navy);font-size:10px;white-space:nowrap;background:var(--g50)}
@@ -867,11 +872,11 @@ const AUTO_SYNC_CONFIG = {
   enabled: true,
   intervalSeconds: 60,
   urls: {
-    objek:      'https://docs.google.com/spreadsheets/d/e/2PACX-1vTwh6SVBt3jVKcvw4YsdRU2y0PKZeuTeU7PTgwjGJtntGW78vHqx51lvPDlX6XbCUW5Hnmy2bJ1rL8c/pub?gid=1735248985&single=true&output=csv',
-    verifikasi: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTwh6SVBt3jVKcvw4YsdRU2y0PKZeuTeU7PTgwjGJtntGW78vHqx51lvPDlX6XbCUW5Hnmy2bJ1rL8c/pub?gid=335361372&single=true&output=csv',
-    psu:        'https://docs.google.com/spreadsheets/d/e/2PACX-1vTwh6SVBt3jVKcvw4YsdRU2y0PKZeuTeU7PTgwjGJtntGW78vHqx51lvPDlX6XbCUW5Hnmy2bJ1rL8c/pub?gid=435253256&single=true&output=csv',
-    salur:      'https://docs.google.com/spreadsheets/d/e/2PACX-1vTwh6SVBt3jVKcvw4YsdRU2y0PKZeuTeU7PTgwjGJtntGW78vHqx51lvPDlX6XbCUW5Hnmy2bJ1rL8c/pub?gid=1030889059&single=true&output=csv',
-    pasca:      'https://docs.google.com/spreadsheets/d/e/2PACX-1vTwh6SVBt3jVKcvw4YsdRU2y0PKZeuTeU7PTgwjGJtntGW78vHqx51lvPDlX6XbCUW5Hnmy2bJ1rL8c/pub?gid=1683956924&single=true&output=csv',
+    objek:      'https://docs.google.com/spreadsheets/d/e/2PACX-1vQD3Demneig5GD0NrR5mXRGoiaCutcRSgZhdrDAk71-FaC42YLUQDVWpNkx5WcRGAni2YLTUOVMYF_6/pub?gid=1432175099&single=true&output=csv',
+    verifikasi: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQD3Demneig5GD0NrR5mXRGoiaCutcRSgZhdrDAk71-FaC42YLUQDVWpNkx5WcRGAni2YLTUOVMYF_6/pub?gid=1950256519&single=true&output=csv',
+    psu:        'https://docs.google.com/spreadsheets/d/e/2PACX-1vQD3Demneig5GD0NrR5mXRGoiaCutcRSgZhdrDAk71-FaC42YLUQDVWpNkx5WcRGAni2YLTUOVMYF_6/pub?gid=523633991&single=true&output=csv',
+    salur:      'https://docs.google.com/spreadsheets/d/e/2PACX-1vQD3Demneig5GD0NrR5mXRGoiaCutcRSgZhdrDAk71-FaC42YLUQDVWpNkx5WcRGAni2YLTUOVMYF_6/pub?gid=31415256&single=true&output=csv',
+    pasca:      'https://docs.google.com/spreadsheets/d/e/2PACX-1vQD3Demneig5GD0NrR5mXRGoiaCutcRSgZhdrDAk71-FaC42YLUQDVWpNkx5WcRGAni2YLTUOVMYF_6/pub?gid=1816322000&single=true&output=csv',
   }
 };
 
@@ -2473,6 +2478,20 @@ const CHV_PSU = [
   { label: 'Ruang Terbuka Biru',              field: 'psu_k_8_2', matField: null, ketField: 'ket_psu_rth_psu_rth_biru', isRTH: true },
 ];
 
+// Pengelompokan aspek PSU (No urut mengikuti kelompok, bukan per-baris CHV_PSU)
+// start/end = index inklusif ke dalam array CHV_PSU di atas
+const PSU_GROUPS = [
+  { title: 'Jaringan Jalan',                  start: 0,  end: 1  },
+  { title: 'Saluran Drainase',                start: 2,  end: 3  },
+  { title: 'Jaringan Air Bersih',             start: 4,  end: 4  },
+  { title: 'Pengelolahan Air Limbah',         start: 5,  end: 5  },
+  { title: 'Pengelolahan Sampah',             start: 6,  end: 6  },
+  { title: 'Jaringan Listrik',                start: 7,  end: 7  },
+  { title: 'Penerangan Jalan',                start: 8,  end: 8  },
+  { title: 'Fasilitas Umum',                  start: 9,  end: 14 },
+  { title: 'Ruang Terbuka',                   start: 15, end: 17 },
+];
+
 // Struktur D: Fisik Bangunan Tahap Penyaluran
 const CHV_FISIK_SALUR = [
   { aspek: 'Pondasi', tambahan: 'catatan_tambahan_py_1_0', subs: [
@@ -2629,6 +2648,11 @@ function buildCHVCard(obj) {
     obj.t1_subsidi_tipe_2 ? `${obj.t1_subsidi_tipe_2} (${fmt(obj.t1_subsidi_unit_2)} unit, ${fmtRp(obj.t1_subsidi_harga_2)})` : null,
     obj.t1_subsidi_tipe_3 ? `${obj.t1_subsidi_tipe_3} (${fmt(obj.t1_subsidi_unit_3)} unit, ${fmtRp(obj.t1_subsidi_harga_3)})` : null,
   ].filter(Boolean).join('<br>') || '-';
+  const tipeKomersil = [
+    obj.t1_komersil_tipe_1 ? `${obj.t1_komersil_tipe_1} (${fmt(obj.t1_komersil_unit_1)} unit, ${fmtRp(obj.t1_komersil_harga_1)})` : null,
+    obj.t1_komersil_tipe_2 ? `${obj.t1_komersil_tipe_2} (${fmt(obj.t1_komersil_unit_2)} unit, ${fmtRp(obj.t1_komersil_harga_2)})` : null,
+    obj.t1_komersil_tipe_3 ? `${obj.t1_komersil_tipe_3} (${fmt(obj.t1_komersil_unit_3)} unit, ${fmtRp(obj.t1_komersil_harga_3)})` : null,
+  ].filter(Boolean).join('<br>') || '-';
   const secA = `
   <div class="chv-section">
     <div class="chv-sec-title">A. DATA PERUMAHAN</div>
@@ -2655,6 +2679,14 @@ function buildCHVCard(obj) {
       <tr>
         <td class="chv-lbl" style="vertical-align:top">Tipe Rumah Subsidi</td>
         <td colspan="5" style="line-height:1.8">${tipeSubsidi}</td>
+      </tr>
+      <tr>
+        <td class="chv-lbl" style="vertical-align:top">Tipe Rumah Komersil</td>
+        <td colspan="5" style="line-height:1.8">${tipeKomersil}</td>
+      </tr>
+      <tr>
+        <td class="chv-lbl">Status Rumah di Perumahan<br><small style="font-weight:400;color:var(--g400)">(Sesuai Data SIKUMBANG)</small></td>
+        <td colspan="5">${chvPillHTML(obj.t1_status_sikumbang)}</td>
       </tr>
     </table>
   </div>`;
@@ -2765,60 +2797,72 @@ function buildCHVCard(obj) {
     return rows.join('');
   }
 
-  CHV_PSU.forEach((item, idx) => {
-    let kondisi = '-', material = '-', keterangan = '';
-    if (psuR) {
-      kondisi = psuR[item.field] || '-';
-      if (item.matField && psuR[item.matField]) material = psuR[item.matField];
-      if (item.ketField && psuR[item.ketField]) keterangan = psuR[item.ketField];
-    }
+  let psuNo = 0;
+  PSU_GROUPS.forEach((grp, gi) => {
+    const isMulti = grp.end > grp.start;
+    psuNo++;
+    psuRows += `<tr class="chv-grp-hdr"><td colspan="5"><span style="opacity:.7;margin-right:6px">${psuNo}.</span>${grp.title}</td></tr>`;
 
-    let materialCell = '';
-    let kondisiCell  = '';
+    for (let idx = grp.start; idx <= grp.end; idx++) {
+      const item = CHV_PSU[idx];
+      let kondisi = '-', material = '-', keterangan = '';
+      if (psuR) {
+        kondisi = psuR[item.field] || '-';
+        if (item.matField && psuR[item.matField]) material = psuR[item.matField];
+        if (item.ketField && psuR[item.ketField]) keterangan = psuR[item.ketField];
+      }
 
-    if (item.isRTH) {
-      // RTH rows: derive material (present items) and kondisi (per-item pill) from sub-fields
-      let prefix = '', labels = [];
-      if (item.field === 'psu_k_8_0') { prefix = 'psu_rth_hijau_0';    labels = RTH_HIJAU; }
-      if (item.field === 'psu_k_8_1') { prefix = 'psu_rth_nonhijau_1'; labels = RTH_NONHIJAU; }
-      if (item.field === 'psu_k_8_2') { prefix = 'psu_rth_biru_2';     labels = RTH_BIRU; }
-      if (psuR && prefix) {
-        materialCell = buildRTHMaterialHTML(psuR, prefix, labels);
-        kondisiCell  = buildRTHKondisiHTML(psuR, prefix, labels);
-        if (keterangan) kondisiCell += `<div style="font-size:10px;color:var(--g500);margin-top:4px;font-style:italic">${keterangan}</div>`;
+      let materialCell = '';
+      let kondisiCell  = '';
+
+      if (item.isRTH) {
+        // RTH rows: derive material (present items) and kondisi (per-item pill) from sub-fields
+        let prefix = '', labels = [];
+        if (item.field === 'psu_k_8_0') { prefix = 'psu_rth_hijau_0';    labels = RTH_HIJAU; }
+        if (item.field === 'psu_k_8_1') { prefix = 'psu_rth_nonhijau_1'; labels = RTH_NONHIJAU; }
+        if (item.field === 'psu_k_8_2') { prefix = 'psu_rth_biru_2';     labels = RTH_BIRU; }
+        if (psuR && prefix) {
+          materialCell = buildRTHMaterialHTML(psuR, prefix, labels);
+          kondisiCell  = buildRTHKondisiHTML(psuR, prefix, labels);
+          if (keterangan) kondisiCell += `<div style="font-size:10px;color:var(--g500);margin-top:4px;font-style:italic">${keterangan}</div>`;
+        } else {
+          materialCell = '<span style="color:var(--g200)">—</span>';
+          kondisiCell  = chvPillHTML(kondisi);
+        }
+
+      } else if (item.field && item.field.startsWith('psu_k_7_')) {
+        // Sarana rows: show each facility as a badge, kondisi per-item
+        if (material !== '-' && material) {
+          const parts = material.split(',').map(s => s.trim()).filter(Boolean);
+          materialCell = parts.map(p =>
+            `<span style="display:inline-block;background:var(--g50,#f5f5f5);border:1px solid var(--g200,#ddd);border-radius:4px;padding:1px 6px;margin:1px 2px 1px 0;font-size:10px;white-space:nowrap">${p}</span>`
+          ).join('');
+          kondisiCell = psuR ? buildSaranaKondisiHTML(material, keterangan, kondisi) : chvPillHTML(kondisi);
+        } else {
+          materialCell = '<span style="color:var(--g200)">—</span>';
+          kondisiCell  = chvPillHTML(kondisi);
+        }
+
       } else {
-        materialCell = '<span style="color:var(--g200)">—</span>';
+        // Standard rows (jalan, drainase, air, listrik, dsb)
+        materialCell = material !== '-' ? `<span style="font-size:11px;color:var(--g600)">${material}</span>` : '<span style="color:var(--g200)">—</span>';
         kondisiCell  = chvPillHTML(kondisi);
       }
 
-    } else if (item.field && item.field.startsWith('psu_k_7_')) {
-      // Sarana rows: show each facility as a badge, kondisi per-item
-      if (material !== '-' && material) {
-        const parts = material.split(',').map(s => s.trim()).filter(Boolean);
-        materialCell = parts.map(p =>
-          `<span style="display:inline-block;background:var(--g50,#f5f5f5);border:1px solid var(--g200,#ddd);border-radius:4px;padding:1px 6px;margin:1px 2px 1px 0;font-size:10px;white-space:nowrap">${p}</span>`
-        ).join('');
-        kondisiCell = psuR ? buildSaranaKondisiHTML(material, keterangan, kondisi) : chvPillHTML(kondisi);
-      } else {
-        materialCell = '<span style="color:var(--g200)">—</span>';
-        kondisiCell  = chvPillHTML(kondisi);
-      }
-
-    } else {
-      // Standard rows (jalan, drainase, air, listrik, dsb)
-      materialCell = material !== '-' ? `<span style="font-size:11px;color:var(--g600)">${material}</span>` : '<span style="color:var(--g200)">—</span>';
-      kondisiCell  = chvPillHTML(kondisi);
+      psuRows += `<tr>
+        <td class="chv-no"></td>
+        <td style="padding-left:24px;color:var(--g600)">${item.label}</td>
+        <td style="font-size:11px">${materialCell}</td>
+        <td style="vertical-align:top;padding-top:6px">${kondisiCell}</td>
+        <td style="font-size:11px">${keterangan || '<span style="color:var(--g200)">—</span>'}</td>
+      </tr>`;
     }
 
-    const rekId = `${chvCardId}_psu_rek_${idx}`;
-    psuRows += `<tr>
-      <td class="chv-no">${idx+1}</td>
-      <td>${item.label}</td>
-      <td style="font-size:11px">${materialCell}</td>
-      <td style="vertical-align:top;padding-top:6px">${kondisiCell}</td>
-      <td style="font-size:11px">${keterangan || '<span style="color:var(--g200)">—</span>'}</td>
-      <td><textarea id="${rekId}" class="chv-rek-input" placeholder="Isi rekomendasi..." rows="2" oninput="saveCHVRek('${rekId}')">${loadCHVRek(rekId)}</textarea></td>
-    </tr>`;
+    const rekId = `${chvCardId}_psu_rek_grp_${gi}`;
+    psuRows += `<tr class="chv-rek-row"><td colspan="5">
+      <div class="chv-rek-label">Rekomendasi / Tindak Lanjut — ${grp.title}</div>
+      <textarea id="${rekId}" placeholder="Isi rekomendasi untuk aspek ${grp.title}..." rows="2" oninput="saveCHVRek('${rekId}')">${loadCHVRek(rekId)}</textarea>
+    </td></tr>`;
   });
   const secC = `
   <div class="chv-section">
@@ -2832,7 +2876,6 @@ function buildCHVCard(obj) {
             <th style="width:160px">Jenis/Material</th>
             <th style="width:130px">Kondisi</th>
             <th>Catatan Hasil Review</th>
-            <th style="width:200px">Rekomendasi/Tindak Lanjut</th>
           </tr>
         </thead>
         <tbody>${psuRows}</tbody>
@@ -2843,8 +2886,8 @@ function buildCHVCard(obj) {
   // Section D: Fisik Bangunan Tahap Penyaluran
   let fisikRows = '';
   let fisikNo = 0;
-  CHV_FISIK_SALUR.forEach(grp => {
-    fisikRows += `<tr class="chv-grp-hdr"><td colspan="6">${grp.aspek}</td></tr>`;
+  CHV_FISIK_SALUR.forEach((grp, gi) => {
+    fisikRows += `<tr class="chv-grp-hdr"><td colspan="5">${grp.aspek}</td></tr>`;
     grp.subs.forEach(sub => {
       fisikNo++;
       let hasil = '-', catatan = '';
@@ -2858,17 +2901,20 @@ function buildCHVCard(obj) {
           ? (salur[grp.tambahan] || '')
           : (salur[`catatan_${sub.field}`] || salur[`catatan_ts_py_${sub.field}`] || '');
       }
-      const rekId = `rek_D_${id}_${fisikNo}`;
-      const rekSaved = loadCHVRek(rekId);
       fisikRows += `<tr>
         <td class="chv-no" style="color:var(--g400);font-size:10px">${sub.aspek||''}</td>
         <td>${sub.label}</td>
         <td style="font-size:10px;color:var(--g600)">${sub.acuan}</td>
         <td class="chv-center">${sub.type === 'kondisi' ? chvPillHTML(hasil) : `<span style="font-size:11px">${hasil !== '-' ? hasil : ''}</span>`}</td>
         <td style="font-size:11px">${catatan}</td>
-        <td style="padding:2px"><textarea id="${rekId}" rows="2" oninput="saveCHVRek('${rekId}')" style="width:100%;font-size:11px;border:1px solid var(--g200);border-radius:4px;padding:3px 5px;resize:vertical;background:var(--surface,#fff);color:var(--g900,#222);font-family:inherit">${rekSaved}</textarea></td>
       </tr>`;
     });
+    const rekId = `rek_D_${id}_grp_${gi}`;
+    const rekSaved = loadCHVRek(rekId);
+    fisikRows += `<tr class="chv-rek-row"><td colspan="5">
+      <div class="chv-rek-label">Rekomendasi / Tindak Lanjut — ${grp.aspek}</div>
+      <textarea id="${rekId}" placeholder="Isi rekomendasi untuk aspek ${grp.aspek}..." rows="2" oninput="saveCHVRek('${rekId}')">${rekSaved}</textarea>
+    </td></tr>`;
   });
   const secD = `
   <div class="chv-section">
@@ -2882,7 +2928,6 @@ function buildCHVCard(obj) {
             <th style="width:180px">Acuan Penilaian</th>
             <th style="width:120px">Hasil</th>
             <th>Catatan Hasil Review</th>
-            <th>Rekomendasi/Tindak Lanjut</th>
           </tr>
         </thead>
         <tbody>${fisikRows}</tbody>
@@ -3081,12 +3126,21 @@ function exportCHVWord() {
         <p style="text-align:center;font-family:Times New Roman;font-size:11pt;margin:0 0 18pt 0;">TINJAUAN LAPANGAN PEMANTAUAN DAN EVALUASI PENYALURAN KPR FLPP</p>`;
 
       // A. Data Perumahan
+      const tipeSubsidiTxt = [1,2,3].map(n => obj[`t1_subsidi_tipe_${n}`] ?
+        `${obj[`t1_subsidi_tipe_${n}`]} (${obj[`t1_subsidi_unit_${n}`]||0} unit, Rp${obj[`t1_subsidi_harga_${n}`]||0})` : null
+      ).filter(Boolean).join('; ') || '-';
+      const tipeKomersilTxt = [1,2,3].map(n => obj[`t1_komersil_tipe_${n}`] ?
+        `${obj[`t1_komersil_tipe_${n}`]} (${obj[`t1_komersil_unit_${n}`]||0} unit, Rp${obj[`t1_komersil_harga_${n}`]||0})` : null
+      ).filter(Boolean).join('; ') || '-';
       pages += secTitle('A. DATA PERUMAHAN');
       pages += `<table style="${tblStyle}">
         <tr>${th('Nama Perumahan')}${td(nama)}${th('Alamat Perumahan')}${td(obj.t1_alamat||'-')}${th('Luas Perumahan')}${td(obj.t1_luas_perumahan ? obj.t1_luas_perumahan+' m²' : '-')}</tr>
         <tr>${th('Nama PT/Pengembang')}${td(obj.t1_nama_pt||'-')}${th('Kabupaten/Kota')}${td(kab)}${th('Total Unit FLPP')}${td(totalUnit)}</tr>
         <tr>${th('ID (SIKUMBANG)')}${td(id)}${th('Provinsi')}${td(prov)}${th('Asosiasi')}${td(obj.t1_asosiasi||'-')}</tr>
         <tr>${th('Koordinat')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc(obj.t1_koordinat||'-')}</td></tr>
+        <tr>${th('Tipe Rumah Subsidi')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc(tipeSubsidiTxt)}</td></tr>
+        <tr>${th('Tipe Rumah Komersil')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc(tipeKomersilTxt)}</td></tr>
+        <tr>${th('Status Rumah di Perumahan (Sesuai SIKUMBANG)')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc(obj.t1_status_sikumbang||'-')}</td></tr>
       </table>`;
 
       // B. Data Objek
@@ -3109,44 +3163,51 @@ function exportCHVWord() {
 
       // C. Kondisi PSU
       pages += secTitle('C. KONDISI PSU (PRASARANA, SARANA & UTILITAS)');
-      pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('Aspek yang Dinilai')}${th('Jenis/Material')}${th('Kondisi','width:100pt;')}${th('Catatan')}${th('Bukti Dukung','width:70pt;')}${th('Rekomendasi')}</tr>`;
-      CHV_PSU.forEach((item, idx) => {
-        let kondisi='', materialTxt='', kondisiDetail='';
-        if (psuR) {
-          if (item.isRTH) {
-            let prefix='', labels=[];
-            if (item.field==='psu_k_8_0'){prefix='psu_rth_hijau_0';   labels=RTH_HIJAU;}
-            if (item.field==='psu_k_8_1'){prefix='psu_rth_nonhijau_1';labels=RTH_NONHIJAU;}
-            if (item.field==='psu_k_8_2'){prefix='psu_rth_biru_2';    labels=RTH_BIRU;}
-            const pItems=[]; const dLines=[];
-            labels.forEach((lbl,i)=>{
-              const ada=(psuR[`${prefix}_${i}_ada`]||'').toLowerCase();
-              const kond=psuR[`${prefix}_${i}_kondisi`]||'';
-              if(ada.includes('ada')&&!ada.includes('tidak')){pItems.push(lbl);dLines.push(`${lbl}: ${kond}`);}
-            });
-            materialTxt=pItems.join(', '); kondisiDetail=dLines.join('; ');
-            kondisi=psuR[item.field]||kondisiDetail||'';
-          } else if (item.field&&item.field.startsWith('psu_k_7_')) {
-            kondisi=psuR[item.field]||'';
-            materialTxt=(item.matField&&psuR[item.matField])?psuR[item.matField]:'';
-            const ket=(item.ketField&&psuR[item.ketField])?psuR[item.ketField]:'';
-            kondisiDetail=ket||kondisi;
-          } else {
-            kondisi=psuR[item.field]||'';
-            materialTxt=(item.matField&&psuR[item.matField])?psuR[item.matField]:'';
+      pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('Aspek yang Dinilai')}${th('Jenis/Material')}${th('Kondisi','width:100pt;')}${th('Catatan')}${th('Bukti Dukung','width:70pt;')}</tr>`;
+      let psuPrintNo = 0;
+      PSU_GROUPS.forEach(grp => {
+        psuPrintNo++;
+        pages += grpTr(`${psuPrintNo}. ${grp.title}`, 6);
+        for (let idx = grp.start; idx <= grp.end; idx++) {
+          const item = CHV_PSU[idx];
+          let kondisi='', materialTxt='', kondisiDetail='';
+          if (psuR) {
+            if (item.isRTH) {
+              let prefix='', labels=[];
+              if (item.field==='psu_k_8_0'){prefix='psu_rth_hijau_0';   labels=RTH_HIJAU;}
+              if (item.field==='psu_k_8_1'){prefix='psu_rth_nonhijau_1';labels=RTH_NONHIJAU;}
+              if (item.field==='psu_k_8_2'){prefix='psu_rth_biru_2';    labels=RTH_BIRU;}
+              const pItems=[]; const dLines=[];
+              labels.forEach((lbl,i)=>{
+                const ada=(psuR[`${prefix}_${i}_ada`]||'').toLowerCase();
+                const kond=psuR[`${prefix}_${i}_kondisi`]||'';
+                if(ada.includes('ada')&&!ada.includes('tidak')){pItems.push(lbl);dLines.push(`${lbl}: ${kond}`);}
+              });
+              materialTxt=pItems.join(', '); kondisiDetail=dLines.join('; ');
+              kondisi=psuR[item.field]||kondisiDetail||'';
+            } else if (item.field&&item.field.startsWith('psu_k_7_')) {
+              kondisi=psuR[item.field]||'';
+              materialTxt=(item.matField&&psuR[item.matField])?psuR[item.matField]:'';
+              const ket=(item.ketField&&psuR[item.ketField])?psuR[item.ketField]:'';
+              kondisiDetail=ket||kondisi;
+            } else {
+              kondisi=psuR[item.field]||'';
+              materialTxt=(item.matField&&psuR[item.matField])?psuR[item.matField]:'';
+            }
           }
+          const finalKondisi = kondisiDetail||kondisi;
+          pages += `<tr>${tdc('')}${td('    '+item.label)}${td(materialTxt)}${tdc(finalKondisi)}${td('')}${td('')}</tr>`;
         }
-        const finalKondisi = kondisiDetail||kondisi;
-        pages += `<tr>${tdc(idx+1)}${td(item.label)}${td(materialTxt)}${tdc(finalKondisi)}${td('')}${td('')}${td('')}</tr>`;
+        pages += `<tr><td colspan="6" style="padding:6px 8px;border:1px solid #aaa;background:#FFF7E0;font-size:10pt;"><strong>Rekomendasi/Tindak Lanjut — ${grp.title}:</strong><div style="min-height:24pt;border-bottom:1px solid #999;margin-top:4pt;"></div></td></tr>`;
       });
       pages += `</table>`;
 
       // D. Fisik Penyaluran
       pages += secTitle('D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN');
-      pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('Aspek')}${th('Sub-Aspek yang Dinilai')}${th('Acuan Penilaian')}${th('Hasil','width:60pt;')}${th('Catatan Hasil Review')}${th('Rekomendasi/Tindak Lanjut')}</tr>`;
+      pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('Aspek')}${th('Sub-Aspek yang Dinilai')}${th('Acuan Penilaian')}${th('Hasil','width:60pt;')}${th('Catatan Hasil Review')}</tr>`;
       let dNo=0;
       CHV_FISIK_SALUR.forEach(grp => {
-        pages += grpTr(grp.aspek, 7);
+        pages += grpTr(grp.aspek, 6);
         grp.subs.forEach(sub => {
           dNo++;
           const raw = salur ? (salur[sub.field]!=null ? String(salur[sub.field]) : '') : '';
@@ -3154,8 +3215,9 @@ function exportCHVWord() {
             ? (grp.useTambahan ? (salur[grp.tambahan]||'')
               : (salur[`catatan_${sub.field}`]||salur[`catatan_ts_py_${sub.field}`]||''))
             : '';
-          pages += `<tr>${tdc(dNo)}${td(grp.aspek)}${td(sub.label)}${td(sub.acuan)}${tdc(raw)}${td(cat)}${td('')}</tr>`;
+          pages += `<tr>${tdc(dNo)}${td(grp.aspek)}${td(sub.label)}${td(sub.acuan)}${tdc(raw)}${td(cat)}</tr>`;
         });
+        pages += `<tr><td colspan="6" style="padding:6px 8px;border:1px solid #aaa;background:#FFF7E0;font-size:10pt;"><strong>Rekomendasi/Tindak Lanjut — ${grp.aspek}:</strong><div style="min-height:24pt;border-bottom:1px solid #999;margin-top:4pt;"></div></td></tr>`;
       });
       pages += `</table>`;
 
@@ -3377,6 +3439,21 @@ async function exportCHVExcel() {
       r = ws.addRow(['Koordinat', obj.t1_koordinat||'-']);
       ws.mergeCells(r.number, 2, r.number, NCOL);
       styleLabelCells(r, [1]);
+      const tipeSubsidiXl = [1,2,3].map(n => obj[`t1_subsidi_tipe_${n}`] ?
+        `${obj[`t1_subsidi_tipe_${n}`]} (${obj[`t1_subsidi_unit_${n}`]||0} unit, Rp${obj[`t1_subsidi_harga_${n}`]||0})` : null
+      ).filter(Boolean).join('; ') || '-';
+      r = ws.addRow(['Tipe Rumah Subsidi', tipeSubsidiXl]);
+      ws.mergeCells(r.number, 2, r.number, NCOL);
+      styleLabelCells(r, [1]);
+      const tipeKomersilXl = [1,2,3].map(n => obj[`t1_komersil_tipe_${n}`] ?
+        `${obj[`t1_komersil_tipe_${n}`]} (${obj[`t1_komersil_unit_${n}`]||0} unit, Rp${obj[`t1_komersil_harga_${n}`]||0})` : null
+      ).filter(Boolean).join('; ') || '-';
+      r = ws.addRow(['Tipe Rumah Komersil', tipeKomersilXl]);
+      ws.mergeCells(r.number, 2, r.number, NCOL);
+      styleLabelCells(r, [1]);
+      r = ws.addRow(['Status Rumah di Perumahan (Sesuai SIKUMBANG)', obj.t1_status_sikumbang||'-']);
+      ws.mergeCells(r.number, 2, r.number, NCOL);
+      styleLabelCells(r, [1]);
       addBlank();
 
       // B. DATA OBJEK PERUMAHAN (Dokumen)
@@ -3403,52 +3480,72 @@ async function exportCHVExcel() {
       });
       addBlank();
 
-      // C. KONDISI PSU — disamakan dengan tampilan web: 6 kolom
-      // (No, Aspek, Jenis/Material, Kondisi, Catatan Hasil Review, Rekomendasi/Tindak Lanjut)
+      // C. KONDISI PSU — dikelompokkan per aspek (Jaringan Jalan, Saluran Drainase, dst),
+      // kolom Rekomendasi per-baris dihapus, diganti 1 baris Rekomendasi manual di akhir tiap aspek.
+      // Kolom: No, Aspek, Jenis/Material, Kondisi, Catatan Hasil Review
       addSecTitle('C. KONDISI PSU (PRASARANA, SARANA & UTILITAS)');
-      r = ws.addRow(['No','Aspek yang Dinilai','Jenis/Material','Kondisi','Catatan Hasil Review','Rekomendasi/Tindak Lanjut']);
-      ws.mergeCells(r.number, 6, r.number, NCOL);
+      r = ws.addRow(['No','Aspek yang Dinilai','Jenis/Material','Kondisi','Catatan Hasil Review']);
+      ws.mergeCells(r.number, 5, r.number, NCOL);
       styleTableHead(r);
-      CHV_PSU.forEach((item, idx) => {
-        let kondisi = '', materialTxt = '', keterangan = '';
-        if (psuR) {
-          if (item.isRTH) {
-            let prefix = '', labels = [];
-            if (item.field === 'psu_k_8_0') { prefix = 'psu_rth_hijau_0';    labels = RTH_HIJAU; }
-            if (item.field === 'psu_k_8_1') { prefix = 'psu_rth_nonhijau_1'; labels = RTH_NONHIJAU; }
-            if (item.field === 'psu_k_8_2') { prefix = 'psu_rth_biru_2';     labels = RTH_BIRU; }
-            const presentItems = [];
-            const detailLines = [];
-            labels.forEach((lbl, i) => {
-              const ada  = (psuR[`${prefix}_${i}_ada`] || '').toLowerCase();
-              const kond = psuR[`${prefix}_${i}_kondisi`] || '';
-              if (ada.includes('ada') && !ada.includes('tidak')) {
-                presentItems.push(lbl);
-                detailLines.push(`${lbl}: ${kond}`);
-              }
-            });
-            materialTxt = presentItems.join(', ');
-            kondisi     = psuR[item.field] || detailLines.join('; ') || '';
-            keterangan  = (item.ketField && psuR[item.ketField]) ? psuR[item.ketField] : '';
-          } else if (item.field && item.field.startsWith('psu_k_7_')) {
-            kondisi     = psuR[item.field] || '';
-            materialTxt = (item.matField && psuR[item.matField]) ? psuR[item.matField] : '';
-            keterangan  = (item.ketField && psuR[item.ketField]) ? psuR[item.ketField] : '';
-          } else {
-            kondisi     = psuR[item.field] || '';
-            materialTxt = (item.matField && psuR[item.matField]) ? psuR[item.matField] : '';
-            keterangan  = (item.ketField && psuR[item.ketField]) ? psuR[item.ketField] : '';
+      let psuXlNo = 0;
+      PSU_GROUPS.forEach(grp => {
+        psuXlNo++;
+        r = ws.addRow([`${psuXlNo}. ${grp.title}`]);
+        ws.mergeCells(r.number, 1, r.number, NCOL);
+        styleGroupHead(r);
+        for (let idx = grp.start; idx <= grp.end; idx++) {
+          const item = CHV_PSU[idx];
+          let kondisi = '', materialTxt = '', keterangan = '';
+          if (psuR) {
+            if (item.isRTH) {
+              let prefix = '', labels = [];
+              if (item.field === 'psu_k_8_0') { prefix = 'psu_rth_hijau_0';    labels = RTH_HIJAU; }
+              if (item.field === 'psu_k_8_1') { prefix = 'psu_rth_nonhijau_1'; labels = RTH_NONHIJAU; }
+              if (item.field === 'psu_k_8_2') { prefix = 'psu_rth_biru_2';     labels = RTH_BIRU; }
+              const presentItems = [];
+              const detailLines = [];
+              labels.forEach((lbl, i) => {
+                const ada  = (psuR[`${prefix}_${i}_ada`] || '').toLowerCase();
+                const kond = psuR[`${prefix}_${i}_kondisi`] || '';
+                if (ada.includes('ada') && !ada.includes('tidak')) {
+                  presentItems.push(lbl);
+                  detailLines.push(`${lbl}: ${kond}`);
+                }
+              });
+              materialTxt = presentItems.join(', ');
+              kondisi     = psuR[item.field] || detailLines.join('; ') || '';
+              keterangan  = (item.ketField && psuR[item.ketField]) ? psuR[item.ketField] : '';
+            } else if (item.field && item.field.startsWith('psu_k_7_')) {
+              kondisi     = psuR[item.field] || '';
+              materialTxt = (item.matField && psuR[item.matField]) ? psuR[item.matField] : '';
+              keterangan  = (item.ketField && psuR[item.ketField]) ? psuR[item.ketField] : '';
+            } else {
+              kondisi     = psuR[item.field] || '';
+              materialTxt = (item.matField && psuR[item.matField]) ? psuR[item.matField] : '';
+              keterangan  = (item.ketField && psuR[item.ketField]) ? psuR[item.ketField] : '';
+            }
           }
+          r = ws.addRow(['', '    ' + item.label, materialTxt, kondisi, keterangan]);
+          ws.mergeCells(r.number, 5, r.number, NCOL);
+          styleDataRow(r, [1,4]);
         }
-        r = ws.addRow([idx+1, item.label, materialTxt, kondisi, keterangan, '']);
-        ws.mergeCells(r.number, 6, r.number, NCOL);
-        styleDataRow(r, [1,4]);
+        // baris Rekomendasi manual di akhir tiap aspek
+        r = ws.addRow([`Rekomendasi / Tindak Lanjut — ${grp.title} :`]);
+        ws.mergeCells(r.number, 1, r.number, NCOL);
+        r.eachCell({ includeEmpty:true }, c => {
+          c.font = { bold:true, color:{argb:COL.navyTx}, size:10, name:'Calibri' };
+          c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF7E0'} };
+          c.alignment = { vertical:'middle', wrapText:true };
+          c.border = allBorder;
+        });
+        r.height = 26;
       });
       addBlank();
 
       // D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN
       addSecTitle('D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN');
-      r = ws.addRow(['No','Aspek','Sub-Aspek yang Dinilai','Acuan Penilaian','Hasil','Catatan Hasil Review','Rekomendasi/Tindak Lanjut']);
+      r = ws.addRow(['No','Aspek','Sub-Aspek yang Dinilai','Acuan Penilaian','Hasil','Catatan Hasil Review']);
+      ws.mergeCells(r.number, 6, r.number, NCOL);
       styleTableHead(r);
       let dNo = 0;
       CHV_FISIK_SALUR.forEach(grp => {
@@ -3463,9 +3560,20 @@ async function exportCHVExcel() {
               ? (salur[grp.tambahan] || '')
               : (salur[`catatan_${sub.field}`] || salur[`catatan_ts_py_${sub.field}`] || ''))
             : '';
-          r = ws.addRow([dNo, grp.aspek, sub.label, sub.acuan, raw, cat, '']);
+          r = ws.addRow([dNo, grp.aspek, sub.label, sub.acuan, raw, cat]);
+          ws.mergeCells(r.number, 6, r.number, NCOL);
           styleDataRow(r, [1,5]);
         });
+        // baris Rekomendasi manual di akhir tiap aspek
+        r = ws.addRow([`Rekomendasi / Tindak Lanjut — ${grp.aspek} :`]);
+        ws.mergeCells(r.number, 1, r.number, NCOL);
+        r.eachCell({ includeEmpty:true }, c => {
+          c.font = { bold:true, color:{argb:COL.navyTx}, size:10, name:'Calibri' };
+          c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF7E0'} };
+          c.alignment = { vertical:'middle', wrapText:true };
+          c.border = allBorder;
+        });
+        r.height = 26;
       });
       addBlank();
 
