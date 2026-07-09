@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -157,6 +158,19 @@
   .alasan-wrap .alasan-hint{font-size:11px;color:var(--red);margin-top:4px;display:flex;align-items:center;gap:4px}
   .alasan-wrap .alasan-hint.filled{color:var(--green)}
 
+  /* Jenis Legalitas Penguasaan Tanah */
+  .jenis-wrap{display:none;margin-top:10px;width:100%}
+  .jenis-wrap.show{display:block}
+  .jenis-wrap .jenis-label{font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px}
+  .jenis-lainnya-input{display:none;width:100%;margin-top:8px}
+  .jenis-lainnya-input.show{display:block}
+  .jenis-lainnya-input input{
+    width:100%;padding:9px 14px;border:1.5px solid var(--gray-200);border-radius:14px;
+    font-size:13px;font-family:'Inter',sans-serif;color:var(--gray-800);
+    background:var(--white);outline:none;transition:border-color .15s;
+  }
+  .jenis-lainnya-input input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
+
 </style>
 </head>
 <body>
@@ -264,7 +278,7 @@
 <div id="toast"></div>
 
 <script>
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbwoIUF7DJ9fXYGxQSH_FDxT4dOQgo4B8b9g28jS7VVlJH8qqE7cz1Qv1QLVui4ti_nu/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwL_U155tjBT1nim0SxD4Qu4LM2EsWc7wlWTEcokU-SfAiglJlhG4Qt7iBJ6X5sEgfr6A/exec';
 
 var fotoState   = {};
 var sessionTime = {};
@@ -453,6 +467,16 @@ window.addEventListener('load', function() {
 
   // ---- DOKUMEN LIST ----
   var dokumenGroups=[
+    {tahap:'Tahap Awal/Persiapan (Sebelum Tahap Perencanaan)', items:[
+      {type:'legalitas', label:'Legalitas Penguasaan Tanah', jenis:[
+        'Sertifikat Hak Milik (SHM)',
+        'Hak Guna Bangunan (HGB)',
+        'Hak Pengelolaan (HPL)',
+        'Tanah Negara',
+        'Dokumen Penguasaan Tanah Lainnya yang Sah',
+        'Lainnya'
+      ]}
+    ]},
     {tahap:'Tahap Perencanaan', items:[
       'Gambar Site Plan Perumahan',
       'DED (Detailed Engineering Design) Perumahan',
@@ -460,6 +484,8 @@ window.addEventListener('load', function() {
       'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)'
     ]},
     {tahap:'Tahap Perizinan', items:[
+      'Nomor Induk Berusaha (NIB)',
+      'Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR)',
       'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL atau Dokumen Lain Sesuai Ketentuan)',
       'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)'
     ]},
@@ -473,9 +499,111 @@ window.addEventListener('load', function() {
   ];
   var dokContainer=document.getElementById('dokumen-list');
   var dokIdx=0;
+
+  function renderLegalitasItem(item, i) {
+    var wrapper=el('div',{cls:'doc-wrapper'});
+    var row=el('div',{cls:'doc-row'});
+    row.appendChild(el('span',{text:item.label,style:'flex:1;font-size:13px;font-weight:500;min-width:160px'}));
+
+    // Radio Ada / Tidak Ada
+    var radioName='legalitas_tanah_ada';
+    var grp=el('div',{cls:'radio-group'});
+    ['Ada','Tidak Ada'].forEach(function(o){
+      var inp=el('input'); inp.type='radio'; inp.name=radioName; inp.value=o;
+      var lbl=el('label',{},[inp, document.createTextNode(' '+o)]);
+      grp.appendChild(lbl);
+    });
+    row.appendChild(grp);
+
+    // Upload button (hanya tampil saat "Ada")
+    var prev=el('div',{cls:'doc-preview'});
+    var uploadBtn=makeDocUploadBtn(prev,item.label);
+    uploadBtn.style.display='none';
+    row.appendChild(uploadBtn);
+
+    // Kotak jenis legalitas (hanya tampil saat "Ada")
+    var jenisWrap=el('div',{cls:'jenis-wrap'});
+    jenisWrap.appendChild(el('div',{cls:'jenis-label',text:'Jenis Legalitas (pilih salah satu):'}));
+    var jenisGrp=el('div',{cls:'radio-group'});
+    var jenisName='legalitas_tanah_jenis';
+    item.jenis.forEach(function(opt){
+      var inp=el('input'); inp.type='radio'; inp.name=jenisName; inp.value=opt;
+      var lbl=el('label',{},[inp, document.createTextNode(' '+opt)]);
+      jenisGrp.appendChild(lbl);
+    });
+    jenisWrap.appendChild(jenisGrp);
+
+    // Input teks saat jenis "Lainnya" dipilih
+    var lainnyaWrap=el('div',{cls:'jenis-lainnya-input'});
+    var lainnyaInput=el('input'); lainnyaInput.type='text'; lainnyaInput.id='legalitas_tanah_jenis_lainnya';
+    lainnyaInput.placeholder='Sebutkan jenis legalitas lainnya...';
+    lainnyaWrap.appendChild(lainnyaInput);
+    jenisWrap.appendChild(lainnyaWrap);
+
+    jenisGrp.addEventListener('change', function(ev){
+      if(ev.target.value==='Lainnya'){ lainnyaWrap.classList.add('show'); }
+      else { lainnyaWrap.classList.remove('show'); lainnyaInput.value=''; }
+    });
+
+    // Kotak alasan "Tidak Ada"
+    var alasanWrap=el('div',{cls:'alasan-wrap'});
+    var alasanId='alasan_legalitas_tanah';
+    var alasanTa=el('textarea');
+    alasanTa.id=alasanId;
+    alasanTa.placeholder='Wajib diisi: tuliskan alasan dokumen tidak ada...';
+    var alasanHint=el('div',{cls:'alasan-hint'});
+    alasanHint.innerHTML='⚠️ Kolom alasan wajib diisi sebelum dapat mengirim data';
+    alasanWrap.appendChild(alasanTa);
+    alasanWrap.appendChild(alasanHint);
+
+    alasanTa.addEventListener('input', function(){
+      if(alasanTa.value.trim()){
+        alasanHint.className='alasan-hint filled';
+        alasanHint.innerHTML='✅ Alasan tercatat';
+        alasanTa.style.borderColor='var(--green)';
+      } else {
+        alasanHint.className='alasan-hint';
+        alasanHint.innerHTML='⚠️ Kolom alasan wajib diisi sebelum dapat mengirim data';
+        alasanTa.style.borderColor='var(--red)';
+      }
+    });
+
+    // Logika toggle saat radio Ada/Tidak Ada berubah
+    grp.addEventListener('change', function(ev){
+      var val=ev.target.value;
+      if(val==='Tidak Ada'){
+        alasanWrap.classList.add('show');
+        jenisWrap.classList.remove('show');
+        uploadBtn.style.display='none';
+        prev.innerHTML='';
+        jenisGrp.querySelectorAll('input[type=radio]').forEach(function(r){r.checked=false;});
+        lainnyaWrap.classList.remove('show');
+        lainnyaInput.value='';
+      } else {
+        alasanWrap.classList.remove('show');
+        alasanTa.value='';
+        alasanHint.className='alasan-hint';
+        alasanHint.innerHTML='⚠️ Kolom alasan wajib diisi sebelum dapat mengirim data';
+        alasanTa.style.borderColor='var(--red)';
+        jenisWrap.classList.add('show');
+        uploadBtn.style.display='';
+      }
+    });
+
+    wrapper.appendChild(row);
+    wrapper.appendChild(jenisWrap);
+    wrapper.appendChild(alasanWrap);
+    wrapper.appendChild(prev);
+    dokContainer.appendChild(wrapper);
+  }
+
   dokumenGroups.forEach(function(group){
     dokContainer.appendChild(el('div',{cls:'subsection-title',text:group.tahap,style:'margin-top:14px'}));
     group.items.forEach(function(dok){
+      if (dok && typeof dok === 'object' && dok.type === 'legalitas') {
+        renderLegalitasItem(dok, dokIdx++);
+        return;
+      }
       var i=dokIdx++;
       var wrapper=el('div',{cls:'doc-wrapper'});
       var row=el('div',{cls:'doc-row'});
