@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -70,6 +71,7 @@
   .kondisi-opt input{display:none}
   .kondisi-opt label{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid var(--gray-200);border-radius:999px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;background:var(--white)}
   .kondisi-opt label .dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0;margin:0}
+  .kondisi-opt input:checked+label{background:var(--gray-100);border-color:var(--navy)}
   .kondisi-opt.baik label{color:#065F46}.kondisi-opt.baik .dot{background:#10B981}.kondisi-opt.baik input:checked+label{background:#ECFDF5;border-color:#10B981}
   .kondisi-opt.sedang label{color:#92400E}.kondisi-opt.sedang .dot{background:#F59E0B}.kondisi-opt.sedang input:checked+label{background:#FFFBEB;border-color:#F59E0B}
   .kondisi-opt.buruk label{color:#7F1D1D}.kondisi-opt.buruk .dot{background:#EF4444}.kondisi-opt.buruk input:checked+label{background:#FEF2F2;border-color:#EF4444}
@@ -149,6 +151,23 @@
   .catatan-box textarea:focus{border-color:#B91C1C;box-shadow:0 0 0 3px rgba(220,38,38,.12)}
   .catatan-box .catatan-label{font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px;display:flex;align-items:center;gap:4px}
   @keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ===== CATATAN BOX INFO (varian emas, untuk jawaban positif/informasional) ===== */
+  .catatan-box-info{display:none;margin-top:8px;animation:fadeSlide .2s ease}
+  .catatan-box-info.visible{display:block}
+  .catatan-box-info input,.catatan-box-info textarea{padding:9px 16px;border:1.5px solid var(--gold);border-radius:16px;font-size:13px;font-family:'Inter',sans-serif;color:var(--gray-800);background:var(--white);outline:none;width:100%;resize:vertical;transition:border-color .15s}
+  .catatan-box-info textarea{min-height:70px}
+  .catatan-box-info input:focus,.catatan-box-info textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
+  .catatan-box-info .catatan-label{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+
+  /* ===== RADIO GROUP DENGAN DESKRIPSI (mis. kategori penghijauan) ===== */
+  .radio-desc-group{display:flex;flex-direction:column;gap:8px}
+  .radio-desc-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:16px;background:var(--white);cursor:pointer;transition:all .15s}
+  .radio-desc-opt input{margin-top:3px;flex-shrink:0}
+  .radio-desc-opt .rdo-title{font-size:13px;font-weight:600;color:var(--gray-800)}
+  .radio-desc-opt .rdo-desc{font-size:12px;color:var(--gray-500);margin-top:2px;line-height:1.4}
+  .radio-desc-opt:has(input:checked){border-color:var(--navy);background:var(--gray-50)}
+  .radio-desc-opt:has(input:checked) .rdo-title{color:var(--navy)}
 
   /* ===== CATATAN TAMBAHAN BOX per section penyaluran ===== */
   .catatan-tambahan-wrap{background:var(--gray-50);border:1.5px solid var(--gold);border-radius:18px;padding:14px 16px;margin-top:14px}
@@ -332,9 +351,33 @@
             <div class="field"><label>Provinsi</label><select id="prov_panel1" onchange="onProvChange('prov_panel1','kab_panel1')"><option value="">-- Pilih Provinsi --</option></select></div>
           </div>
           <div class="field"><label>Kabupaten/Kota</label><select id="kab_panel1"><option value="">-- Pilih Provinsi dahulu --</option></select></div>
+          <div class="field-row">
+            <div class="field"><label>Alamat Perumahan</label><input type="text" id="p1_alamat"></div>
+            <div class="field"><label>Luas Perumahan (m²)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p1_luas_perumahan"></div>
+          </div>
         </div>
       </div>
       <div id="psu-sections"></div>
+      <div class="section" style="margin-bottom:20px">
+        <div class="section-header"><span class="section-num">10.0</span><h3>Serah Terima PSU</h3></div>
+        <div class="section-body">
+          <div class="field">
+            <label>Apakah PSU sudah diserahterimakan dengan Pemerintah Daerah?</label>
+            <div class="radio-group">
+              <label><input type="radio" name="psu_serah_terima" value="Sudah"> Sudah</label>
+              <label><input type="radio" name="psu_serah_terima" value="Belum"> Belum</label>
+            </div>
+            <div class="catatan-box-info" id="box_psu_serah_sudah">
+              <div class="catatan-label">📅 Kapan Diserahterimakan?</div>
+              <input type="date" id="psu_serah_tanggal" name="psu_serah_tanggal">
+            </div>
+            <div class="catatan-box" id="box_psu_serah_belum">
+              <div class="catatan-label">✏️ Mengapa Belum Diserahterimakan?</div>
+              <textarea id="psu_serah_alasan" name="psu_serah_alasan" placeholder="Jelaskan alasan PSU belum diserahterimakan..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="send-area">
         <div class="draft-info" id="draft-info-panel-1">
           <span id="draft-label-panel-1" style="display:none">Draft tersimpan</span>
@@ -365,6 +408,15 @@
             <div class="field"><label>Provinsi</label><select id="prov_panel2" onchange="onProvChange('prov_panel2','kab_panel2')"><option value="">-- Pilih Provinsi --</option></select></div>
           </div>
           <div class="field"><label>Kabupaten/Kota</label><select id="kab_panel2"><option value="">-- Pilih Provinsi dahulu --</option></select></div>
+          <div class="field"><label>Alamat Perumahan</label><input type="text" id="p2_alamat"></div>
+          <div class="field">
+            <label>Koordinat (lat, lng)</label>
+            <div class="geo-field-row">
+              <input type="text" id="p2_koordinat" placeholder="-6.200000, 106.816666">
+              <button type="button" class="geo-btn" id="geoBtn_p2_koordinat">📍 Ambil Lokasi</button>
+            </div>
+            <div class="geo-status" id="geoStatus_p2_koordinat"></div>
+          </div>
         </div>
       </div>
       <div id="penyaluran-sections"></div>
@@ -398,40 +450,73 @@
             <div class="field"><label>Provinsi</label><select id="prov_panel3" onchange="onProvChange('prov_panel3','kab_panel3')"><option value="">-- Pilih Provinsi --</option></select></div>
           </div>
           <div class="field"><label>Kabupaten/Kota</label><select id="kab_panel3"><option value="">-- Pilih Provinsi dahulu --</option></select></div>
+          <div class="field"><label>Alamat Perumahan</label><input type="text" id="p3_alamat"></div>
+          <div class="field">
+            <label>Koordinat (lat, lng)</label>
+            <div class="geo-field-row">
+              <input type="text" id="p3_koordinat" placeholder="-6.200000, 106.816666">
+              <button type="button" class="geo-btn" id="geoBtn_p3_koordinat">📍 Ambil Lokasi</button>
+            </div>
+            <div class="geo-status" id="geoStatus_p3_koordinat"></div>
+          </div>
         </div>
       </div>
       <div class="divider-banner"><span class="divider-badge">KETERHUNIAN</span><div><h3>Kondisi Keterhunian Rumah</h3><p>Profil penghuni, tipe unit, dan status keterhunian perumahan FLPP</p></div></div>
       <div class="section">
         <div class="section-header"><span class="section-num">1.0</span><h3>Profil Penghuni</h3></div>
         <div class="section-body">
-          <div class="subsection"><div class="subsection-title">Data Responden (Penghuni)</div>
+          <div class="subsection"><div class="subsection-title">Data Responden</div>
             <div class="field"><label>Nomor Rumah</label><input type="text" id="p3_nomor_rumah" name="nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
             <div class="field-row">
-              <div class="field"><label>Nama Lengkap</label><input type="text"></div>
-              <div class="field"><label>NIK</label><input type="text" maxlength="16"></div>
+              <div class="field"><label>Nama Lengkap</label><input type="text" id="p3_nama_responden" name="nama_responden"></div>
+              <div class="field"><label>NIK</label><input type="text" id="p3_nik_responden" name="nik_responden" maxlength="16"></div>
             </div>
-            <div class="field"><label>Jenis Kelamin</label><div class="radio-group"><label><input type="radio" name="jk_penghuni" value="Laki-laki"> Laki-laki</label><label><input type="radio" name="jk_penghuni" value="Perempuan"> Perempuan</label></div></div>
-            <div class="field"><label>Status Pernikahan</label><div class="radio-group"><label><input type="radio" name="kawin_penghuni" value="Belum Kawin"> Belum Kawin</label><label><input type="radio" name="kawin_penghuni" value="Kawin"> Kawin</label></div></div>
+            <div class="field"><label>Jenis Kelamin</label><div class="radio-group"><label><input type="radio" name="jk_responden" value="Laki-laki"> Laki-laki</label><label><input type="radio" name="jk_responden" value="Perempuan"> Perempuan</label></div></div>
+            <div class="field"><label>Hubungan dengan Debitur</label><div class="radio-group">
+              <label><input type="radio" name="hub_debitur" value="Debitur Itu Sendiri"> Debitur Itu Sendiri</label>
+              <label><input type="radio" name="hub_debitur" value="Suami/Istri"> Suami/Istri</label>
+              <label><input type="radio" name="hub_debitur" value="Anak"> Anak</label>
+              <label><input type="radio" name="hub_debitur" value="Orang Tua"> Orang Tua</label>
+              <label><input type="radio" name="hub_debitur" value="Saudara"> Saudara</label>
+              <label><input type="radio" name="hub_debitur" value="Lainnya"> Lainnya</label>
+            </div></div>
+          </div>
+          <div class="subsection"><div class="subsection-title">Data Debitur</div>
+            <div class="field"><label>Apakah Debitur Sama dengan Responden?</label><div class="radio-group">
+              <label><input type="radio" name="debitur_sama_responden" value="Ya"> Ya</label>
+              <label><input type="radio" name="debitur_sama_responden" value="Tidak"> Tidak</label>
+            </div></div>
+            <div class="catatan-box-info" id="box_debitur_sama_ya">
+              <div class="catatan-label">ℹ️ Info</div>
+              <div style="font-size:13px;color:var(--gray-600)">Nama Lengkap dan Jenis Kelamin debitur mengikuti Data Responden di atas.</div>
+            </div>
+            <div class="catatan-box-info" id="box_debitur_beda">
+              <div class="field-row">
+                <div class="field"><label>Nama Lengkap Debitur</label><input type="text" id="p3_nama_debitur" name="nama_debitur"></div>
+              </div>
+              <div class="field"><label>Jenis Kelamin Debitur</label><div class="radio-group"><label><input type="radio" name="jk_debitur" value="Laki-laki"> Laki-laki</label><label><input type="radio" name="jk_debitur" value="Perempuan"> Perempuan</label></div></div>
+            </div>
+            <div class="field"><label>Status Pernikahan</label><div class="radio-group"><label><input type="radio" name="kawin_debitur" value="Belum Kawin"> Belum Kawin</label><label><input type="radio" name="kawin_debitur" value="Kawin"> Kawin</label></div></div>
             <div class="field-row">
               <div class="field"><label>Provinsi Domisili</label><select id="prov_domisili" onchange="onProvChange('prov_domisili','kab_domisili')"><option value="">-- Pilih Provinsi --</option></select></div>
               <div class="field"><label>Kabupaten/Kota Domisili</label><select id="kab_domisili"><option value="">-- Pilih Provinsi dahulu --</option></select></div>
             </div>
-            <div class="field"><label>Nomor HP</label><input type="tel"></div>
+            <div class="field"><label>Nomor HP</label><input type="tel" id="p3_hp_debitur" name="hp_debitur"></div>
             <div class="field"><label>Pekerjaan</label><div class="radio-group">
-              <label><input type="radio" name="kerja_penghuni" value="ASN/BUMN/BUMD"> ASN/BUMN/BUMD</label>
-              <label><input type="radio" name="kerja_penghuni" value="TNI/POLRI"> TNI/POLRI</label>
-              <label><input type="radio" name="kerja_penghuni" value="Swasta"> Swasta</label>
-              <label><input type="radio" name="kerja_penghuni" value="Wiraswasta"> Wiraswasta</label>
-              <label><input type="radio" name="kerja_penghuni" value="Informal"> Informal</label>
-              <label><input type="radio" name="kerja_penghuni" value="Tidak Bekerja"> Tidak Bekerja</label>
+              <label><input type="radio" name="kerja_debitur" value="ASN/BUMN/BUMD"> ASN/BUMN/BUMD</label>
+              <label><input type="radio" name="kerja_debitur" value="TNI/POLRI"> TNI/POLRI</label>
+              <label><input type="radio" name="kerja_debitur" value="Swasta"> Swasta</label>
+              <label><input type="radio" name="kerja_debitur" value="Wiraswasta"> Wiraswasta</label>
+              <label><input type="radio" name="kerja_debitur" value="Informal"> Informal</label>
+              <label><input type="radio" name="kerja_debitur" value="Tidak Bekerja"> Tidak Bekerja</label>
             </div></div>
             <div class="field"><label>Jumlah Penghasilan Rata-rata</label><div class="radio-group">
-              <label><input type="radio" name="gaji_penghuni" value="< 2 Juta"> &lt; 2 Juta</label>
-              <label><input type="radio" name="gaji_penghuni" value="2-5 Juta"> 2–5 Juta</label>
-              <label><input type="radio" name="gaji_penghuni" value="5-6 Juta"> 5–6 Juta</label>
-              <label><input type="radio" name="gaji_penghuni" value="6-7 Juta"> 6–7 Juta</label>
-              <label><input type="radio" name="gaji_penghuni" value="7-8 Juta"> 7–8 Juta</label>
-              <label><input type="radio" name="gaji_penghuni" value="> 8 Juta"> &gt; 8 Juta</label>
+              <label><input type="radio" name="gaji_debitur" value="< 2 Juta"> &lt; 2 Juta</label>
+              <label><input type="radio" name="gaji_debitur" value="2-5 Juta"> 2–5 Juta</label>
+              <label><input type="radio" name="gaji_debitur" value="5-6 Juta"> 5–6 Juta</label>
+              <label><input type="radio" name="gaji_debitur" value="6-7 Juta"> 6–7 Juta</label>
+              <label><input type="radio" name="gaji_debitur" value="7-8 Juta"> 7–8 Juta</label>
+              <label><input type="radio" name="gaji_debitur" value="> 8 Juta"> &gt; 8 Juta</label>
             </div></div>
           </div>
         </div>
@@ -468,14 +553,6 @@
           <div class="field"><label>Jenis Program Penerima Manfaat</label><div class="check-group"><label><input type="checkbox" value="FLPP"> FLPP</label><label><input type="checkbox" value="SBUM"> SBUM</label></div></div>
           <div class="field"><label>Sticker/Plat KPR Bersubsidi</label><div class="radio-group"><label><input type="radio" name="sticker" value="Tersedia"> Tersedia</label><label><input type="radio" name="sticker" value="Tidak Tersedia"> Tidak Tersedia</label></div><div class="catatan-box" id="catatan_box_sticker"><div class="catatan-label">✏️ Keterangan (deskripsi kondisi dilapangan)</div><textarea id="catatan_sticker" name="catatan_sticker" placeholder="Jelaskan alasan tidak tersedia..."></textarea></div></div>
           <div class="field"><label>Sertifikat Rumah</label><div class="radio-group"><label><input type="radio" name="sertif" value="Tersedia"> Tersedia</label><label><input type="radio" name="sertif" value="Tidak Tersedia"> Tidak Tersedia</label></div><div class="catatan-box" id="catatan_box_sertif"><div class="catatan-label">✏️ Keterangan (deskripsi kondisi dilapangan)</div><textarea id="catatan_sertif" name="catatan_sertif" placeholder="Jelaskan alasan tidak tersedia..."></textarea></div></div>
-          <div class="field-row">
-            <div class="field"><label>PBG</label><div class="radio-group"><label><input type="radio" name="pbg" value="Tersedia"> Tersedia</label><label><input type="radio" name="pbg" value="Tidak Tersedia"> Tidak Tersedia</label></div><div class="catatan-box" id="catatan_box_pbg"><div class="catatan-label">✏️ Keterangan (deskripsi kondisi dilapangan)</div><textarea id="catatan_pbg" name="catatan_pbg" placeholder="Jelaskan alasan tidak tersedia..."></textarea></div></div>
-            <div class="field"><label>Nomor PBG</label><input type="text"></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>SLF</label><div class="radio-group"><label><input type="radio" name="slf" value="Tersedia"> Tersedia</label><label><input type="radio" name="slf" value="Tidak Tersedia"> Tidak Tersedia</label></div><div class="catatan-box" id="catatan_box_slf"><div class="catatan-label">✏️ Keterangan (deskripsi kondisi dilapangan)</div><textarea id="catatan_slf" name="catatan_slf" placeholder="Jelaskan alasan tidak tersedia..."></textarea></div></div>
-            <div class="field"><label>Nomor SLF</label><input type="text"></div>
-          </div>
           <div class="field"><label>Jumlah Penghuni</label><div class="radio-group">
             <label><input type="radio" name="penghuni" value="1 Orang"> 1 Orang</label>
             <label><input type="radio" name="penghuni" value="2 Orang"> 2 Orang</label>
@@ -567,7 +644,7 @@
 <div id="toast"></div>
 
 <script>
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbwoIUF7DJ9fXYGxQSH_FDxT4dOQgo4B8b9g28jS7VVlJH8qqE7cz1Qv1QLVui4ti_nu/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwL_U155tjBT1nim0SxD4Qu4LM2EsWc7wlWTEcokU-SfAiglJlhG4Qt7iBJ6X5sEgfr6A/exec';
 
 var WILAYAH_INDONESIA = {"Aceh":["Kab. Aceh Barat","Kab. Aceh Barat Daya","Kab. Aceh Besar","Kab. Aceh Jaya","Kab. Aceh Selatan","Kab. Aceh Singkil","Kab. Aceh Tamiang","Kab. Aceh Tengah","Kab. Aceh Tenggara","Kab. Aceh Timur","Kab. Aceh Utara","Kab. Bener Meriah","Kab. Bireuen","Kab. Gayo Lues","Kab. Nagan Raya","Kab. Pidie","Kab. Pidie Jaya","Kab. Simeulue","Kota Banda Aceh","Kota Langsa","Kota Lhokseumawe","Kota Sabang","Kota Subulussalam"],"Sumatera Utara":["Kab. Asahan","Kab. Batu Bara","Kab. Dairi","Kab. Deli Serdang","Kab. Humbang Hasundutan","Kab. Karo","Kab. Labuhanbatu","Kab. Labuhanbatu Selatan","Kab. Labuhanbatu Utara","Kab. Langkat","Kab. Mandailing Natal","Kab. Nias","Kab. Nias Barat","Kab. Nias Selatan","Kab. Nias Utara","Kab. Padang Lawas","Kab. Padang Lawas Utara","Kab. Pakpak Bharat","Kab. Samosir","Kab. Serdang Bedagai","Kab. Simalungun","Kab. Tapanuli Selatan","Kab. Tapanuli Tengah","Kab. Tapanuli Utara","Kab. Toba","Kota Binjai","Kota Gunungsitoli","Kota Medan","Kota Padangsidempuan","Kota Pematangsiantar","Kota Sibolga","Kota Tanjungbalai","Kota Tebing Tinggi"],"Sumatera Barat":["Kab. Agam","Kab. Dharmasraya","Kab. Kepulauan Mentawai","Kab. Lima Puluh Kota","Kab. Padang Pariaman","Kab. Pasaman","Kab. Pasaman Barat","Kab. Pesisir Selatan","Kab. Sijunjung","Kab. Solok","Kab. Solok Selatan","Kab. Tanah Datar","Kota Bukittinggi","Kota Padang","Kota Padang Panjang","Kota Pariaman","Kota Payakumbuh","Kota Sawahlunto","Kota Solok"],"Riau":["Kab. Bengkalis","Kab. Indragiri Hilir","Kab. Indragiri Hulu","Kab. Kampar","Kab. Kepulauan Meranti","Kab. Kuantan Singingi","Kab. Pelalawan","Kab. Rokan Hilir","Kab. Rokan Hulu","Kab. Siak","Kota Dumai","Kota Pekanbaru"],"Kepulauan Riau":["Kab. Bintan","Kab. Karimun","Kab. Kepulauan Anambas","Kab. Lingga","Kab. Natuna","Kota Batam","Kota Tanjungpinang"],"Jambi":["Kab. Batanghari","Kab. Bungo","Kab. Kerinci","Kab. Merangin","Kab. Muaro Jambi","Kab. Sarolangun","Kab. Tanjung Jabung Barat","Kab. Tanjung Jabung Timur","Kab. Tebo","Kota Jambi","Kota Sungai Penuh"],"Sumatera Selatan":["Kab. Banyuasin","Kab. Empat Lawang","Kab. Lahat","Kab. Muara Enim","Kab. Musi Banyuasin","Kab. Musi Rawas","Kab. Musi Rawas Utara","Kab. Ogan Ilir","Kab. Ogan Komering Ilir","Kab. Ogan Komering Ulu","Kab. Ogan Komering Ulu Selatan","Kab. Ogan Komering Ulu Timur","Kab. Penukal Abab Lematang Ilir","Kota Lubuklinggau","Kota Pagar Alam","Kota Palembang","Kota Prabumulih"],"Bangka Belitung":["Kab. Bangka","Kab. Bangka Barat","Kab. Bangka Selatan","Kab. Bangka Tengah","Kab. Belitung","Kab. Belitung Timur","Kota Pangkalpinang"],"Bengkulu":["Kab. Bengkulu Selatan","Kab. Bengkulu Tengah","Kab. Bengkulu Utara","Kab. Kaur","Kab. Kepahiang","Kab. Lebong","Kab. Mukomuko","Kab. Rejang Lebong","Kab. Seluma","Kota Bengkulu"],"Lampung":["Kab. Lampung Barat","Kab. Lampung Selatan","Kab. Lampung Tengah","Kab. Lampung Timur","Kab. Lampung Utara","Kab. Mesuji","Kab. Pesawaran","Kab. Pesisir Barat","Kab. Pringsewu","Kab. Tanggamus","Kab. Tulang Bawang","Kab. Tulang Bawang Barat","Kab. Way Kanan","Kota Bandar Lampung","Kota Metro"],"DKI Jakarta":["Kota Jakarta Barat","Kota Jakarta Pusat","Kota Jakarta Selatan","Kota Jakarta Timur","Kota Jakarta Utara","Kab. Kepulauan Seribu"],"Jawa Barat":["Kab. Bandung","Kab. Bandung Barat","Kab. Bekasi","Kab. Bogor","Kab. Ciamis","Kab. Cianjur","Kab. Cirebon","Kab. Garut","Kab. Indramayu","Kab. Karawang","Kab. Kuningan","Kab. Majalengka","Kab. Pangandaran","Kab. Purwakarta","Kab. Subang","Kab. Sukabumi","Kab. Sumedang","Kab. Tasikmalaya","Kota Bandung","Kota Banjar","Kota Bekasi","Kota Bogor","Kota Cimahi","Kota Cirebon","Kota Depok","Kota Sukabumi","Kota Tasikmalaya"],"Jawa Tengah":["Kab. Banjarnegara","Kab. Banyumas","Kab. Batang","Kab. Blora","Kab. Boyolali","Kab. Brebes","Kab. Cilacap","Kab. Demak","Kab. Grobogan","Kab. Jepara","Kab. Karanganyar","Kab. Kebumen","Kab. Kendal","Kab. Klaten","Kab. Kudus","Kab. Magelang","Kab. Pati","Kab. Pekalongan","Kab. Pemalang","Kab. Purbalingga","Kab. Purworejo","Kab. Rembang","Kab. Semarang","Kab. Sragen","Kab. Sukoharjo","Kab. Tegal","Kab. Temanggung","Kab. Wonogiri","Kab. Wonosobo","Kota Magelang","Kota Pekalongan","Kota Salatiga","Kota Semarang","Kota Surakarta","Kota Tegal"],"DI Yogyakarta":["Kab. Bantul","Kab. Gunungkidul","Kab. Kulon Progo","Kab. Sleman","Kota Yogyakarta"],"Jawa Timur":["Kab. Bangkalan","Kab. Banyuwangi","Kab. Blitar","Kab. Bojonegoro","Kab. Bondowoso","Kab. Gresik","Kab. Jember","Kab. Jombang","Kab. Kediri","Kab. Lamongan","Kab. Lumajang","Kab. Madiun","Kab. Magetan","Kab. Malang","Kab. Mojokerto","Kab. Nganjuk","Kab. Ngawi","Kab. Pacitan","Kab. Pamekasan","Kab. Pasuruan","Kab. Ponorogo","Kab. Probolinggo","Kab. Sampang","Kab. Sidoarjo","Kab. Situbondo","Kab. Sumenep","Kab. Trenggalek","Kab. Tuban","Kab. Tulungagung","Kota Batu","Kota Blitar","Kota Kediri","Kota Madiun","Kota Malang","Kota Mojokerto","Kota Pasuruan","Kota Probolinggo","Kota Surabaya"],"Banten":["Kab. Lebak","Kab. Pandeglang","Kab. Serang","Kab. Tangerang","Kota Cilegon","Kota Serang","Kota Tangerang","Kota Tangerang Selatan"],"Bali":["Kab. Badung","Kab. Bangli","Kab. Buleleng","Kab. Gianyar","Kab. Jembrana","Kab. Karangasem","Kab. Klungkung","Kab. Tabanan","Kota Denpasar"],"Nusa Tenggara Barat":["Kab. Bima","Kab. Dompu","Kab. Lombok Barat","Kab. Lombok Tengah","Kab. Lombok Timur","Kab. Lombok Utara","Kab. Sumbawa","Kab. Sumbawa Barat","Kota Bima","Kota Mataram"],"Nusa Tenggara Timur":["Kab. Alor","Kab. Belu","Kab. Ende","Kab. Flores Timur","Kab. Kupang","Kab. Lembata","Kab. Malaka","Kab. Manggarai","Kab. Manggarai Barat","Kab. Manggarai Timur","Kab. Nagekeo","Kab. Ngada","Kab. Rote Ndao","Kab. Sabu Raijua","Kab. Sikka","Kab. Sumba Barat","Kab. Sumba Barat Daya","Kab. Sumba Tengah","Kab. Sumba Timur","Kab. Timor Tengah Selatan","Kab. Timor Tengah Utara","Kota Kupang"],"Kalimantan Barat":["Kab. Bengkayang","Kab. Kapuas Hulu","Kab. Kayong Utara","Kab. Ketapang","Kab. Kubu Raya","Kab. Landak","Kab. Melawi","Kab. Mempawah","Kab. Sambas","Kab. Sanggau","Kab. Sekadau","Kab. Sintang","Kota Pontianak","Kota Singkawang"],"Kalimantan Tengah":["Kab. Barito Selatan","Kab. Barito Timur","Kab. Barito Utara","Kab. Gunung Mas","Kab. Kapuas","Kab. Katingan","Kab. Kotawaringin Barat","Kab. Kotawaringin Timur","Kab. Lamandau","Kab. Murung Raya","Kab. Pulang Pisau","Kab. Seruyan","Kab. Sukamara","Kota Palangka Raya"],"Kalimantan Selatan":["Kab. Balangan","Kab. Banjar","Kab. Barito Kuala","Kab. Hulu Sungai Selatan","Kab. Hulu Sungai Tengah","Kab. Hulu Sungai Utara","Kab. Kotabaru","Kab. Tabalong","Kab. Tanah Bumbu","Kab. Tanah Laut","Kab. Tapin","Kota Banjarbaru","Kota Banjarmasin"],"Kalimantan Timur":["Kab. Berau","Kab. Kutai Barat","Kab. Kutai Kartanegara","Kab. Kutai Timur","Kab. Mahakam Ulu","Kab. Paser","Kab. Penajam Paser Utara","Kota Balikpapan","Kota Bontang","Kota Samarinda"],"Kalimantan Utara":["Kab. Bulungan","Kab. Malinau","Kab. Nunukan","Kab. Tana Tidung","Kota Tarakan"],"Sulawesi Utara":["Kab. Bolaang Mongondow","Kab. Bolaang Mongondow Selatan","Kab. Bolaang Mongondow Timur","Kab. Bolaang Mongondow Utara","Kab. Kepulauan Sangihe","Kab. Kepulauan Siau Tagulandang Biaro","Kab. Kepulauan Talaud","Kab. Minahasa","Kab. Minahasa Selatan","Kab. Minahasa Tenggara","Kab. Minahasa Utara","Kota Bitung","Kota Kotamobagu","Kota Manado","Kota Tomohon"],"Sulawesi Tengah":["Kab. Banggai","Kab. Banggai Kepulauan","Kab. Banggai Laut","Kab. Buol","Kab. Donggala","Kab. Morowali","Kab. Morowali Utara","Kab. Parigi Moutong","Kab. Poso","Kab. Sigi","Kab. Tojo Una-Una","Kab. Tolitoli","Kota Palu"],"Sulawesi Selatan":["Kab. Bantaeng","Kab. Barru","Kab. Bone","Kab. Bulukumba","Kab. Enrekang","Kab. Gowa","Kab. Jeneponto","Kab. Kepulauan Selayar","Kab. Luwu","Kab. Luwu Timur","Kab. Luwu Utara","Kab. Maros","Kab. Pangkajene dan Kepulauan","Kab. Pinrang","Kab. Sidenreng Rappang","Kab. Sinjai","Kab. Soppeng","Kab. Takalar","Kab. Tana Toraja","Kab. Toraja Utara","Kab. Wajo","Kota Makassar","Kota Palopo","Kota Parepare"],"Sulawesi Tenggara":["Kab. Bombana","Kab. Buton","Kab. Buton Selatan","Kab. Buton Tengah","Kab. Buton Utara","Kab. Kolaka","Kab. Kolaka Timur","Kab. Kolaka Utara","Kab. Konawe","Kab. Konawe Kepulauan","Kab. Konawe Selatan","Kab. Konawe Utara","Kab. Muna","Kab. Muna Barat","Kab. Wakatobi","Kota Baubau","Kota Kendari"],"Gorontalo":["Kab. Boalemo","Kab. Bone Bolango","Kab. Gorontalo","Kab. Gorontalo Utara","Kab. Pohuwato","Kota Gorontalo"],"Sulawesi Barat":["Kab. Majene","Kab. Mamasa","Kab. Mamuju","Kab. Mamuju Tengah","Kab. Mamuju Utara","Kab. Polewali Mandar"],"Maluku":["Kab. Buru","Kab. Buru Selatan","Kab. Kepulauan Aru","Kab. Maluku Barat Daya","Kab. Maluku Tengah","Kab. Maluku Tenggara","Kab. Maluku Tenggara Barat","Kab. Seram Bagian Barat","Kab. Seram Bagian Timur","Kota Ambon","Kota Tual"],"Maluku Utara":["Kab. Halmahera Barat","Kab. Halmahera Selatan","Kab. Halmahera Tengah","Kab. Halmahera Timur","Kab. Halmahera Utara","Kab. Kepulauan Sula","Kab. Pulau Morotai","Kab. Pulau Taliabu","Kota Ternate","Kota Tidore Kepulauan"],"Papua":["Kab. Biak Numfor","Kab. Jayapura","Kab. Kepulauan Yapen","Kab. Mamberamo Raya","Kab. Sarmi","Kab. Supiori","Kab. Waropen","Kota Jayapura"],"Papua Barat":["Kab. Fakfak","Kab. Kaimana","Kab. Manokwari","Kab. Manokwari Selatan","Kab. Pegunungan Arfak","Kab. Teluk Bintuni","Kab. Teluk Wondama","Kota Manokwari"],"Papua Barat Daya":["Kab. Maybrat","Kab. Raja Ampat","Kab. Sorong","Kab. Sorong Selatan","Kab. Tambrauw","Kota Sorong"],"Papua Tengah":["Kab. Deiyai","Kab. Dogiyai","Kab. Intan Jaya","Kab. Mimika","Kab. Nabire","Kab. Paniai","Kab. Puncak","Kab. Puncak Jaya"],"Papua Pegunungan":["Kab. Jayawijaya","Kab. Lanny Jaya","Kab. Mamberamo Tengah","Kab. Nduga","Kab. Pegunungan Bintang","Kab. Tolikara","Kab. Yahukimo","Kab. Yalimo"],"Papua Selatan":["Kab. Asmat","Kab. Boven Digoel","Kab. Mappi","Kab. Merauke"]};
 
@@ -691,6 +768,20 @@ function makeRadioGroup(name, opts) {
   });
   return grp;
 }
+function makeRadioGroupWithDesc(name, items) {
+  // items: [{value, desc}]
+  var grp = el('div', {cls:'radio-desc-group'});
+  items.forEach(function(it, idx) {
+    var inp = el('input'); inp.type='radio'; inp.name=name; inp.id=name+'_'+idx; inp.value=it.value;
+    var textWrap = el('div', {cls:'rdo-text'});
+    textWrap.appendChild(el('div', {cls:'rdo-title', text:it.value}));
+    textWrap.appendChild(el('div', {cls:'rdo-desc', text:it.desc}));
+    var lbl = el('label', {cls:'radio-desc-opt'}, [inp, textWrap]);
+    lbl.setAttribute('for', name+'_'+idx);
+    grp.appendChild(lbl);
+  });
+  return grp;
+}
 function makeCheckGroup(name, opts) {
   var grp = el('div', {cls:'check-group'});
   opts.forEach(function(o) {
@@ -709,6 +800,22 @@ function makeCheckGroupWithOther(name, opts, otherPlaceholder) {
     if(o==='Lainnya'){
       inp.addEventListener('change', function(){ otherInput.style.display = inp.checked ? 'block' : 'none'; if(!inp.checked) otherInput.value=''; });
     }
+    var lbl = el('label', {}, [inp, document.createTextNode(' '+o)]);
+    grp.appendChild(lbl);
+  });
+  wrap.appendChild(grp);
+  wrap.appendChild(otherInput);
+  return wrap;
+}
+function makeRadioGroupWithOther(name, opts, otherPlaceholder) {
+  var wrap = el('div', {style:'display:flex;flex-direction:column;gap:8px'});
+  var grp = el('div', {cls:'radio-group'});
+  var otherInput = el('input', {type:'text', id:name+'_lainnya_text', placeholder:(otherPlaceholder||'Sebutkan...'), style:'display:none;padding:9px 16px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:14px;font-family:\'Inter\',sans-serif;color:var(--gray-800);background:var(--white);outline:none;width:100%;max-width:340px'});
+  opts.forEach(function(o) {
+    var inp = el('input'); inp.type='radio'; inp.name=name; inp.value=o;
+    inp.addEventListener('change', function(){
+      if(inp.checked){ otherInput.style.display = (o==='Lainnya') ? 'block' : 'none'; if(o!=='Lainnya') otherInput.value=''; }
+    });
     var lbl = el('label', {}, [inp, document.createTextNode(' '+o)]);
     grp.appendChild(lbl);
   });
@@ -947,6 +1054,8 @@ window.addEventListener('load', function() {
   });
   setupGeoButton('t1_koordinat');
   setupGeoButton('t3_koordinat');
+  setupGeoButton('p2_koordinat');
+  setupGeoButton('p3_koordinat');
 
   // ---- SWIPE GESER ANTAR TAB ----
   (function() {
@@ -1106,12 +1215,18 @@ window.addEventListener('load', function() {
       {label:'Sarana Ibadah',hasFoto:true,types:['Masjid','Mushola','Gereja','Lainnya']},
       {label:'Sarana Kesehatan',hasFoto:true,types:['Apotek','Klinik Bersalin','Posyandu','Puskesmas','Praktek Dokter','Lainnya']},
       {label:'Sarana Ekonomi',hasFoto:true,types:['Pasar','Ruko','Toko','Lainnya']},
-      {label:'Sarana Olahraga',hasFoto:true,types:['Lapangan Voley','Lapangan Futsal','Area Taman','Lainnya']}
+      {label:'Sarana Olahraga',hasFoto:true,types:['Lapangan Voley','Lapangan Futsal','Area Taman','Lainnya']},
+      {label:'Sarana Transportasi',hasFoto:true,types:['Halte Angkutan Umum','Terminal','Stasiun Kereta','Pangkalan Ojek','Transportasi Online Mudah Diakses','Lainnya'],
+        jenisLabel:'Jenis Sarana',
+        jarakOpts:['< 500 m','500 m – 1 km','1 – 3 km','> 3 km'],
+        kondisiLabel:'Kondisi Akses',
+        kondisiOpts:[{cls:'baik',label:'Baik / Mudah Diakses'},{cls:'sedang',label:'Sedang / Terdapat Hambatan'},{cls:'buruk',label:'Buruk / Sulit Diakses'}]
+      }
     ]},
-    {num:'9.0',label:'Ruang Terbuka Hijau (RTH)',type:'rth',groups:[
-      {label:'Ruang Terbuka Hijau',prefix:'psu_rth_hijau',items:['Taman Kota','Jalur Hijau','Hutan Kota','Kebun Raya','Taman Bermain','Makam','Lainnya']},
-      {label:'Ruang Terbuka Non Hijau',prefix:'psu_rth_nonhijau',items:['Lapangan Olahraga','Alun-alun','Trotoar','Area Parkir','Jalan','Lainnya']},
-      {label:'Ruang Terbuka Biru',prefix:'psu_rth_biru',items:['Sungai','Danau','Pantai','Laut','Waduk','Kolam','Lainnya']}
+    {num:'9.0',label:'Ruang Terbuka Hijau (RTH)',subs:[
+      {label:'Ruang Terbuka Hijau',hasFoto:true,types:['Jalur Hijau','Taman Bermain','Makam','Lainnya']},
+      {label:'Ruang Terbuka Non Hijau',hasFoto:true,types:['Lapangan Olahraga','Alun-alun','Trotoar','Area Parkir','Jalan','Lainnya']},
+      {label:'Ruang Terbuka Biru',hasFoto:true,types:['Sungai','Danau','Pantai','Laut','Waduk','Kolam','Lainnya']}
     ]}
   ];
   var kondisiOpts=[{cls:'baik',label:'Baik / Berfungsi'},{cls:'sedang',label:'Sedang / Ada Gangguan'},{cls:'buruk',label:'Buruk / Tidak Berfungsi'}];
@@ -1120,101 +1235,23 @@ window.addEventListener('load', function() {
     var sec=el('div',{cls:'section',style:'margin-bottom:20px'});
     var hdr=el('div',{cls:'section-header'},[el('span',{cls:'section-num',text:item.num}),el('h3',{text:item.label})]);
     var body=el('div',{cls:'section-body'});
-    if(item.type==='rth'){
-      var rthK=[{val:'Baik / Berfungsi',color:'#10B981',bg:'#ECFDF5',icon:'✅'},{val:'Sedang / Ada Gangguan',color:'#F59E0B',bg:'#FFFBEB',icon:'⚠️'},{val:'Buruk / Tidak Berfungsi',color:'#EF4444',bg:'#FEF2F2',icon:'❌'}];
-      var rthGrpIcons=['🌳','🏟️','💧'];
-      item.groups.forEach(function(grp,gi){
-        var sub_el=el('div',{cls:'subsection'});
-        // Subsection title with group icon
-        var titleRow=el('div',{style:'display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--gray-200);margin-bottom:8px'});
-        titleRow.appendChild(el('span',{text:rthGrpIcons[gi]||'🌿',style:'font-size:18px;line-height:1'}));
-        titleRow.appendChild(el('div',{cls:'subsection-title',style:'border:none;padding:0;margin:0',text:grp.label}));
-        sub_el.appendChild(titleRow);
-        // Card grid container
-        var cardGrid=el('div',{style:'display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:6px'});
-        grp.items.forEach(function(itemName,ii){
-          var rname=grp.prefix+'_'+gi+'_'+ii;
-          // Card wrapper
-          var card=el('div',{style:'background:var(--white);border:1.5px solid var(--gray-200);border-radius:16px;padding:10px 14px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .2s,border-color .2s'});
-          // Card header: number badge + name
-          var cardHead=el('div',{style:'display:flex;align-items:flex-start;gap:10px'});
-          cardHead.appendChild(el('span',{text:String(ii+1),style:'flex-shrink:0;background:var(--navy);color:#fff;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:700;font-size:11px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1;margin-top:1px'}));
-          if(itemName==='Lainnya'){
-            var lainWrap=el('div',{style:'flex:1;display:flex;flex-direction:column;gap:4px'});
-            lainWrap.appendChild(el('span',{text:'Lainnya',style:'font-size:12px;font-weight:600;color:var(--gray-600)'}));
-            lainWrap.appendChild(el('input',{type:'text',name:rname+'_nama',placeholder:'Sebutkan jenis...',style:'width:100%;padding:5px 10px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:12px;font-family:\'Inter\',sans-serif;outline:none'}));
-            cardHead.appendChild(lainWrap);
-          } else {
-            cardHead.appendChild(el('span',{text:itemName,style:'font-size:13px;font-weight:600;color:var(--gray-800);line-height:1.35;flex:1'}));
-          }
-          card.appendChild(cardHead);
-          // Divider
-          card.appendChild(el('div',{style:'border-top:1px solid var(--gray-100)'}));
-          // Ketersediaan toggle
-          var adaLabel=el('div',{text:'Ketersediaan',style:'font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px'});
-          card.appendChild(adaLabel);
-          var adaRow=el('div',{style:'display:flex;gap:8px'});
-          ['Ada','Tidak Ada'].forEach(function(opt){
-            var rid=rname+'_ada_'+opt.replace(' ','_');
-            var inp=el('input'); inp.type='radio'; inp.name=rname+'_ada'; inp.id=rid; inp.value=opt; inp.style.display='none';
-            var lbl=el('label'); lbl.setAttribute('for',rid);
-            var isAda=(opt==='Ada');
-            lbl.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 8px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;background:var(--white);color:var(--gray-600);min-width:0;overflow:hidden;white-space:nowrap';
-            lbl.appendChild(el('span',{text:isAda?'✓':'✗',style:'font-size:13px'}));
-            lbl.appendChild(document.createTextNode(opt));
-            inp.addEventListener('change',function(){
-              adaRow.querySelectorAll('label').forEach(function(l){l.style.background='var(--white)';l.style.borderColor='var(--gray-200)';l.style.color='var(--gray-600)';});
-              if(inp.checked){ lbl.style.background=isAda?'#E0F0F5':'#FEF2F2'; lbl.style.borderColor=isAda?'var(--navy)':'#EF4444'; lbl.style.color=isAda?'var(--navy)':'#7F1D1D'; }
-            });
-            adaRow.appendChild(inp); adaRow.appendChild(lbl);
-          });
-          card.appendChild(adaRow);
-          // Kondisi pills
-          var kondLabel=el('div',{text:'Kondisi',style:'font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px'});
-          card.appendChild(kondLabel);
-          var kondRow=el('div',{style:'display:flex;flex-direction:column;gap:5px'});
-          rthK.forEach(function(k,ki){
-            var rid2=rname+'_kond_'+ki; var inp2=el('input'); inp2.type='radio'; inp2.name=rname+'_kondisi'; inp2.id=rid2; inp2.value=k.val; inp2.style.display='none';
-            var lbl2=el('label'); lbl2.setAttribute('for',rid2);
-            lbl2.style.cssText='display:flex;align-items:center;gap:7px;padding:6px 12px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;background:var(--white);color:var(--gray-600)';
-            var dot=el('span',{style:'display:inline-block;width:9px;height:9px;border-radius:50%;background:'+k.color+';flex-shrink:0'});
-            lbl2.appendChild(inp2); lbl2.appendChild(dot); lbl2.appendChild(document.createTextNode(k.val));
-            inp2.addEventListener('change',function(){
-              kondRow.querySelectorAll('label').forEach(function(l){l.style.background='var(--white)';l.style.borderColor='var(--gray-200)';l.style.color='var(--gray-600)';l.style.fontWeight='500';});
-              if(inp2.checked){ lbl2.style.background=k.bg; lbl2.style.borderColor=k.color; lbl2.style.color=k.color; lbl2.style.fontWeight='700'; }
-            });
-            kondRow.appendChild(lbl2);
-          });
-          card.appendChild(kondRow);
-          cardGrid.appendChild(card);
-        });
-        sub_el.appendChild(cardGrid);
-        // Keterangan textbox per group RTH
-        var rthKetWrap = el('div', {cls:'catatan-tambahan-wrap', style:'margin-top:14px'});
-        var rthKetTitle = el('div', {cls:'ct-title'});
-        rthKetTitle.innerHTML = '📝 Keterangan';
-        var rthKetTa = el('textarea');
-        rthKetTa.name = 'ket_psu_rth_' + grp.prefix;
-        rthKetTa.id = 'ket_psu_rth_' + grp.prefix;
-        rthKetTa.placeholder = 'Keterangan untuk ' + grp.label + ' (deskripsi kondisi dilapangan)...';
-        rthKetWrap.appendChild(rthKetTitle);
-        rthKetWrap.appendChild(rthKetTa);
-        sub_el.appendChild(rthKetWrap);
-        // Foto upload
-        var fo=makeFotoUpload('PSU_RTH_'+grp.prefix); var ff=el('div',{cls:'field',style:'margin-top:14px'}); ff.appendChild(el('label',{text:'📷 Upload Foto — '+grp.label,style:'font-size:12px;font-weight:600;color:var(--gray-600)'})); ff.appendChild(fo.wrap[0]); ff.appendChild(fo.wrap[1]); sub_el.appendChild(ff);
-        body.appendChild(sub_el);
-      });
-    } else {
+    {
       item.subs.forEach(function(sub,ssi){
         var sub_el=el('div',{cls:'subsection'});
         sub_el.appendChild(el('div',{cls:'subsection-title',text:sub.label}));
         var psuMatWidget = sub.types.indexOf('Lainnya') !== -1
           ? makeCheckGroupWithOther('psu_mat_'+si+'_'+ssi, sub.types, 'Sebutkan jenis/material lainnya...')
           : makeCheckGroup('psu_mat_'+si+'_'+ssi, sub.types);
-        sub_el.appendChild(makeField('Jenis/Material', psuMatWidget));
+        sub_el.appendChild(makeField(sub.jenisLabel||'Jenis/Material', psuMatWidget));
+        if(sub.jarakOpts){
+          var jGrpEl=el('div',{cls:'kondisi-group'});
+          sub.jarakOpts.forEach(function(j,ji){ var rid='psu_jarak_'+si+'_'+ssi+'_'+ji; var inp=el('input'); inp.type='radio'; inp.name='psu_jarak_'+si+'_'+ssi; inp.id=rid; inp.value=j; var dot=el('span',{cls:'dot',style:'background:var(--gray-400)'}); var lbl=el('label'); lbl.setAttribute('for',rid); lbl.appendChild(dot); lbl.appendChild(document.createTextNode(j)); var opt=el('div',{cls:'kondisi-opt'},[inp,lbl]); jGrpEl.appendChild(opt); });
+          sub_el.appendChild(makeField('Jarak dari Perumahan',jGrpEl));
+        }
         var kGrpEl=el('div',{cls:'kondisi-group'});
-        kondisiOpts.forEach(function(k,ki){ var rid='psu_k_'+si+'_'+ssi+'_'+ki; var inp=el('input'); inp.type='radio'; inp.name='psu_k_'+si+'_'+ssi; inp.id=rid; inp.value=k.label; var dot=el('span',{cls:'dot'}); var lbl=el('label'); lbl.setAttribute('for',rid); lbl.appendChild(dot); lbl.appendChild(document.createTextNode(k.label)); var opt=el('div',{cls:'kondisi-opt '+k.cls},[inp,lbl]); kGrpEl.appendChild(opt); });
-        sub_el.appendChild(makeField('Kondisi',kGrpEl));
+        var kOpts = sub.kondisiOpts || kondisiOpts;
+        kOpts.forEach(function(k,ki){ var rid='psu_k_'+si+'_'+ssi+'_'+ki; var inp=el('input'); inp.type='radio'; inp.name='psu_k_'+si+'_'+ssi; inp.id=rid; inp.value=k.label; var dot=el('span',{cls:'dot'}); var lbl=el('label'); lbl.setAttribute('for',rid); lbl.appendChild(dot); lbl.appendChild(document.createTextNode(k.label)); var opt=el('div',{cls:'kondisi-opt '+k.cls},[inp,lbl]); kGrpEl.appendChild(opt); });
+        sub_el.appendChild(makeField(sub.kondisiLabel||'Kondisi',kGrpEl));
         var psuKetTa=el('textarea',{placeholder:'Keterangan (deskripsi kondisi dilapangan)...'}); psuKetTa.id='ket_psu_'+si+'_'+ssi; psuKetTa.name='ket_psu_'+si+'_'+ssi; sub_el.appendChild(makeField('Keterangan',psuKetTa));
         if(sub.hasFoto){
           var fs=makeFotoUpload('PSU_Fas_'+si+'_'+ssi+'_'+sub.label); var fsf=el('div',{cls:'field'}); fsf.appendChild(el('label',{text:'Upload Foto'})); fsf.appendChild(fs.wrap[0]); fsf.appendChild(fs.wrap[1]); sub_el.appendChild(fsf);
@@ -1278,7 +1315,13 @@ window.addEventListener('load', function() {
       {label:'Proteksi Kebakaran',name:'py_util_kebakaran',opts:['Tersedia','Tidak Tersedia']},
       {label:'Jaringan Air Limbah',name:'py_util_airlimbah',opts:['Tersedia','Tidak Tersedia']}
     ]},
-    {num:'11.0',label:'Penghijauan Dalam Kavling',fields:[{label:'Kategori',name:'py_hijau_kavling',type:'radio',opts:['Penghijauan sangat baik','Penghijauan baik','Penghijauan sedang','Penghijauan minimal','Tidak terdapat penghijauan']}]}
+    {num:'11.0',label:'Penghijauan Dalam Kavling',fields:[{label:'Kategori',name:'py_hijau_kavling',type:'radio_desc',items:[
+      {value:'Tidak terdapat penghijauan',desc:'Halaman berupa tanah terbuka, perkerasan, atau lahan kosong tanpa vegetasi.'},
+      {value:'Penghijauan minimal',desc:'Terdapat rumput, semak, atau vegetasi rendah dalam jumlah terbatas.'},
+      {value:'Penghijauan sedang',desc:'Terdapat kombinasi rumput, tanaman hias, atau tanaman produktif yang menutupi sebagian area kavling.'},
+      {value:'Penghijauan baik',desc:'Terdapat vegetasi yang cukup beragam, termasuk pohon peneduh dan tanaman lainnya yang menutupi sebagian besar area terbuka.'},
+      {value:'Penghijauan sangat baik',desc:'Vegetasi tumbuh optimal dengan kombinasi pohon, tanaman hias, dan/atau tanaman produktif yang menciptakan lingkungan teduh dan asri.'}
+    ]}]}
   ];
   var pyContainer=document.getElementById('penyaluran-sections');
   penyaluranItems.forEach(function(item){
@@ -1423,6 +1466,8 @@ window.addEventListener('load', function() {
           var wrap=el('div',{cls:'check-foto-wrap'}); wrap.appendChild(makeCheckGroupWithOther(f.name,f.opts,'Sebutkan '+f.label.toLowerCase()+' lainnya...'));
           var prev=el('div',{cls:'foto-preview',style:'margin-top:8px'}); var uObj=makeUploadBtn(f.name+'_foto',prev); wrap.appendChild(uObj.btn);
           var fd=el('div',{cls:'field'}); fd.appendChild(el('label',{text:f.label})); fd.appendChild(wrap); fd.appendChild(prev); body.appendChild(fd);
+        } else if(f.type==='radio_desc'){
+          body.appendChild(makeField(f.label,makeRadioGroupWithDesc(f.name,f.items)));
         } else body.appendChild(makeField(f.label,makeRadioGroup(f.name,f.opts)));
       });
       if(!hasUtilOrCheckFoto){ var fo=makeFotoUpload('py_'+item.num); var ff=el('div',{cls:'field'}); ff.appendChild(el('label',{text:'Upload Foto'})); ff.appendChild(fo.wrap[0]); ff.appendChild(fo.wrap[1]); body.appendChild(ff); }
@@ -1479,12 +1524,12 @@ window.addEventListener('load', function() {
   // ================================================================
   var pascaFisikItems = [
     { num:'4.0', label:'Komponen Fisik Bangunan — Lantai', fields:[
-      { label:'Jenis Lantai',       name:'pf_lantai_jenis',   type:'check', opts:['Keramik','Tegel','Plester Semen','Lainnya'] },
+      { label:'Jenis Lantai',       name:'pf_lantai_jenis',   type:'radio_other', opts:['Keramik','Tegel','Plester Semen','Lainnya'] },
       { label:'Komponen Visual',    name:'pf_lantai_visual',  type:'check', opts:['Tidak Ada Cacat','Retak/Pecah','Keramik Terangkat','Nat Rusak','Lantai Lembab/Rembes','Ada Genangan'] },
       { label:'Kondisi',            name:'pf_lantai_kondisi', type:'kondisi3' }
     ]},
     { num:'5.0', label:'Komponen Fisik Bangunan — Dinding', fields:[
-      { label:'Jenis Dinding',      name:'pf_dinding_jenis',  type:'check', opts:['Bata Merah','Bata Ringan','Lainnya'] },
+      { label:'Jenis Dinding',      name:'pf_dinding_jenis',  type:'radio_other', opts:['Bata Merah','Bata Ringan','Lainnya'] },
       { label:'Komponen Visual',    name:'pf_dinding_visual', type:'check', opts:['Tidak Ada Cacat','Retak Rambut','Retak Struktur','Rembes Air','Berjamur/Berlumut','Cat Mengelupas','Plesteran Rontok'] },
       { label:'Kondisi',            name:'pf_dinding_kondisi',type:'kondisi3' }
     ]},
@@ -1513,7 +1558,13 @@ window.addEventListener('load', function() {
       { label:'Jaringan Air Limbah',   name:'pf_util_airlimbah', opts:['Tersedia','Tidak Tersedia'] }
     ]},
     { num:'9.0', label:'Penghijauan Dalam Kavling', fields:[
-      { label:'Kategori', name:'pf_hijau_kavling', type:'radio', opts:['Penghijauan sangat baik','Penghijauan baik','Penghijauan sedang','Penghijauan minimal','Tidak terdapat penghijauan'] }
+      { label:'Kategori', name:'pf_hijau_kavling', type:'radio_desc', items:[
+        {value:'Tidak terdapat penghijauan',desc:'Halaman berupa tanah terbuka, perkerasan, atau lahan kosong tanpa vegetasi.'},
+        {value:'Penghijauan minimal',desc:'Terdapat rumput, semak, atau vegetasi rendah dalam jumlah terbatas.'},
+        {value:'Penghijauan sedang',desc:'Terdapat kombinasi rumput, tanaman hias, atau tanaman produktif yang menutupi sebagian area kavling.'},
+        {value:'Penghijauan baik',desc:'Terdapat vegetasi yang cukup beragam, termasuk pohon peneduh dan tanaman lainnya yang menutupi sebagian besar area terbuka.'},
+        {value:'Penghijauan sangat baik',desc:'Vegetasi tumbuh optimal dengan kombinasi pohon, tanaman hias, dan/atau tanaman produktif yang menciptakan lingkungan teduh dan asri.'}
+      ]}
     ]}
   ];
 
@@ -1609,6 +1660,14 @@ window.addEventListener('load', function() {
             ? makeCheckGroupWithOther(f.name, f.opts, 'Sebutkan ' + f.label.toLowerCase() + ' lainnya...')
             : makeCheckGroup(f.name, f.opts);
           body.appendChild(makeField(f.label, checkWidget));
+        } else if (f.type === 'radio_other') {
+          var hasLainnyaR = f.opts && f.opts.indexOf('Lainnya') !== -1;
+          var radioWidget = hasLainnyaR
+            ? makeRadioGroupWithOther(f.name, f.opts, 'Sebutkan ' + f.label.toLowerCase() + ' lainnya...')
+            : makeRadioGroup(f.name, f.opts);
+          body.appendChild(makeField(f.label, radioWidget));
+        } else if (f.type === 'radio_desc') {
+          body.appendChild(makeField(f.label, makeRadioGroupWithDesc(f.name, f.items)));
         } else {
           body.appendChild(makeField(f.label, makeRadioGroup(f.name, f.opts)));
         }
@@ -1719,8 +1778,8 @@ window.addEventListener('load', function() {
     });
   }
 
-  // ---- Keterhunian: Sticker, Sertifikat, PBG, SLF — Tidak Tersedia ----
-  ['sticker','sertif','pbg','slf'].forEach(function(rname) {
+  // ---- Keterhunian: Sticker, Sertifikat — Tidak Tersedia ----
+  ['sticker','sertif'].forEach(function(rname) {
     var box = document.getElementById('catatan_box_' + rname);
     if (!box) return;
     document.querySelectorAll('input[type=radio][name="' + rname + '"]').forEach(function(r) {
@@ -1730,6 +1789,44 @@ window.addEventListener('load', function() {
       });
     });
   });
+
+  // ---- Serah Terima PSU: Sudah -> tanggal, Belum -> alasan ----
+  (function() {
+    var boxSudah = document.getElementById('box_psu_serah_sudah');
+    var boxBelum = document.getElementById('box_psu_serah_belum');
+    if (!boxSudah || !boxBelum) return;
+    document.querySelectorAll('input[type=radio][name="psu_serah_terima"]').forEach(function(r) {
+      r.addEventListener('change', function() {
+        if (!r.checked) return;
+        if (r.value === 'Sudah') {
+          boxSudah.classList.add('visible'); boxBelum.classList.remove('visible');
+          var ta = boxBelum.querySelector('textarea'); if (ta) ta.value = '';
+        } else if (r.value === 'Belum') {
+          boxBelum.classList.add('visible'); boxSudah.classList.remove('visible');
+          var inp = boxSudah.querySelector('input'); if (inp) inp.value = '';
+        }
+      });
+    });
+  })();
+
+  // ---- Data Debitur: sama dengan responden -> info, tidak -> nama & jenis kelamin debitur ----
+  (function() {
+    var boxYa = document.getElementById('box_debitur_sama_ya');
+    var boxTidak = document.getElementById('box_debitur_beda');
+    if (!boxYa || !boxTidak) return;
+    document.querySelectorAll('input[type=radio][name="debitur_sama_responden"]').forEach(function(r) {
+      r.addEventListener('change', function() {
+        if (!r.checked) return;
+        if (r.value === 'Ya') {
+          boxYa.classList.add('visible'); boxTidak.classList.remove('visible');
+          var nm = document.getElementById('p3_nama_debitur'); if (nm) nm.value = '';
+          boxTidak.querySelectorAll('input[type=radio]').forEach(function(x){ x.checked = false; });
+        } else if (r.value === 'Tidak') {
+          boxTidak.classList.add('visible'); boxYa.classList.remove('visible');
+        }
+      });
+    });
+  })();
 
   // ---- 1. TAB OBJEK PERUMAHAN: dokumen dok_sesuai_* ----
   // Dokumen dibuat secara dinamis dengan radio name "dok_sesuai_N"
