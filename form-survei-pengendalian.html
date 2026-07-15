@@ -1,10 +1,11 @@
 
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formulir Survei FLPP Digital</title>
+<title>Verifikasi Data Dukung</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500&display=swap');
   :root {
@@ -198,6 +199,67 @@
   #confirmSendModal .btn-confirm{flex:1;padding:11px;border:none;border-radius:999px;background:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--white);cursor:pointer;transition:all .15s}
   #confirmSendModal .btn-confirm:hover{background:var(--navy-light)}
 
+  /* ===== VERIFIKASI DATA DUKUNG (tab Verifikasi Data Dukung) ===== */
+  :root{ --amber:#B45309; }
+  .btn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:999px;padding:11px 22px;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--navy);color:var(--white)}
+  .btn-primary:hover{background:var(--navy-light)}
+  .btn-primary:disabled{opacity:.55;cursor:default}
+  .btn-ghost{background:var(--gray-100);color:var(--gray-800)}
+  .btn-ghost:hover{background:var(--gray-200)}
+  .vd-status-line{font-size:12px;color:var(--gray-400);margin-top:8px}
+  .vd-status-line.err{color:var(--red)}
+  .vd-status-line.ok{color:var(--green)}
+  .vd-search-box{display:flex;gap:10px;flex-wrap:wrap}
+  .vd-search-box input{flex:1;min-width:200px}
+  .vd-result-list{margin-top:12px;max-height:320px;overflow-y:auto;border:1px solid var(--gray-200);border-radius:12px}
+  .vd-result-item{padding:12px 14px;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:.1s}
+  .vd-result-item:last-child{border-bottom:none}
+  .vd-result-item:hover{background:var(--gray-50)}
+  .vd-result-item.selected{background:var(--gold-light)}
+  .vd-result-item .vd-ri-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;color:var(--navy)}
+  .vd-result-item .vd-ri-sub{font-size:11px;color:var(--gray-400);margin-top:2px}
+  .vd-badge-verified{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle}
+  .vd-badge-sesuai{background:#DCFCE7;color:var(--green)}
+  .vd-badge-tidaksesuai{background:#FEE2E2;color:var(--red)}
+  .vd-badge-perbaikan{background:#FEF3C7;color:var(--amber)}
+  .vd-section-header{display:flex;align-items:center;gap:10px;margin:22px 0 12px}
+  .vd-section-header:first-child{margin-top:0}
+  .vd-section-num{background:var(--navy);color:var(--gold-light);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
+  .vd-section-header h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--navy)}
+  .vd-kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+  @media(max-width:640px){.vd-kv-grid{grid-template-columns:1fr}}
+  .vd-kv{background:var(--gray-50);border:1.5px solid var(--gray-100);border-radius:10px;padding:9px 12px;transition:.15s}
+  .vd-kv .vd-k{font-size:11px;color:var(--gray-400);font-weight:600;margin-bottom:2px}
+  .vd-kv .vd-v{font-size:13px;color:var(--gray-800);word-break:break-word}
+  .vd-kv .vd-v.empty{color:var(--gray-400);font-style:italic}
+  .vd-kv .vd-v a{color:var(--navy);font-weight:600}
+  .vd-kv.vd-tidaksesuai{background:#FEF2F2;border-color:#F3B4B4}
+  .vd-kv.vd-tidaksesuai .vd-k{color:var(--red)}
+  .vd-kv-check{display:flex;align-items:center;gap:5px;margin-top:7px;padding-top:7px;border-top:1px dashed var(--gray-200)}
+  .vd-kv-check label{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;color:var(--gray-600)}
+  .vd-kv-check input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);cursor:pointer}
+  .vd-kv.vd-tidaksesuai .vd-kv-check label{color:var(--red)}
+  .vd-doc-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100);font-size:13px}
+  .vd-doc-row:last-child{border-bottom:none}
+  .vd-doc-row-main{display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1;flex-wrap:wrap}
+  .vd-doc-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+  .vd-doc-ada{background:#DCFCE7;color:var(--green)}
+  .vd-doc-tidak{background:#FEE2E2;color:var(--red)}
+  .vd-doc-kosong{background:var(--gray-100);color:var(--gray-400)}
+  .vd-doc-alasan{font-size:11.5px;color:var(--gray-600);margin-top:3px;font-style:italic}
+  .vd-doc-row.vd-tidaksesuai{background:#FEF2F2;margin:0 -10px;padding:9px 10px;border-radius:8px}
+  .vd-section-catatan{margin-top:14px}
+  .vd-section-catatan label{display:block;font-size:11.5px;font-weight:700;color:var(--gray-600);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:5px}
+  .vd-section-catatan textarea{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);resize:vertical;min-height:50px}
+  .vd-section-catatan textarea:focus{outline:none;border-color:var(--navy)}
+  .vd-empty-state{text-align:center;padding:40px 20px;color:var(--gray-400);font-size:13px}
+  .vd-selected-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--gold-light);border:1.5px solid var(--gold);border-radius:14px;padding:11px 16px;margin-bottom:20px}
+  .vd-selected-bar .vd-sb-text{font-size:12.5px;color:var(--navy)}
+  .vd-selected-bar .vd-sb-text b{font-family:'Plus Jakarta Sans',sans-serif}
+  .vd-selected-bar .vd-sb-btn{flex-shrink:0;background:var(--navy);color:var(--white);border:none;border-radius:999px;padding:7px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+  .vd-selected-bar .vd-sb-btn:hover{background:var(--navy-light)}
+
 </style>
 <base target="_blank">
 </head>
@@ -224,7 +286,7 @@
   </div>
   <div class="tabs-wrapper">
     <div class="tabs-nav" id="tabsNav">
-      <button class="tab-btn active" data-tab="0">Objek Perumahan</button>
+      <button class="tab-btn active" data-tab="0">Verifikasi Data Dukung</button>
       <button class="tab-btn" data-tab="1">Kondisi PSU</button>
       <button class="tab-btn" data-tab="2">Tahap Penyaluran</button>
       <button class="tab-btn" data-tab="3">Tahap Pasca Penyaluran</button>
@@ -238,98 +300,70 @@
   <div class="panels-track" id="panelsTrack">
   <!-- TAB 0 -->
   <div class="form-panel active" id="panel-0">
-    <div class="panel-header"><div class="panel-number">Form 1</div><div><h2>Verifikasi Data Objek Perumahan</h2><p>Identitas dan data fisik perumahan beserta dokumen pendukung</p></div></div>
+    <div class="panel-header"><div class="panel-number">Form 1</div><div><h2>Verifikasi Data Dukung</h2><p>Verifikasi lapangan atas data objek perumahan yang telah dikirim pengembang</p></div></div>
     <div class="panel-body">
-      <div class="surveyor-bar"><label for="surveyor0">👤 Nama Surveyor</label><input type="text" id="surveyor0" placeholder="Masukkan nama surveyor..."></div>
-      <div class="section">
-        <div class="section-header"><span class="section-num">INFO</span><h3>Identitas Perumahan</h3></div>
+
+      <div class="section" id="vd-loadCard">
+        <div class="section-header"><span class="section-num">🔗</span><h3>Sumber Data</h3></div>
         <div class="section-body">
-          <div class="field"><label>ID Lokasi SIKUMBANG</label><input type="text" id="t1_id_sikumbang" placeholder="Masukkan ID lokasi SIKUMBANG..."></div>
-          <div class="field-row">
-            <div class="field"><label>Nama Perumahan <span class="req">*</span></label><input type="text" id="t1_nama_perumahan"></div>
-            <div class="field"><label>Nama PT</label><input type="text" id="t1_nama_pt"></div>
+          <button type="button" class="btn btn-ghost" id="vd-btnMuat">🔄 Muat Ulang Data</button>
+          <div class="vd-status-line" id="vd-loadStatus">⏳ Memuat data...</div>
+        </div>
+      </div>
+
+      <div class="section" id="vd-cariCard" style="display:none">
+        <div class="section-header" id="vd-cariCardHeader"><span class="section-num">🔍</span><h3>Cari Data yang Akan Diverifikasi</h3></div>
+        <div class="section-body">
+          <div class="vd-search-box">
+            <input type="text" id="vd-searchInput" placeholder="Ketik Nama Perumahan atau ID SIKUMBANG...">
           </div>
-          <div class="field-row">
-            <div class="field"><label>Nama Asosiasi</label><input type="text" id="t1_asosiasi"></div>
-            <div class="field"><label>Nama Kontraktor</label><input type="text" id="t1_kontraktor"></div>
+          <div class="field">
+            <label>Atau pilih dari daftar</label>
+            <select id="vd-dropdownSelect">
+              <option value="">— Pilih entri —</option>
+            </select>
           </div>
-          <div class="field"><label>Alamat Perumahan</label><input type="text" id="t1_alamat"></div>
+          <div class="vd-result-list" id="vd-resultList" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="section" id="vd-detailCard" style="display:none">
+        <div class="section-header"><span class="section-num">📋</span><h3>Detail Data Objek Perumahan</h3></div>
+        <div class="section-body">
+          <div id="vd-detailBody"></div>
+        </div>
+      </div>
+
+      <div class="section" id="vd-verifCard" style="display:none">
+        <div class="section-header"><span class="section-num">✅</span><h3>Hasil Verifikasi Lapangan</h3></div>
+        <div class="section-body">
           <div class="field-row">
             <div class="field">
-              <label>Koordinat (lat, lng)</label>
-              <div class="geo-field-row">
-                <input type="text" id="t1_koordinat" placeholder="-6.200000, 106.816666">
-                <button type="button" class="geo-btn" id="geoBtn_t1_koordinat">📍 Ambil Lokasi</button>
-              </div>
-              <div class="geo-status" id="geoStatus_t1_koordinat"></div>
+              <label>Nama Verifikator <span class="req">*</span></label>
+              <input type="text" id="vd-vNama" placeholder="Nama petugas verifikasi">
             </div>
-            <div class="field"><label>Luas Perumahan (m²)</label><input type="text" inputmode="numeric" class="num-ribuan"></div>
+            <div class="field">
+              <label>Tanggal Verifikasi</label>
+              <input type="date" id="vd-vTanggal">
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-header"><span class="section-num">I</span><h3>Tipe Rumah</h3></div>
-        <div class="section-body">
-          <div class="subsection"><div class="subsection-title">1. Rumah Subsidi</div>
-            <div class="field-row three"><div class="field"><label>1. Tipe Rumah</label><input type="text" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="num-ribuan"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div></div>
-            <div class="field-row three"><div class="field"><label>2. Tipe Rumah</label><input type="text" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="num-ribuan"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div></div>
-            <div class="field-row three"><div class="field"><label>3. Tipe Rumah</label><input type="text" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="num-ribuan"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div></div>
-          </div>
-          <div class="subsection"><div class="subsection-title">2. Rumah Komersil</div>
-            <div class="field-row three"><div class="field"><label>1. Tipe Rumah</label><input type="text" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="num-ribuan"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div></div>
-            <div class="field-row three"><div class="field"><label>2. Tipe Rumah</label><input type="text" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="num-ribuan"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div></div>
-            <div class="field-row three"><div class="field"><label>3. Tipe Rumah</label><input type="text" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="num-ribuan"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-header"><span class="section-num">II</span><h3>Status Rumah di Perumahan</h3></div>
-        <div class="section-body">
           <div class="field">
-            <label>Sesuai dengan Data SIKUMBANG</label>
-            <div class="radio-group" id="status_sikumbang_group">
-              <label><input type="radio" name="status_sikumbang" value="Sesuai"> Sesuai</label>
-              <label><input type="radio" name="status_sikumbang" value="Tidak Sesuai"> Tidak Sesuai</label>
+            <label>Status Verifikasi <span class="req">*</span></label>
+            <div class="radio-group" id="vd-vStatusGroup">
+              <label><input type="radio" name="vd-vStatus" value="Sesuai"> Sesuai</label>
+              <label><input type="radio" name="vd-vStatus" value="Tidak Sesuai"> Tidak Sesuai</label>
+              <label><input type="radio" name="vd-vStatus" value="Perlu Perbaikan"> Perlu Perbaikan</label>
             </div>
           </div>
-          <div id="status_rumah_detail" style="display:none">
-            <div class="subsection"><div class="subsection-title">1. Rumah Komersil</div>
-              <div class="field-row five">
-                <div class="field"><label>Kavling</label><input type="text" id="status_komersil_kavling" inputmode="numeric" class="num-ribuan"></div>
-                <div class="field"><label>Pembangunan</label><input type="text" id="status_komersil_pembangunan" inputmode="numeric" class="num-ribuan"></div>
-                <div class="field"><label>Ready Stock</label><input type="text" id="status_komersil_readystock" inputmode="numeric" class="num-ribuan"></div>
-                <div class="field"><label>Dipesan</label><input type="text" id="status_komersil_dipesan" inputmode="numeric" class="num-ribuan"></div>
-                <div class="field"><label>Terjual</label><input type="text" id="status_komersil_terjual" inputmode="numeric" class="num-ribuan"></div>
-              </div>
-            </div>
-            <div class="subsection"><div class="subsection-title">2. Rumah Subsidi</div>
-              <div class="field-row five">
-                <div class="field"><label>Kavling</label><input type="text" id="status_subsidi_kavling" inputmode="numeric" class="num-ribuan"></div>
-                <div class="field"><label>Pembangunan</label><input type="text" id="status_subsidi_pembangunan" inputmode="numeric" class="num-ribuan"></div>
-                <div class="field"><label>Ready Stock</label><input type="text" id="status_subsidi_readystock" inputmode="numeric" class="num-ribuan"></div>
-                <div class="field"><label>Proses Bank</label><input type="text" id="status_subsidi_prosesbank" inputmode="numeric" class="num-ribuan"></div>
-                <div class="field"><label>Terjual</label><input type="text" id="status_subsidi_terjual" inputmode="numeric" class="num-ribuan"></div>
-              </div>
-            </div>
+          <div class="field">
+            <label>Catatan Verifikasi</label>
+            <textarea id="vd-vCatatan" placeholder="Tuliskan temuan, kekurangan, atau catatan verifikasi di lapangan..."></textarea>
           </div>
+          <button type="button" class="btn btn-primary" id="vd-btnSimpanVerif">💾 Simpan Hasil Verifikasi</button>
+          <div class="vd-status-line" id="vd-verifStatus"></div>
         </div>
       </div>
-      <div class="section">
-        <div class="section-header"><span class="section-num">III</span><h3>Data Dukung / Dokumen</h3></div>
-        <div class="section-body">
-          <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Pilih ketersediaan dan kesesuaian setiap dokumen</p>
-          <div id="dokumen-list"></div>
-        </div>
-      </div>
-      <div class="send-area">
-        <div class="draft-info" id="draft-info-panel-0">
-          <span id="draft-label-panel-0" style="display:none">Draft tersimpan</span>
-          <span class="draft-ts" id="draft-ts-panel-0"></span>
-        </div>
-        <div class="foto-status" id="foto-status-panel-0"></div>
-        <button class="btn-draft" data-panel="panel-0">Simpan Draft</button>
-        <button class="btn-send" data-panel="panel-0" data-surveyor="surveyor0" data-form="Verifikasi Data Objek Perumahan">Kirim Data</button>
-      </div>
+
     </div>
   </div>
 
@@ -1184,6 +1218,7 @@ window.addEventListener('load', function() {
   ];
   var dokContainer=document.getElementById('dokumen-list');
   var dokIdx=0;
+  if (dokContainer) {
   dokumenGroups.forEach(function(group){
     dokContainer.appendChild(el('div',{cls:'subsection-title',text:group.tahap,style:'margin-top:14px'}));
     group.items.forEach(function(dok){
@@ -1199,6 +1234,7 @@ window.addEventListener('load', function() {
       dokContainer.appendChild(wrapper);
     });
   });
+  }
 
   // ---- PSU SECTIONS ----
   var psuItems = [
@@ -1944,6 +1980,7 @@ window.addEventListener('load', function() {
     if (!p0) return;
     var done = new Set();
     p0.querySelectorAll('input[type=radio][value="Tidak Sesuai"]').forEach(function(r) {
+      if (r.name && r.name.indexOf('vd-') === 0) return; // lewati form Verifikasi Data Dukung
       if (done.has(r.name)) return; done.add(r.name);
       var boxId = 'catatan_box_' + r.name;
       if (p0.querySelector('#' + boxId)) return; // sudah dipasang
@@ -2131,6 +2168,421 @@ function showToast(msg, isErr) {
   var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('error',!!isErr); t.classList.add('show');
   setTimeout(function(){ t.classList.remove('show'); }, 4000);
 }
+
+/* ===================================================================== */
+/* ===== TAB "VERIFIKASI DATA DUKUNG" — cari & verifikasi data dukung === */
+/* Menggunakan GAS_URL, el(), dan showToast() yang sudah didefinisikan   */
+/* di atas (sama dengan URL Apps Script tab lainnya).                    */
+/* ===================================================================== */
+(function(){
+
+  var VD_FIELD_LABELS = {
+    t1_id_sikumbang: 'ID Lokasi SIKUMBANG',
+    t1_nama_perumahan: 'Nama Perumahan',
+    t1_nama_pt: 'Nama PT',
+    t1_asosiasi: 'Nama Asosiasi',
+    t1_kontraktor: 'Nama Kontraktor',
+    t1_alamat: 'Alamat Perumahan',
+    t1_koordinat: 'Koordinat Lokasi',
+    t1_luas_perumahan: 'Luas Perumahan (m²)'
+  };
+  var VD_TIPE_RUMAH_FIELDS = {
+    'Rumah Subsidi': [
+      ['t1_subsidi_tipe_1','t1_subsidi_unit_1','t1_subsidi_harga_1'],
+      ['t1_subsidi_tipe_2','t1_subsidi_unit_2','t1_subsidi_harga_2'],
+      ['t1_subsidi_tipe_3','t1_subsidi_unit_3','t1_subsidi_harga_3']
+    ],
+    'Rumah Komersil': [
+      ['t1_komersil_tipe_1','t1_komersil_unit_1','t1_komersil_harga_1'],
+      ['t1_komersil_tipe_2','t1_komersil_unit_2','t1_komersil_harga_2'],
+      ['t1_komersil_tipe_3','t1_komersil_unit_3','t1_komersil_harga_3']
+    ]
+  };
+  var VD_STATUS_RUMAH_FIELDS = {
+    'Rumah Komersil': [
+      ['status_komersil_kavling','Kavling'],['status_komersil_pembangunan','Pembangunan'],
+      ['status_komersil_readystock','Ready Stock'],['status_komersil_dipesan','Dipesan'],['status_komersil_terjual','Terjual']
+    ],
+    'Rumah Subsidi': [
+      ['status_subsidi_kavling','Kavling'],['status_subsidi_pembangunan','Pembangunan'],
+      ['status_subsidi_readystock','Ready Stock'],['status_subsidi_prosesbank','Proses Bank'],['status_subsidi_terjual','Terjual']
+    ]
+  };
+  var VD_DOK_LABELS = {
+    1:'Gambar Site Plan Perumahan', 2:'DED (Detailed Engineering Design) Perumahan',
+    3:'Rencana Kerja dan Syarat-syarat (RKS)', 4:'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)',
+    5:'Nomor Induk Berusaha (NIB)', 6:'Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR)',
+    7:'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL)', 8:'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)',
+    9:'As Built Drawing', 10:'Sertifikat Laik Fungsi (SLF)',
+    11:'Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi'
+  };
+  var VD_VERIF_COLS = ['Status Verifikasi','Catatan Verifikasi','Nama Verifikator','Tanggal Verifikasi','Checklist Detail','Catatan Bagian'];
+  var VD_KNOWN_KEYS = ['_row','Timestamp','Form'].concat(Object.keys(VD_FIELD_LABELS), VD_VERIF_COLS,
+    'legalitas_tanah_ada,legalitas_tanah_jenis,legalitas_tanah_jenis_lainnya,alasan_legalitas_tanah'.split(','));
+  Object.keys(VD_TIPE_RUMAH_FIELDS).forEach(function(k){ VD_TIPE_RUMAH_FIELDS[k].forEach(function(g){ VD_KNOWN_KEYS=VD_KNOWN_KEYS.concat(g); }); });
+  Object.keys(VD_STATUS_RUMAH_FIELDS).forEach(function(k){ VD_STATUS_RUMAH_FIELDS[k].forEach(function(p){ VD_KNOWN_KEYS.push(p[0]); }); });
+  for (var vd_d=1; vd_d<=11; vd_d++){ VD_KNOWN_KEYS.push('dok_ada_'+vd_d); VD_KNOWN_KEYS.push('alasan_dok_'+vd_d); }
+
+  var vdAllRows = [];
+  var vdSelectedRow = null;
+  var vdChecklistState = {};   // { fieldKey: true(Sesuai) / false(Tidak Sesuai) }
+  var vdCatatanBagian = {};    // { namaSection: teks catatan manual }
+
+  function vdFmtVal(v){
+    if (v===undefined || v===null || v==='') return null;
+    return String(v);
+  }
+  function vdKv(label, value, fieldKey){
+    var isUrl = value && /^https?:\/\//i.test(value);
+    var box = el('div',{cls:'vd-kv'});
+    box.appendChild(el('div',{cls:'vd-k',text:label}));
+    if (value===null){
+      box.appendChild(el('div',{cls:'vd-v empty',text:'— belum diisi —'}));
+    } else if (isUrl){
+      var v = el('div',{cls:'vd-v'});
+      var a = el('a',{href:value,target:'_blank',text:'📎 Lihat Lampiran'});
+      v.appendChild(a); box.appendChild(v);
+    } else {
+      box.appendChild(el('div',{cls:'vd-v',text:value}));
+    }
+    if (fieldKey) vdAttachChecklist(box, fieldKey);
+    return box;
+  }
+
+  // ---------- Checkbox checklist "Sesuai" per item data ----------
+  function vdAttachChecklist(box, fieldKey){
+    var checked = vdChecklistState[fieldKey] !== false; // default: Sesuai (dicentang)
+    var wrap = el('div',{cls:'vd-kv-check'});
+    var label = el('label',{});
+    var cb = el('input',{type:'checkbox'});
+    cb.checked = checked;
+    box.classList.toggle('vd-tidaksesuai', !checked);
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(checked ? 'Sesuai' : 'Tidak Sesuai'));
+    cb.addEventListener('change', function(){
+      vdChecklistState[fieldKey] = cb.checked;
+      box.classList.toggle('vd-tidaksesuai', !cb.checked);
+      label.lastChild.textContent = cb.checked ? 'Sesuai' : 'Tidak Sesuai';
+    });
+    wrap.appendChild(label);
+    box.appendChild(wrap);
+  }
+
+  // ---------- Checkbox checklist khusus baris dokumen (doc-row) ----------
+  function vdAttachDocChecklist(rowEl, fieldKey){
+    var checked = vdChecklistState[fieldKey] !== false; // default: Sesuai (dicentang)
+    var wrap = el('label',{style:'display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;font-family:\'Plus Jakarta Sans\',sans-serif;cursor:pointer;color:var(--gray-600);white-space:nowrap'});
+    var cb = el('input',{type:'checkbox'});
+    cb.checked = checked;
+    cb.style.width='15px'; cb.style.height='15px'; cb.style.accentColor='var(--green)'; cb.style.cursor='pointer';
+    rowEl.classList.toggle('vd-tidaksesuai', !checked);
+    wrap.appendChild(cb);
+    var txt = document.createTextNode(checked ? 'Sesuai' : 'Tidak Sesuai');
+    wrap.appendChild(txt);
+    cb.addEventListener('change', function(){
+      vdChecklistState[fieldKey] = cb.checked;
+      rowEl.classList.toggle('vd-tidaksesuai', !cb.checked);
+      wrap.replaceChild(document.createTextNode(cb.checked ? 'Sesuai' : 'Tidak Sesuai'), wrap.lastChild);
+    });
+    rowEl.appendChild(wrap);
+  }
+
+  // ---------- Kotak catatan manual per section ----------
+  function vdSectionCatatan(sectionKey, placeholder){
+    var wrap = el('div',{cls:'vd-section-catatan'});
+    wrap.appendChild(el('label',{text:'📝 Catatan untuk bagian ini'}));
+    var ta = el('textarea',{placeholder: placeholder || 'Tuliskan catatan verifikasi untuk bagian ini (opsional)...'});
+    ta.value = vdCatatanBagian[sectionKey] || '';
+    ta.addEventListener('input', function(){ vdCatatanBagian[sectionKey] = ta.value; });
+    wrap.appendChild(ta);
+    return wrap;
+  }
+
+  var vdBtnMuat = document.getElementById('vd-btnMuat');
+  if (vdBtnMuat) vdBtnMuat.addEventListener('click', vdMuatData);
+
+  function vdMuatData(){
+    var statusEl = document.getElementById('vd-loadStatus');
+    statusEl.className='vd-status-line'; statusEl.textContent='⏳ Memuat data...';
+    fetch(GAS_URL + (GAS_URL.indexOf('?')>-1?'&':'?') + 'action=list')
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if (!res.ok) throw new Error(res.message || 'Gagal memuat data');
+        vdAllRows = res.rows || [];
+        statusEl.className='vd-status-line ok';
+        statusEl.textContent='✅ '+vdAllRows.length+' data berhasil dimuat.';
+        document.getElementById('vd-cariCard').style.display='';
+        vdRenderDropdown(vdAllRows);
+        vdRenderResultList('');
+      })
+      .catch(function(err){
+        statusEl.className='vd-status-line err';
+        statusEl.textContent='❌ Gagal memuat data: '+err.message+' (pastikan backend verifikasi sudah ditempel & di-deploy)';
+      });
+  }
+
+  function vdLabelForRow(row){
+    var nama = row['t1_nama_perumahan'] || '(tanpa nama)';
+    var id = row['t1_id_sikumbang'] ? ' — '+row['t1_id_sikumbang'] : '';
+    return nama + id;
+  }
+  function vdIsVerified(row){ return !!(row['Status Verifikasi'] && String(row['Status Verifikasi']).trim()); }
+  function vdBadgeForRow(row){
+    if (!vdIsVerified(row)) return '';
+    var s = row['Status Verifikasi'];
+    var cls = s==='Sesuai' ? 'vd-badge-sesuai' : s==='Tidak Sesuai' ? 'vd-badge-tidaksesuai' : 'vd-badge-perbaikan';
+    return '<span class="vd-badge-verified '+cls+'">'+s+'</span>';
+  }
+
+  function vdRenderDropdown(rows){
+    var sel = document.getElementById('vd-dropdownSelect');
+    sel.innerHTML = '<option value="">— Pilih entri —</option>';
+    rows.forEach(function(row){
+      var opt = el('option',{value:String(row._row), text: vdLabelForRow(row) + (vdIsVerified(row)?' ✓':'')});
+      sel.appendChild(opt);
+    });
+  }
+  var vdDropdownSelect = document.getElementById('vd-dropdownSelect');
+  if (vdDropdownSelect) vdDropdownSelect.addEventListener('change', function(){
+    var rowNum = this.value;
+    if (!rowNum) return;
+    var row = vdAllRows.find(function(r){ return String(r._row)===rowNum; });
+    if (row) vdSelectRow(row);
+  });
+
+  var vdSearchInput = document.getElementById('vd-searchInput');
+  if (vdSearchInput) vdSearchInput.addEventListener('input', function(){
+    vdRenderResultList(this.value.trim().toLowerCase());
+  });
+  function vdRenderResultList(q){
+    var list = document.getElementById('vd-resultList');
+    list.innerHTML = '';
+    if (!q){ list.style.display='none'; return; }
+    var matched = vdAllRows.filter(function(row){
+      var nama = String(row['t1_nama_perumahan']||'').toLowerCase();
+      var idsk = String(row['t1_id_sikumbang']||'').toLowerCase();
+      return nama.indexOf(q)>-1 || idsk.indexOf(q)>-1;
+    });
+    if (matched.length===0){
+      list.style.display='';
+      list.appendChild(el('div',{cls:'vd-empty-state',text:'Tidak ada data yang cocok.'}));
+      return;
+    }
+    list.style.display='';
+    matched.forEach(function(row){
+      var item = el('div',{cls:'vd-result-item'});
+      var title = el('div',{cls:'vd-ri-title',html: vdLabelForRow(row) + vdBadgeForRow(row)});
+      var sub = el('div',{cls:'vd-ri-sub',text:'Baris #'+row._row + (row['Timestamp']?' • '+row['Timestamp']:'')});
+      item.appendChild(title); item.appendChild(sub);
+      item.addEventListener('click', function(){ vdSelectRow(row); });
+      list.appendChild(item);
+    });
+  }
+
+  function vdSelectRow(row){
+    vdSelectedRow = row;
+    var dd = document.getElementById('vd-dropdownSelect');
+    if (dd) dd.value = String(row._row);
+
+    // Muat ulang checklist & catatan per bagian: pakai hasil verifikasi sebelumnya kalau ada,
+    // kalau belum pernah default semua "Sesuai" & catatan kosong.
+    try { vdChecklistState = row['Checklist Detail'] ? JSON.parse(row['Checklist Detail']) : {}; }
+    catch(e){ vdChecklistState = {}; }
+    try { vdCatatanBagian = row['Catatan Bagian'] ? JSON.parse(row['Catatan Bagian']) : {}; }
+    catch(e){ vdCatatanBagian = {}; }
+
+    vdRenderDetail(row);
+    vdRenderVerifForm(row);
+    document.getElementById('vd-detailCard').style.display='';
+    document.getElementById('vd-verifCard').style.display='';
+    document.getElementById('vd-detailCard').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function vdGantiData(){
+    var cariCard = document.getElementById('vd-cariCard');
+    if (cariCard) cariCard.scrollIntoView({behavior:'smooth', block:'start'});
+    var searchInput = document.getElementById('vd-searchInput');
+    if (searchInput) { searchInput.focus(); searchInput.select(); }
+  }
+
+  function vdRenderDetail(row){
+    var body = document.getElementById('vd-detailBody');
+    body.innerHTML = '';
+
+    // Bar info: data yang sedang diverifikasi + tombol untuk ganti pilihan
+    var sbar = el('div',{cls:'vd-selected-bar'});
+    var sbarText = el('div',{cls:'vd-sb-text'});
+    sbarText.innerHTML = '🏠 Sedang memverifikasi: <b>'+vdLabelForRow(row)+'</b>. Salah pilih? Klik tombol di samping untuk ganti data.';
+    var sbarBtn = el('button',{type:'button',cls:'vd-sb-btn',text:'🔁 Ganti Data'});
+    sbarBtn.addEventListener('click', vdGantiData);
+    sbar.appendChild(sbarText); sbar.appendChild(sbarBtn);
+    body.appendChild(sbar);
+
+    // I. Identitas
+    body.appendChild(el('div',{cls:'vd-section-header'},[
+      el('span',{cls:'vd-section-num',text:'INFO'}), el('h3',{text:'Identitas Perumahan'})
+    ]));
+    var idGrid = el('div',{cls:'vd-kv-grid'});
+    Object.keys(VD_FIELD_LABELS).forEach(function(k){ idGrid.appendChild(vdKv(VD_FIELD_LABELS[k], vdFmtVal(row[k]), k)); });
+    body.appendChild(idGrid);
+    body.appendChild(vdSectionCatatan('Identitas Perumahan'));
+
+    // II. Tipe Rumah
+    body.appendChild(el('div',{cls:'vd-section-header'},[
+      el('span',{cls:'vd-section-num',text:'I'}), el('h3',{text:'Tipe Rumah'})
+    ]));
+    var vdAdaTipeRumah = false;
+    Object.keys(VD_TIPE_RUMAH_FIELDS).forEach(function(kategori){
+      var any = VD_TIPE_RUMAH_FIELDS[kategori].some(function(g){ return vdFmtVal(row[g[0]]); });
+      if (!any) return;
+      vdAdaTipeRumah = true;
+      body.appendChild(el('div',{style:'font-size:12px;font-weight:700;color:var(--gray-600);margin:10px 0 6px',text:kategori}));
+      var grid = el('div',{cls:'vd-kv-grid'});
+      VD_TIPE_RUMAH_FIELDS[kategori].forEach(function(g, idx){
+        if (!vdFmtVal(row[g[0]])) return;
+        grid.appendChild(vdKv('Tipe #'+(idx+1), vdFmtVal(row[g[0]]), g[0]));
+        grid.appendChild(vdKv('Jumlah Unit #'+(idx+1), vdFmtVal(row[g[1]]), g[1]));
+        grid.appendChild(vdKv('Harga #'+(idx+1), vdFmtVal(row[g[2]]), g[2]));
+      });
+      body.appendChild(grid);
+    });
+    if (vdAdaTipeRumah) body.appendChild(vdSectionCatatan('Tipe Rumah'));
+
+    // III. Status Rumah
+    body.appendChild(el('div',{cls:'vd-section-header'},[
+      el('span',{cls:'vd-section-num',text:'II'}), el('h3',{text:'Status Rumah di Perumahan'})
+    ]));
+    Object.keys(VD_STATUS_RUMAH_FIELDS).forEach(function(kategori){
+      body.appendChild(el('div',{style:'font-size:12px;font-weight:700;color:var(--gray-600);margin:10px 0 6px',text:kategori}));
+      var grid = el('div',{cls:'vd-kv-grid'});
+      VD_STATUS_RUMAH_FIELDS[kategori].forEach(function(p){ grid.appendChild(vdKv(p[1], vdFmtVal(row[p[0]]), p[0])); });
+      body.appendChild(grid);
+    });
+    body.appendChild(vdSectionCatatan('Status Rumah di Perumahan'));
+
+    // IV. Data Dukung / Dokumen
+    body.appendChild(el('div',{cls:'vd-section-header'},[
+      el('span',{cls:'vd-section-num',text:'III'}), el('h3',{text:'Data Dukung / Dokumen'})
+    ]));
+    var dokBox = el('div',{});
+    // Legalitas tanah (khusus)
+    var legAda = row['legalitas_tanah_ada'];
+    var legRow = el('div',{cls:'vd-doc-row'});
+    var legMain = el('div',{cls:'vd-doc-row-main'});
+    legMain.appendChild(el('span',{text:'Legalitas Penguasaan Tanah'}));
+    if (legAda==='Ada'){
+      var tag = el('span',{cls:'vd-doc-tag vd-doc-ada',text:'Ada — '+(row['legalitas_tanah_jenis']||'-')+(row['legalitas_tanah_jenis']==='Lainnya'&&row['legalitas_tanah_jenis_lainnya']?': '+row['legalitas_tanah_jenis_lainnya']:'')});
+      legMain.appendChild(tag);
+    } else if (legAda==='Tidak Ada'){
+      legMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-tidak',text:'Tidak Ada'}));
+    } else {
+      legMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-kosong',text:'Belum diisi'}));
+    }
+    legRow.appendChild(legMain);
+    vdAttachDocChecklist(legRow, 'legalitas_tanah_ada');
+    dokBox.appendChild(legRow);
+    if (legAda==='Tidak Ada' && row['alasan_legalitas_tanah']){
+      dokBox.appendChild(el('div',{cls:'vd-doc-alasan',text:'Alasan: '+row['alasan_legalitas_tanah']}));
+    }
+    // Dokumen lain (index 1-11)
+    for (var i=1;i<=11;i++){
+      var ada = row['dok_ada_'+i];
+      var r = el('div',{cls:'vd-doc-row'});
+      var rMain = el('div',{cls:'vd-doc-row-main'});
+      rMain.appendChild(el('span',{text:VD_DOK_LABELS[i]}));
+      if (ada==='Ada') rMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-ada',text:'Ada'}));
+      else if (ada==='Tidak Ada') rMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-tidak',text:'Tidak Ada'}));
+      else rMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-kosong',text:'Belum diisi'}));
+      r.appendChild(rMain);
+      vdAttachDocChecklist(r, 'dok_ada_'+i);
+      dokBox.appendChild(r);
+      if (ada==='Tidak Ada' && row['alasan_dok_'+i]){
+        dokBox.appendChild(el('div',{cls:'vd-doc-alasan',text:'Alasan: '+row['alasan_dok_'+i]}));
+      }
+    }
+    body.appendChild(dokBox);
+    body.appendChild(vdSectionCatatan('Data Dukung / Dokumen'));
+
+    // Informasi tambahan (kolom lain yang belum dikenal/di-mapping, mis. Timestamp, foto, dsb.)
+    var extraKeys = Object.keys(row).filter(function(k){ return VD_KNOWN_KEYS.indexOf(k)===-1 && vdFmtVal(row[k]); });
+    if (extraKeys.length){
+      body.appendChild(el('div',{cls:'vd-section-header'},[
+        el('span',{cls:'vd-section-num',text:'INFO'}), el('h3',{text:'Informasi Tambahan / Lampiran'})
+      ]));
+      var exGrid = el('div',{cls:'vd-kv-grid'});
+      extraKeys.forEach(function(k){ exGrid.appendChild(vdKv(k, vdFmtVal(row[k]), k)); });
+      body.appendChild(exGrid);
+      body.appendChild(vdSectionCatatan('Informasi Tambahan / Lampiran'));
+    }
+    if (row['Timestamp']){
+      body.appendChild(el('div',{style:'margin-top:14px;font-size:11px;color:var(--gray-400)',text:'Dikirim oleh pengembang pada: '+row['Timestamp']}));
+    }
+  }
+
+  function vdRenderVerifForm(row){
+    document.getElementById('vd-vNama').value = row['Nama Verifikator'] || '';
+    document.getElementById('vd-vTanggal').value = new Date().toISOString().split('T')[0];
+    document.getElementById('vd-vCatatan').value = row['Catatan Verifikasi'] || '';
+    document.querySelectorAll('input[name="vd-vStatus"]').forEach(function(r){ r.checked = (r.value === row['Status Verifikasi']); });
+    document.getElementById('vd-verifStatus').textContent = vdIsVerified(row)
+      ? 'ℹ️ Data ini sudah pernah diverifikasi oleh '+row['Nama Verifikator']+' pada '+row['Tanggal Verifikasi']+'. Menyimpan ulang akan menimpa hasil sebelumnya.'
+      : '';
+    document.getElementById('vd-verifStatus').className = 'vd-status-line';
+  }
+
+  var vdBtnSimpanVerif = document.getElementById('vd-btnSimpanVerif');
+  if (vdBtnSimpanVerif) vdBtnSimpanVerif.addEventListener('click', function(){
+    if (!vdSelectedRow){ showToast('⚠️ Pilih data terlebih dahulu.', true); return; }
+    var nama = document.getElementById('vd-vNama').value.trim();
+    var statusRadio = document.querySelector('input[name="vd-vStatus"]:checked');
+    var statusEl = document.getElementById('vd-verifStatus');
+
+    if (!nama){ showToast('⚠️ Isi Nama Verifikator terlebih dahulu.', true); return; }
+    if (!statusRadio){ showToast('⚠️ Pilih Status Verifikasi terlebih dahulu.', true); return; }
+
+    var payload = {
+      action: 'verify',
+      row: vdSelectedRow._row,
+      data: {
+        'Status Verifikasi': statusRadio.value,
+        'Catatan Verifikasi': document.getElementById('vd-vCatatan').value.trim(),
+        'Nama Verifikator': nama,
+        'Tanggal Verifikasi': document.getElementById('vd-vTanggal').value,
+        'Checklist Detail': JSON.stringify(vdChecklistState),
+        'Catatan Bagian': JSON.stringify(vdCatatanBagian)
+      }
+    };
+
+    var btn = document.getElementById('vd-btnSimpanVerif');
+    btn.disabled = true; btn.textContent = '⏳ Menyimpan...';
+
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        btn.disabled = false; btn.textContent = '💾 Simpan Hasil Verifikasi';
+        if (!res.ok) throw new Error(res.message || 'Gagal menyimpan');
+        showToast('✅ Hasil verifikasi berhasil disimpan!');
+        statusEl.className = 'vd-status-line ok';
+        statusEl.textContent = '✅ Tersimpan.';
+        Object.assign(vdSelectedRow, payload.data);
+        vdRenderDropdown(vdAllRows);
+      })
+      .catch(function(err){
+        btn.disabled = false; btn.textContent = '💾 Simpan Hasil Verifikasi';
+        showToast('❌ Gagal menyimpan: '+err.message, true);
+        statusEl.className = 'vd-status-line err';
+        statusEl.textContent = '❌ '+err.message;
+      });
+  });
+
+  // Muat otomatis saat halaman dibuka
+  window.addEventListener('load', vdMuatData);
+
+})();
 </script>
 </body>
 </html>
