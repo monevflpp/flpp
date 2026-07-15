@@ -189,6 +189,16 @@
   <div class="form-panel active" id="panel-0">
     <div class="panel-body">
       <div class="section">
+        <div class="section-header"><span class="section-num">PENGISI</span><h3>Identitas Pengisi Data</h3></div>
+        <div class="section-body">
+          <div class="field-row three">
+            <div class="field"><label>Nama Pengisi <span class="req">*</span></label><input type="text" id="pengisi_nama" placeholder="Nama lengkap"></div>
+            <div class="field"><label>Jabatan</label><input type="text" id="pengisi_jabatan" placeholder="Mis = Marketing, Site Manager"></div>
+            <div class="field"><label>Nomor Telepon</label><input type="tel" id="pengisi_telepon" placeholder="08xxxxxxxxxx"></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
         <div class="section-header"><span class="section-num">INFO</span><h3>Identitas Perumahan</h3></div>
         <div class="section-body">
           <div class="field"><label>ID Lokasi SIKUMBANG</label><input type="text" id="t1_id_sikumbang"></div>
@@ -278,7 +288,7 @@
 <div id="toast"></div>
 
 <script>
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbwoIUF7DJ9fXYGxQSH_FDxT4dOQgo4B8b9g28jS7VVlJH8qqE7cz1Qv1QLVui4ti_nu/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwL_U155tjBT1nim0SxD4Qu4LM2EsWc7wlWTEcokU-SfAiglJlhG4Qt7iBJ6X5sEgfr6A/exec';
 
 var fotoState   = {};
 var sessionTime = {};
@@ -762,6 +772,13 @@ function resetFotoState(panelId) {
 }
 
 async function submitForm(panelId, formName, btn) {
+  var pengisiNama = document.getElementById('pengisi_nama');
+  if (!pengisiNama || !pengisiNama.value.trim()) {
+    showToast('⚠️ Harap isi Nama Pengisi Data terlebih dahulu!', true);
+    if(pengisiNama) pengisiNama.focus();
+    return;
+  }
+
   var namaPerumahan = document.getElementById('t1_nama_perumahan');
   if (!namaPerumahan || !namaPerumahan.value.trim()) {
     showToast('⚠️ Harap isi Nama Perumahan terlebih dahulu!', true);
