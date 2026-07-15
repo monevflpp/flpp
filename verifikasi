@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulir Verifikasi Data Objek Perumahan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500&display=swap');
+  :root {
+    --navy:#0E5B73; --navy-light:#084C61; --gold:#D5C58A; --gold-light:#e8d9a8;
+    --cream:#F2EEDF; --white:#FFFFFF; --gray-50:#F7F5EE; --gray-100:#EDE9DA;
+    --gray-200:#DDD8C6; --gray-400:#A09880; --gray-600:#5C5440; --gray-800:#2C2A22;
+    --red:#DC2626; --green:#059669; --amber:#B45309;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--gray-800);min-height:100vh}
+  .site-header{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+  .header-inner{max-width:1000px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px}
+  .header-logo{width:48px;height:48px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;color:var(--navy);flex-shrink:0}
+  .header-text h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--white);line-height:1.2}
+  .header-text p{font-size:12px;color:var(--gold-light);margin-top:2px}
+  .main{max-width:1000px;margin:0 auto;padding:28px 20px 80px}
+
+  .card{background:var(--white);border-radius:20px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:20px}
+  .card h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+  .field label{font-size:12px;font-weight:600;color:var(--gray-600);font-family:'Plus Jakarta Sans',sans-serif}
+  .field input[type=text],.field input[type=date],.field select,.field textarea{
+    padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-800)
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--navy)}
+  .field textarea{resize:vertical;min-height:70px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.row2{grid-template-columns:1fr}}
+
+  .btn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:12px;padding:11px 20px;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--navy);color:var(--white)}
+  .btn-primary:hover{background:var(--navy-light)}
+  .btn-primary:disabled{opacity:.55;cursor:default}
+  .btn-ghost{background:var(--gray-100);color:var(--gray-800)}
+  .btn-ghost:hover{background:var(--gray-200)}
+
+  .status-line{font-size:12px;color:var(--gray-400);margin-top:8px}
+  .status-line.err{color:var(--red)}
+  .status-line.ok{color:var(--green)}
+
+  .search-box{display:flex;gap:10px;flex-wrap:wrap}
+  .search-box input{flex:1;min-width:200px}
+
+  .result-list{margin-top:12px;max-height:320px;overflow-y:auto;border:1px solid var(--gray-200);border-radius:12px}
+  .result-item{padding:12px 14px;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:.1s}
+  .result-item:last-child{border-bottom:none}
+  .result-item:hover{background:var(--gray-50)}
+  .result-item.selected{background:var(--gold-light)}
+  .result-item .ri-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;color:var(--navy)}
+  .result-item .ri-sub{font-size:11px;color:var(--gray-400);margin-top:2px}
+  .badge-verified{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle}
+  .badge-sesuai{background:#DCFCE7;color:var(--green)}
+  .badge-tidaksesuai{background:#FEE2E2;color:var(--red)}
+  .badge-perbaikan{background:#FEF3C7;color:var(--amber)}
+
+  .section-header{display:flex;align-items:center;gap:10px;margin:22px 0 12px}
+  .section-header:first-child{margin-top:0}
+  .section-num{background:var(--navy);color:var(--gold-light);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
+  .section-header h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--navy)}
+
+  .kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+  @media(max-width:640px){.kv-grid{grid-template-columns:1fr}}
+  .kv{background:var(--gray-50);border:1px solid var(--gray-100);border-radius:10px;padding:9px 12px}
+  .kv .k{font-size:11px;color:var(--gray-400);font-weight:600;margin-bottom:2px}
+  .kv .v{font-size:13px;color:var(--gray-800);word-break:break-word}
+  .kv .v.empty{color:var(--gray-400);font-style:italic}
+  .kv .v a{color:var(--navy);font-weight:600}
+
+  .doc-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100);font-size:13px}
+  .doc-row:last-child{border-bottom:none}
+  .doc-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+  .doc-ada{background:#DCFCE7;color:var(--green)}
+  .doc-tidak{background:#FEE2E2;color:var(--red)}
+  .doc-kosong{background:var(--gray-100);color:var(--gray-400)}
+  .doc-alasan{font-size:11.5px;color:var(--gray-600);margin-top:3px;font-style:italic}
+
+  .radio-group{display:flex;gap:14px;flex-wrap:wrap}
+  .radio-group label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;cursor:pointer}
+
+  .empty-state{text-align:center;padding:40px 20px;color:var(--gray-400);font-size:13px}
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gray-800);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="header-inner">
+    <div class="header-logo">V</div>
+    <div class="header-text">
+      <h1>Formulir Verifikasi Data Objek Perumahan</h1>
+      <p>Kota Salatiga — Program FLPP/KPR Subsidi</p>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SUMBER DATA (otomatis) -->
+  <div class="card" id="loadCard">
+    <h2>🔗 Sumber Data</h2>
+    <button class="btn btn-ghost" id="btnMuat">🔄 Muat Ulang Data</button>
+    <div class="status-line" id="loadStatus">⏳ Memuat data...</div>
+  </div>
+
+  <!-- PENCARIAN -->
+  <div class="card" id="cariCard" style="display:none">
+    <h2>🔍 Cari Data yang Akan Diverifikasi</h2>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Ketik Nama Perumahan atau ID SIKUMBANG...">
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Atau pilih dari daftar</label>
+      <select id="dropdownSelect">
+        <option value="">— Pilih entri —</option>
+      </select>
+    </div>
+    <div class="result-list" id="resultList" style="display:none"></div>
+  </div>
+
+  <!-- DETAIL DATA -->
+  <div class="card" id="detailCard" style="display:none">
+    <h2>📋 Detail Data Objek Perumahan</h2>
+    <div id="detailBody"></div>
+  </div>
+
+  <!-- VERIFIKASI -->
+  <div class="card" id="verifCard" style="display:none">
+    <h2>✅ Hasil Verifikasi Lapangan</h2>
+    <div class="row2">
+      <div class="field">
+        <label>Nama Verifikator <span style="color:var(--red)">*</span></label>
+        <input type="text" id="vNama" placeholder="Nama petugas verifikasi">
+      </div>
+      <div class="field">
+        <label>Tanggal Verifikasi</label>
+        <input type="date" id="vTanggal">
+      </div>
+    </div>
+    <div class="field">
+      <label>Status Verifikasi <span style="color:var(--red)">*</span></label>
+      <div class="radio-group" id="vStatusGroup">
+        <label><input type="radio" name="vStatus" value="Sesuai"> Sesuai</label>
+        <label><input type="radio" name="vStatus" value="Tidak Sesuai"> Tidak Sesuai</label>
+        <label><input type="radio" name="vStatus" value="Perlu Perbaikan"> Perlu Perbaikan</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Catatan Verifikasi</label>
+      <textarea id="vCatatan" placeholder="Tuliskan temuan, kekurangan, atau catatan verifikasi di lapangan..."></textarea>
+    </div>
+    <button class="btn btn-primary" id="btnSimpanVerif">💾 Simpan Hasil Verifikasi</button>
+    <div class="status-line" id="verifStatus"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// URL Apps Script (Web App) — sama dengan GAS_URL di form-objek-perumahan.html.
+// Setelah kode backend verifikasi ditempel & di-deploy ulang ke project yang
+// sama, URL ini TIDAK berubah, jadi cukup ditanam di sini sekali saja.
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbw-l1ZZZd_h4WYnKzFVIkGTRSNu9uFsHSU5k1fk_x5fDWs-iQXnqXjZYWWCJlLnoKE/exec';
+
+// ---------- Label field agar tampil rapi (mengikuti field id di form-objek-perumahan.html) ----------
+var FIELD_LABELS = {
+  t1_id_sikumbang: 'ID Lokasi SIKUMBANG',
+  t1_nama_perumahan: 'Nama Perumahan',
+  t1_nama_pt: 'Nama PT',
+  t1_asosiasi: 'Nama Asosiasi',
+  t1_kontraktor: 'Nama Kontraktor',
+  t1_alamat: 'Alamat Perumahan',
+  t1_koordinat: 'Koordinat Lokasi',
+  t1_luas_perumahan: 'Luas Perumahan (m²)'
+};
+var TIPE_RUMAH_FIELDS = {
+  'Rumah Subsidi': [
+    ['t1_subsidi_tipe_1','t1_subsidi_unit_1','t1_subsidi_harga_1'],
+    ['t1_subsidi_tipe_2','t1_subsidi_unit_2','t1_subsidi_harga_2'],
+    ['t1_subsidi_tipe_3','t1_subsidi_unit_3','t1_subsidi_harga_3']
+  ],
+  'Rumah Komersil': [
+    ['t1_komersil_tipe_1','t1_komersil_unit_1','t1_komersil_harga_1'],
+    ['t1_komersil_tipe_2','t1_komersil_unit_2','t1_komersil_harga_2'],
+    ['t1_komersil_tipe_3','t1_komersil_unit_3','t1_komersil_harga_3']
+  ]
+};
+var STATUS_RUMAH_FIELDS = {
+  'Rumah Komersil': [
+    ['status_komersil_kavling','Kavling'],['status_komersil_pembangunan','Pembangunan'],
+    ['status_komersil_readystock','Ready Stock'],['status_komersil_dipesan','Dipesan'],['status_komersil_terjual','Terjual']
+  ],
+  'Rumah Subsidi': [
+    ['status_subsidi_kavling','Kavling'],['status_subsidi_pembangunan','Pembangunan'],
+    ['status_subsidi_readystock','Ready Stock'],['status_subsidi_prosesbank','Proses Bank'],['status_subsidi_terjual','Terjual']
+  ]
+};
+var DOK_LABELS = {
+  1:'Gambar Site Plan Perumahan', 2:'DED (Detailed Engineering Design) Perumahan',
+  3:'Rencana Kerja dan Syarat-syarat (RKS)', 4:'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)',
+  5:'Nomor Induk Berusaha (NIB)', 6:'Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR)',
+  7:'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL)', 8:'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)',
+  9:'As Built Drawing', 10:'Sertifikat Laik Fungsi (SLF)',
+  11:'Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi'
+};
+var VERIF_COLS = ['Status Verifikasi','Catatan Verifikasi','Nama Verifikator','Tanggal Verifikasi'];
+// Semua id/kolom "yang sudah dikenal" — sisanya akan tampil otomatis di "Informasi Tambahan"
+var KNOWN_KEYS = ['_row','Timestamp','Form'].concat(Object.keys(FIELD_LABELS), VERIF_COLS,
+  'legalitas_tanah_ada,legalitas_tanah_jenis,legalitas_tanah_jenis_lainnya,alasan_legalitas_tanah'.split(','));
+Object.keys(TIPE_RUMAH_FIELDS).forEach(function(k){ TIPE_RUMAH_FIELDS[k].forEach(function(g){ KNOWN_KEYS=KNOWN_KEYS.concat(g); }); });
+Object.keys(STATUS_RUMAH_FIELDS).forEach(function(k){ STATUS_RUMAH_FIELDS[k].forEach(function(p){ KNOWN_KEYS.push(p[0]); }); });
+for (var d=1; d<=11; d++){ KNOWN_KEYS.push('dok_ada_'+d); KNOWN_KEYS.push('alasan_dok_'+d); }
+
+// ---------- State ----------
+var allRows = [];
+var selectedRow = null;
+
+function el(tag, attrs, children){
+  var e = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(function(k){
+    if (k==='cls') e.className=attrs[k]; else if(k==='text') e.textContent=attrs[k];
+    else if (k==='html') e.innerHTML=attrs[k]; else e.setAttribute(k,attrs[k]);
+  });
+  if (children) children.forEach(function(c){ if(c) e.appendChild(c); });
+  return e;
+}
+function showToast(msg, isErr){
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('error',!!isErr); t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 4000);
+}
+function fmtVal(v){
+  if (v===undefined || v===null || v==='') return null;
+  return String(v);
+}
+function kv(label, value){
+  var isUrl = value && /^https?:\/\//i.test(value);
+  var box = el('div',{cls:'kv'});
+  box.appendChild(el('div',{cls:'k',text:label}));
+  if (value===null){
+    box.appendChild(el('div',{cls:'v empty',text:'— belum diisi —'}));
+  } else if (isUrl){
+    var v = el('div',{cls:'v'});
+    var a = el('a',{href:value,target:'_blank',text:'📎 Lihat Lampiran'});
+    v.appendChild(a); box.appendChild(v);
+  } else {
+    box.appendChild(el('div',{cls:'v',text:value}));
+  }
+  return box;
+}
+
+// ---------- Muat data dari Apps Script ----------
+document.getElementById('btnMuat').addEventListener('click', muatData);
+
+function muatData(){
+  var statusEl = document.getElementById('loadStatus');
+  statusEl.className='status-line'; statusEl.textContent='⏳ Memuat data...';
+  fetch(GAS_URL + (GAS_URL.indexOf('?')>-1?'&':'?') + 'action=list')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res.ok) throw new Error(res.message || 'Gagal memuat data');
+      allRows = res.rows || [];
+      statusEl.className='status-line ok';
+      statusEl.textContent='✅ '+allRows.length+' data berhasil dimuat.';
+      document.getElementById('cariCard').style.display='';
+      renderDropdown(allRows);
+      renderResultList('');
+    })
+    .catch(function(err){
+      statusEl.className='status-line err';
+      statusEl.textContent='❌ Gagal memuat data: '+err.message+' (pastikan backend verifikasi sudah ditempel & di-deploy)';
+    });
+}
+
+function labelForRow(row){
+  var nama = row['t1_nama_perumahan'] || '(tanpa nama)';
+  var id = row['t1_id_sikumbang'] ? ' — '+row['t1_id_sikumbang'] : '';
+  return nama + id;
+}
+function isVerified(row){ return !!(row['Status Verifikasi'] && String(row['Status Verifikasi']).trim()); }
+function badgeForRow(row){
+  if (!isVerified(row)) return '';
+  var s = row['Status Verifikasi'];
+  var cls = s==='Sesuai' ? 'badge-sesuai' : s==='Tidak Sesuai' ? 'badge-tidaksesuai' : 'badge-perbaikan';
+  return '<span class="badge-verified '+cls+'">'+s+'</span>';
+}
+
+function renderDropdown(rows){
+  var sel = document.getElementById('dropdownSelect');
+  sel.innerHTML = '<option value="">— Pilih entri —</option>';
+  rows.forEach(function(row){
+    var opt = el('option',{value:String(row._row), text: labelForRow(row) + (isVerified(row)?' ✓':'')});
+    sel.appendChild(opt);
+  });
+}
+document.getElementById('dropdownSelect').addEventListener('change', function(){
+  var rowNum = this.value;
+  if (!rowNum) return;
+  var row = allRows.find(function(r){ return String(r._row)===rowNum; });
+  if (row) selectRow(row);
+});
+
+document.getElementById('searchInput').addEventListener('input', function(){
+  renderResultList(this.value.trim().toLowerCase());
+});
+function renderResultList(q){
+  var list = document.getElementById('resultList');
+  list.innerHTML = '';
+  if (!q){ list.style.display='none'; return; }
+  var matched = allRows.filter(function(row){
+    var nama = String(row['t1_nama_perumahan']||'').toLowerCase();
+    var idsk = String(row['t1_id_sikumbang']||'').toLowerCase();
+    return nama.indexOf(q)>-1 || idsk.indexOf(q)>-1;
+  });
+  if (matched.length===0){
+    list.style.display='';
+    list.appendChild(el('div',{cls:'empty-state',text:'Tidak ada data yang cocok.'}));
+    return;
+  }
+  list.style.display='';
+  matched.forEach(function(row){
+    var item = el('div',{cls:'result-item'});
+    var title = el('div',{cls:'ri-title',html: labelForRow(row) + badgeForRow(row)});
+    var sub = el('div',{cls:'ri-sub',text:'Baris #'+row._row + (row['Timestamp']?' • '+row['Timestamp']:'')});
+    item.appendChild(title); item.appendChild(sub);
+    item.addEventListener('click', function(){ selectRow(row); });
+    list.appendChild(item);
+  });
+}
+
+// ---------- Pilih & tampilkan detail ----------
+function selectRow(row){
+  selectedRow = row;
+  document.getElementById('dropdownSelect').value = String(row._row);
+  renderDetail(row);
+  renderVerifForm(row);
+  document.getElementById('detailCard').style.display='';
+  document.getElementById('verifCard').style.display='';
+  document.getElementById('detailCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderDetail(row){
+  var body = document.getElementById('detailBody');
+  body.innerHTML = '';
+
+  // I. Identitas
+  body.appendChild(el('div',{cls:'section-header'},[
+    el('span',{cls:'section-num',text:'INFO'}), el('h3',{text:'Identitas Perumahan'})
+  ]));
+  var idGrid = el('div',{cls:'kv-grid'});
+  Object.keys(FIELD_LABELS).forEach(function(k){ idGrid.appendChild(kv(FIELD_LABELS[k], fmtVal(row[k]))); });
+  body.appendChild(idGrid);
+
+  // II. Tipe Rumah
+  body.appendChild(el('div',{cls:'section-header'},[
+    el('span',{cls:'section-num',text:'I'}), el('h3',{text:'Tipe Rumah'})
+  ]));
+  Object.keys(TIPE_RUMAH_FIELDS).forEach(function(kategori){
+    var any = TIPE_RUMAH_FIELDS[kategori].some(function(g){ return fmtVal(row[g[0]]); });
+    if (!any) return;
+    body.appendChild(el('div',{style:'font-size:12px;font-weight:700;color:var(--gray-600);margin:10px 0 6px',text:kategori}));
+    var grid = el('div',{cls:'kv-grid'});
+    TIPE_RUMAH_FIELDS[kategori].forEach(function(g, idx){
+      if (!fmtVal(row[g[0]])) return;
+      grid.appendChild(kv('Tipe #'+(idx+1), fmtVal(row[g[0]])));
+      grid.appendChild(kv('Jumlah Unit #'+(idx+1), fmtVal(row[g[1]])));
+      grid.appendChild(kv('Harga #'+(idx+1), fmtVal(row[g[2]])));
+    });
+    body.appendChild(grid);
+  });
+
+  // III. Status Rumah
+  body.appendChild(el('div',{cls:'section-header'},[
+    el('span',{cls:'section-num',text:'II'}), el('h3',{text:'Status Rumah di Perumahan'})
+  ]));
+  Object.keys(STATUS_RUMAH_FIELDS).forEach(function(kategori){
+    body.appendChild(el('div',{style:'font-size:12px;font-weight:700;color:var(--gray-600);margin:10px 0 6px',text:kategori}));
+    var grid = el('div',{cls:'kv-grid'});
+    STATUS_RUMAH_FIELDS[kategori].forEach(function(p){ grid.appendChild(kv(p[1], fmtVal(row[p[0]]))); });
+    body.appendChild(grid);
+  });
+
+  // IV. Data Dukung / Dokumen
+  body.appendChild(el('div',{cls:'section-header'},[
+    el('span',{cls:'section-num',text:'III'}), el('h3',{text:'Data Dukung / Dokumen'})
+  ]));
+  var dokBox = el('div',{});
+  // Legalitas tanah (khusus)
+  var legAda = row['legalitas_tanah_ada'];
+  var legRow = el('div',{cls:'doc-row'});
+  legRow.appendChild(el('span',{text:'Legalitas Penguasaan Tanah'}));
+  if (legAda==='Ada'){
+    var tag = el('span',{cls:'doc-tag doc-ada',text:'Ada — '+(row['legalitas_tanah_jenis']||'-')+(row['legalitas_tanah_jenis']==='Lainnya'&&row['legalitas_tanah_jenis_lainnya']?': '+row['legalitas_tanah_jenis_lainnya']:'')});
+    legRow.appendChild(tag);
+  } else if (legAda==='Tidak Ada'){
+    legRow.appendChild(el('span',{cls:'doc-tag doc-tidak',text:'Tidak Ada'}));
+  } else {
+    legRow.appendChild(el('span',{cls:'doc-tag doc-kosong',text:'Belum diisi'}));
+  }
+  dokBox.appendChild(legRow);
+  if (legAda==='Tidak Ada' && row['alasan_legalitas_tanah']){
+    dokBox.appendChild(el('div',{cls:'doc-alasan',text:'Alasan: '+row['alasan_legalitas_tanah']}));
+  }
+  // Dokumen lain (index 1-11)
+  for (var i=1;i<=11;i++){
+    var ada = row['dok_ada_'+i];
+    var r = el('div',{cls:'doc-row'});
+    r.appendChild(el('span',{text:DOK_LABELS[i]}));
+    if (ada==='Ada') r.appendChild(el('span',{cls:'doc-tag doc-ada',text:'Ada'}));
+    else if (ada==='Tidak Ada') r.appendChild(el('span',{cls:'doc-tag doc-tidak',text:'Tidak Ada'}));
+    else r.appendChild(el('span',{cls:'doc-tag doc-kosong',text:'Belum diisi'}));
+    dokBox.appendChild(r);
+    if (ada==='Tidak Ada' && row['alasan_dok_'+i]){
+      dokBox.appendChild(el('div',{cls:'doc-alasan',text:'Alasan: '+row['alasan_dok_'+i]}));
+    }
+  }
+  body.appendChild(dokBox);
+
+  // Informasi tambahan (kolom lain yang belum dikenal/di-mapping, mis. Timestamp, foto, dsb.)
+  var extraKeys = Object.keys(row).filter(function(k){ return KNOWN_KEYS.indexOf(k)===-1 && fmtVal(row[k]); });
+  if (extraKeys.length){
+    body.appendChild(el('div',{cls:'section-header'},[
+      el('span',{cls:'section-num',text:'INFO'}), el('h3',{text:'Informasi Tambahan / Lampiran'})
+    ]));
+    var exGrid = el('div',{cls:'kv-grid'});
+    extraKeys.forEach(function(k){ exGrid.appendChild(kv(k, fmtVal(row[k]))); });
+    body.appendChild(exGrid);
+  }
+  if (row['Timestamp']){
+    body.appendChild(el('div',{style:'margin-top:14px;font-size:11px;color:var(--gray-400)',text:'Dikirim oleh pengembang pada: '+row['Timestamp']}));
+  }
+}
+
+function renderVerifForm(row){
+  document.getElementById('vNama').value = row['Nama Verifikator'] || '';
+  document.getElementById('vTanggal').value = new Date().toISOString().split('T')[0];
+  document.getElementById('vCatatan').value = row['Catatan Verifikasi'] || '';
+  document.querySelectorAll('input[name=vStatus]').forEach(function(r){ r.checked = (r.value === row['Status Verifikasi']); });
+  document.getElementById('verifStatus').textContent = isVerified(row)
+    ? 'ℹ️ Data ini sudah pernah diverifikasi oleh '+row['Nama Verifikator']+' pada '+row['Tanggal Verifikasi']+'. Menyimpan ulang akan menimpa hasil sebelumnya.'
+    : '';
+  document.getElementById('verifStatus').className = 'status-line';
+}
+
+// ---------- Simpan hasil verifikasi ----------
+document.getElementById('btnSimpanVerif').addEventListener('click', function(){
+  if (!selectedRow){ showToast('⚠️ Pilih data terlebih dahulu.', true); return; }
+  var nama = document.getElementById('vNama').value.trim();
+  var statusRadio = document.querySelector('input[name=vStatus]:checked');
+  var statusEl = document.getElementById('verifStatus');
+
+  if (!nama){ showToast('⚠️ Isi Nama Verifikator terlebih dahulu.', true); return; }
+  if (!statusRadio){ showToast('⚠️ Pilih Status Verifikasi terlebih dahulu.', true); return; }
+
+  var payload = {
+    action: 'verify',
+    row: selectedRow._row,
+    data: {
+      'Status Verifikasi': statusRadio.value,
+      'Catatan Verifikasi': document.getElementById('vCatatan').value.trim(),
+      'Nama Verifikator': nama,
+      'Tanggal Verifikasi': document.getElementById('vTanggal').value
+    }
+  };
+
+  var btn = document.getElementById('btnSimpanVerif');
+  btn.disabled = true; btn.textContent = '⏳ Menyimpan...';
+
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // hindari CORS preflight ke Apps Script
+    body: JSON.stringify(payload)
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      btn.disabled = false; btn.textContent = '💾 Simpan Hasil Verifikasi';
+      if (!res.ok) throw new Error(res.message || 'Gagal menyimpan');
+      showToast('✅ Hasil verifikasi berhasil disimpan!');
+      statusEl.className = 'status-line ok';
+      statusEl.textContent = '✅ Tersimpan.';
+      // Sinkronkan state lokal
+      Object.assign(selectedRow, payload.data);
+      renderDropdown(allRows);
+    })
+    .catch(function(err){
+      btn.disabled = false; btn.textContent = '💾 Simpan Hasil Verifikasi';
+      showToast('❌ Gagal menyimpan: '+err.message, true);
+      statusEl.className = 'status-line err';
+      statusEl.textContent = '❌ '+err.message;
+    });
+});
+
+// Muat otomatis saat halaman dibuka
+window.addEventListener('load', muatData);
+</script>
+</body>
+</html>
