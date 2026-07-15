@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -8,6 +9,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
@@ -126,6 +129,19 @@ tr:hover td{background:var(--g50)}
 .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 .filter-select{padding:7px 14px;border:1.5px solid var(--g200);border-radius:99px;font-family:inherit;font-size:12px;color:var(--g800);background:var(--white);cursor:pointer;outline:none;transition:border-color .15s}
 .filter-select:focus{border-color:var(--navy2)}
+
+/* TITIK LOKASI MAP */
+.titik-map-wrap{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:18px;border:1px solid var(--g100)}
+#titik-map{height:440px;width:100%;background:var(--g50)}
+.titik-legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 18px;background:var(--white);border-top:1px solid var(--g100);font-size:11px;color:var(--g600)}
+.titik-legend b{color:var(--navy)}
+.titik-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--teal);margin-right:6px;vertical-align:middle;border:2px solid #fff;box-shadow:0 0 0 1px var(--teal)}
+.leaflet-popup-content-wrapper{border-radius:12px}
+.leaflet-popup-content{font-family:'Plus Jakarta Sans',sans-serif;font-size:12px}
+.titik-popup-title{font-weight:800;color:var(--navy);font-size:13px;margin-bottom:4px}
+.titik-popup-row{color:var(--g600);margin-top:2px}
+.btn-reset-filter{padding:7px 16px;border:1.5px solid var(--g200);border-radius:99px;font-family:inherit;font-size:12px;font-weight:700;color:var(--g600);background:var(--white);cursor:pointer;transition:all .15s}
+.btn-reset-filter:hover{border-color:var(--navy2);color:var(--navy2)}
 
 /* PERUMAHAN CARDS */
 .p-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
@@ -386,6 +402,69 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 .chv-center{text-align:center}
 .chv-lbl{font-weight:700;color:var(--navy);font-size:10px;white-space:nowrap;background:var(--g50)}
 .chv-data-tbl td{padding:7px 10px;border:1px solid var(--g100)}
+
+/* ══ VERIFIKASI — TAMBAH DATA (FORM MODAL) ══ */
+.btn-add-vfy{border:none;padding:9px 18px;border-radius:99px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;display:inline-flex;align-items:center;gap:6px;transition:all .15s;box-shadow:0 2px 10px rgba(11,61,82,.25)}
+.btn-add-vfy:hover{background:var(--navy2);transform:translateY(-1px)}
+
+.vfy-overlay{display:none;position:fixed;inset:0;background:rgba(11,61,82,.55);z-index:9998;align-items:flex-start;justify-content:center;padding:26px 14px;overflow-y:auto}
+.vfy-overlay.active{display:flex}
+.vfy-modal{background:var(--white);border-radius:20px;max-width:760px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden;margin-bottom:26px}
+.vfy-modal-head{background:var(--navy);padding:20px 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.vfy-modal-head h3{color:#fff;font-size:16px;font-weight:800;line-height:1.3}
+.vfy-modal-head p{color:rgba(255,255,255,.6);font-size:12px;margin-top:4px}
+.vfy-modal-close{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;line-height:1}
+.vfy-modal-close:hover{background:rgba(255,255,255,.22)}
+.vfy-modal-body{padding:22px 24px;max-height:70vh;overflow-y:auto}
+
+.vfy-surveyor{background:linear-gradient(135deg,#F0EAD0,#E8D9A8);border:1.5px solid var(--gold);border-radius:16px;padding:13px 16px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.vfy-surveyor label{font-weight:700;font-size:12px;color:var(--navy);white-space:nowrap}
+.vfy-surveyor input{flex:1;min-width:180px;padding:8px 14px;border:1.5px solid var(--gold);border-radius:999px;font-size:13px;font-family:inherit;background:#fff;outline:none}
+.vfy-surveyor input:focus{border-color:var(--navy)}
+
+.vfy-section{margin-bottom:20px;border:1.5px solid var(--g200);border-radius:16px;overflow:hidden}
+.vfy-section-head{background:var(--g50);padding:11px 16px;border-bottom:1.5px solid var(--g200);display:flex;align-items:center;gap:9px}
+.vfy-section-num{background:var(--navy);color:#fff;font-size:10px;font-weight:800;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vfy-section-head h4{font-size:12.5px;font-weight:700;color:var(--navy)}
+.vfy-section-body{padding:16px}
+
+.vfy-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.vfy-field:last-child{margin-bottom:0}
+.vfy-field label{font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.03em}
+.vfy-field input[type=text],.vfy-field textarea{padding:9px 14px;border:1.5px solid var(--g200);border-radius:12px;font-size:13px;font-family:inherit;color:var(--g800);background:#fff;outline:none;transition:border-color .15s;width:100%}
+.vfy-field input[type=text]:focus,.vfy-field textarea:focus{border-color:var(--navy2)}
+.vfy-field textarea{resize:vertical;min-height:60px}
+.vfy-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.vfy-field-row .vfy-field{margin-bottom:0}
+@media(max-width:600px){.vfy-field-row{grid-template-columns:1fr}}
+.vfy-req{color:var(--red);margin-left:2px}
+
+.vfy-radio-group{display:flex;flex-wrap:wrap;gap:7px}
+.vfy-radio-group label{flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;border:1.5px solid var(--g200);border-radius:999px;cursor:pointer;font-size:12px;color:var(--g800);background:#fff;transition:all .15s;user-select:none}
+.vfy-radio-group input[type=radio]{accent-color:var(--navy);width:13px;height:13px}
+.vfy-radio-group label:hover{border-color:var(--navy2);background:var(--g50)}
+.vfy-radio-group label.checked{border-color:var(--navy2);background:#E0EEF3;color:var(--navy);font-weight:700}
+
+.vfy-catatan-box{display:none;margin-top:8px}
+.vfy-catatan-box.visible{display:block}
+.vfy-catatan-box textarea{padding:9px 14px;border:1.5px solid var(--red);border-radius:12px;font-size:12.5px;font-family:inherit;color:var(--g800);background:#FFF5F5;outline:none;width:100%;resize:vertical;min-height:56px}
+.vfy-catatan-box textarea:focus{border-color:#B91C1C}
+.vfy-catatan-label{font-size:10px;font-weight:700;color:var(--red);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+
+.vfy-dok-tahap{font-size:11px;font-weight:800;color:var(--navy2);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px}
+.vfy-dok-tahap:first-child{margin-top:0}
+.vfy-doc-wrapper{border-bottom:1px solid var(--g100);padding:10px 0}
+.vfy-doc-wrapper:last-child{border-bottom:none}
+.vfy-doc-name{font-size:12.5px;font-weight:600;color:var(--g800);margin-bottom:8px}
+.vfy-doc-row{display:flex;gap:8px;flex-wrap:wrap}
+.vfy-doc-row .vfy-radio-group{flex:1;min-width:180px}
+
+.vfy-modal-foot{padding:16px 24px;border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:flex-end;gap:10px;background:var(--g50)}
+.vfy-btn-cancel{padding:10px 20px;border:1.5px solid var(--g200);border-radius:99px;background:#fff;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--g600);cursor:pointer}
+.vfy-btn-cancel:hover{border-color:var(--g400);color:var(--g800)}
+.vfy-btn-submit{padding:10px 24px;border:none;border-radius:99px;background:var(--navy);color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s}
+.vfy-btn-submit:hover{background:var(--navy2)}
+.vfy-btn-submit:disabled{opacity:.6;cursor:not-allowed}
 </style>
 </head>
 <body class="is-locked">
@@ -437,6 +516,73 @@ body.is-locked > *:not(#lock-screen){display:none !important}
   </div>
 </div>
 
+<!-- VERIFIKASI FORM MODAL (Tambah Data Objek Perumahan) -->
+<div class="vfy-overlay" id="vfy-overlay" onmousedown="if(event.target===this) closeVfyModal()">
+  <div class="vfy-modal">
+    <div class="vfy-modal-head">
+      <div>
+        <h3>📋 Tambah Data Verifikasi</h3>
+        <p>Verifikasi Data Objek Perumahan — sesuai Form Survei Pengendalian</p>
+      </div>
+      <button class="vfy-modal-close" onclick="closeVfyModal()">✕</button>
+    </div>
+    <div class="vfy-modal-body">
+      <div class="vfy-surveyor">
+        <label for="vfy_surveyor">👤 Nama Surveyor</label>
+        <input type="text" id="vfy_surveyor" placeholder="Masukkan nama surveyor...">
+      </div>
+
+      <div class="vfy-section">
+        <div class="vfy-section-head"><span class="vfy-section-num">1</span><h4>Identitas Perumahan</h4></div>
+        <div class="vfy-section-body">
+          <div class="vfy-field">
+            <label>ID Lokasi SIKUMBANG</label>
+            <input type="text" id="vfy_t1_id_sikumbang" placeholder="Masukkan ID lokasi SIKUMBANG...">
+          </div>
+          <div class="vfy-field-row">
+            <div class="vfy-field"><label>Nama Perumahan <span class="vfy-req">*</span></label><input type="text" id="vfy_t1_nama_perumahan"></div>
+            <div class="vfy-field"><label>Nama PT</label><input type="text" id="vfy_t1_nama_pt"></div>
+          </div>
+          <div class="vfy-field-row">
+            <div class="vfy-field"><label>Nama Asosiasi</label><input type="text" id="vfy_t1_asosiasi"></div>
+            <div class="vfy-field"><label>Nama Kontraktor</label><input type="text" id="vfy_t1_kontraktor"></div>
+          </div>
+          <div class="vfy-field"><label>Alamat Perumahan</label><input type="text" id="vfy_t1_alamat"></div>
+        </div>
+      </div>
+
+      <div class="vfy-section">
+        <div class="vfy-section-head"><span class="vfy-section-num">2</span><h4>Status Rumah — Kesesuaian Data SIKUMBANG</h4></div>
+        <div class="vfy-section-body">
+          <div class="vfy-field">
+            <label>Sesuai dengan Data SIKUMBANG</label>
+            <div class="vfy-radio-group" id="vfy-sikumbang-group">
+              <label><input type="radio" name="vfy_status_sikumbang" value="Sesuai" onchange="onVfySikumbangChange()"> Sesuai</label>
+              <label><input type="radio" name="vfy_status_sikumbang" value="Tidak Sesuai" onchange="onVfySikumbangChange()"> Tidak Sesuai</label>
+            </div>
+            <div class="vfy-catatan-box" id="vfy-sikumbang-catatan-box">
+              <div class="vfy-catatan-label">⚠️ Catatan Ketidaksesuaian</div>
+              <textarea id="vfy_catatan_status_sikumbang" placeholder="Jelaskan ketidaksesuaian data..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vfy-section">
+        <div class="vfy-section-head"><span class="vfy-section-num">3</span><h4>Data Dukung / Dokumen</h4></div>
+        <div class="vfy-section-body">
+          <p style="font-size:11.5px;color:var(--g400);margin-bottom:10px">Pilih ketersediaan dan kesesuaian setiap dokumen</p>
+          <div id="vfy-dokumen-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="vfy-modal-foot">
+      <button class="vfy-btn-cancel" onclick="closeVfyModal()">Batal</button>
+      <button class="vfy-btn-submit" id="vfy-btn-submit" onclick="submitVfyForm()">Kirim Data</button>
+    </div>
+  </div>
+</div>
+
 <header class="app-header">
   <div class="header-brand">
     <div class="header-logo">🏘️</div>
@@ -461,6 +607,7 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 
 <nav class="nav-bar">
   <button class="nav-btn active" data-page="overview" onclick="showPage('overview',this)">📊 Ringkasan</button>
+  <button class="nav-btn" data-page="titik" onclick="showPage('titik',this)">📍 Titik Lokasi</button>
   <button class="nav-btn" data-page="perumahan" onclick="showPage('perumahan',this)">🏘️ Perumahan</button>
   <button class="nav-btn" data-page="verifikasi" onclick="showPage('verifikasi',this)">✅ Verifikasi</button>
   <button class="nav-btn" data-page="psu" onclick="showPage('psu',this)">🌿 Kondisi PSU</button>
@@ -521,6 +668,47 @@ body.is-locked > *:not(#lock-screen){display:none !important}
   </div>
 </div>
 
+<!-- ══ TITIK LOKASI PERUMAHAN TERSURVEY ══ -->
+<div class="page" id="page-titik">
+  <div class="sec-title">Titik Lokasi Perumahan Tersurvey</div>
+
+  <div class="kpi-strip" id="titik-kpi-strip"></div>
+
+  <div class="titik-map-wrap">
+    <div id="titik-map"></div>
+    <div class="titik-legend">
+      <span><span class="titik-dot"></span><b id="titik-count-map">0</b> titik terpetakan</span>
+      <span id="titik-count-nokoord"></span>
+    </div>
+  </div>
+
+  <div class="filter-bar" style="justify-content:space-between">
+    <div class="filter-bar" style="margin-bottom:0">
+      <select class="filter-select" id="titik-prov-filter" onchange="renderTitikLokasi()">
+        <option value="">Semua Provinsi</option>
+      </select>
+      <select class="filter-select" id="titik-kab-filter" onchange="renderTitikLokasi()">
+        <option value="">Semua Kab/Kota</option>
+      </select>
+      <select class="filter-select" id="titik-perumahan-filter" onchange="renderTitikLokasi()">
+        <option value="">Semua Perumahan</option>
+      </select>
+    </div>
+    <button class="btn-reset-filter" onclick="resetTitikFilter()">↺ Reset Filter</button>
+  </div>
+
+  <div class="card" style="padding:0">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>No</th><th>Provinsi</th><th>Kab/Kota</th><th>Nama Perumahan</th><th>Nama Pengembang</th><th>Tgl Survey</th><th>Unit Tersurvei</th>
+        </tr></thead>
+        <tbody id="titik-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- ══ PERUMAHAN ══ -->
 <div class="page" id="page-perumahan">
   <div class="sec-title">Data Objek Perumahan — Sheet 1</div>
@@ -538,10 +726,11 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 <!-- ══ VERIFIKASI ══ -->
 <div class="page" id="page-verifikasi">
   <div class="sec-title">Verifikasi Data Objek Perumahan — Sheet 2</div>
-  <div class="filter-bar">
+  <div class="filter-bar" style="justify-content:space-between">
     <select class="filter-select" id="vfy-filter" onchange="renderVerifikasi()">
       <option value="">Semua Perumahan</option>
     </select>
+    <button class="btn-add-vfy" onclick="openVfyModal()">➕ Tambah Data Verifikasi</button>
   </div>
   <div class="grid-2" style="margin-bottom:18px">
     <div class="card">
@@ -1096,6 +1285,159 @@ function renderPerumahan() {
 }
 
 // ══════════════════════════════════════════════════════
+// TITIK LOKASI PERUMAHAN TERSURVEY
+// ══════════════════════════════════════════════════════
+let titikMap = null, titikMarkersLayer = null;
+
+// Menerima berbagai format: "-6.123, 106.456" / "-6.123,106.456" / link Google Maps
+function parseKoordinat(str) {
+  if (!str) return null;
+  const s = String(str).trim();
+  const atMatch = s.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+  if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+  const qMatch = s.match(/[?&]q=(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+  if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+  const plain = s.match(/(-?\d{1,3}\.\d+)\s*[,;]\s*(-?\d{1,3}\.\d+)/);
+  if (plain) {
+    const lat = parseFloat(plain[1]), lng = parseFloat(plain[2]);
+    if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) return { lat, lng };
+  }
+  return null;
+}
+
+function getTglSurveyObj(obj) {
+  const id = obj.t1_id_sikumbang, nama = obj.t1_nama_perumahan;
+  const psuR = DB.psu.find(r => r.p1_id_sikumbang === id || r.p1_nama_perumahan === nama);
+  if (psuR && psuR.p1_tanggal) return psuR.p1_tanggal;
+  const salurR = DB.salur.find(r => r.p2_id_sikumbang === id || r.p2_nama_perumahan === nama);
+  if (salurR && salurR.p2_tanggal) return salurR.p2_tanggal;
+  const pascaR = DB.pasca.find(r => r.p3_id_sikumbang === id || r.p3_nama_perumahan === nama);
+  if (pascaR && pascaR.p3_tanggal) return pascaR.p3_tanggal;
+  return '';
+}
+
+function fmtTglSurvey(val) {
+  if (!val) return '-';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return val;
+  return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function getUnitTersurvei(obj) {
+  const id = obj.t1_id_sikumbang, nama = obj.t1_nama_perumahan;
+  return DB.pasca.filter(r => r.p3_id_sikumbang === id || r.p3_nama_perumahan === nama).length;
+}
+
+function initTitikMap() {
+  if (titikMap || typeof L === 'undefined') return;
+  const mapEl = document.getElementById('titik-map');
+  if (!mapEl) return;
+  titikMap = L.map('titik-map', { scrollWheelZoom: true }).setView([-2.5, 118], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(titikMap);
+  titikMarkersLayer = L.layerGroup().addTo(titikMap);
+}
+
+function initTitikFilters() {
+  const provList = [...new Set(DB.objek.map(r => (r.t1_alamat||'').split(',')[0].trim()).filter(Boolean))];
+  const kabList  = [...new Set(DB.objek.map(r => (r.t1_alamat||'').split(',')[1]?.trim()).filter(Boolean))];
+  populateSelect('titik-prov-filter', provList, 'Semua Provinsi');
+  populateSelect('titik-kab-filter', kabList, 'Semua Kab/Kota');
+  populateSelect('titik-perumahan-filter', DB.objek.map(r => r.t1_nama_perumahan), 'Semua Perumahan');
+}
+
+function resetTitikFilter() {
+  ['titik-prov-filter','titik-kab-filter','titik-perumahan-filter'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  renderTitikLokasi();
+}
+
+function renderTitikLokasi() {
+  initTitikMap();
+
+  const provF = document.getElementById('titik-prov-filter')?.value || '';
+  const kabF  = document.getElementById('titik-kab-filter')?.value || '';
+  const perF  = document.getElementById('titik-perumahan-filter')?.value || '';
+
+  let data = DB.objek;
+  if (provF) data = data.filter(r => (r.t1_alamat||'').split(',')[0]?.trim() === provF);
+  if (kabF)  data = data.filter(r => (r.t1_alamat||'').split(',')[1]?.trim() === kabF);
+  if (perF)  data = data.filter(r => r.t1_nama_perumahan === perF);
+
+  // ── KPI: jumlah sudah tersurvei ──
+  const provSet = new Set(data.map(r => (r.t1_alamat||'').split(',')[0]?.trim()).filter(Boolean));
+  const kabSet  = new Set(data.map(r => (r.t1_alamat||'').split(',')[1]?.trim()).filter(Boolean));
+  const totalUnitTersurvei = data.reduce((s, r) => s + getUnitTersurvei(r), 0);
+  const kpiEl = document.getElementById('titik-kpi-strip');
+  if (kpiEl) {
+    kpiEl.innerHTML = `
+      <div class="kpi"><div class="kpi-val">${provSet.size}</div><div class="kpi-label">Provinsi</div><div class="kpi-sub">Sudah tersurvei</div></div>
+      <div class="kpi gold"><div class="kpi-val">${kabSet.size}</div><div class="kpi-label">Kab/Kota</div><div class="kpi-sub">Sudah tersurvei</div></div>
+      <div class="kpi green"><div class="kpi-val">${data.length}</div><div class="kpi-label">Perumahan</div><div class="kpi-sub">Sudah tersurvei</div></div>
+      <div class="kpi navy"><div class="kpi-val">${fmt(totalUnitTersurvei)}</div><div class="kpi-label">Unit Rumah</div><div class="kpi-sub">Sudah tersurvei</div></div>
+    `;
+  }
+
+  // ── Tabel ──
+  const tbody = document.getElementById('titik-tbody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="ico">📭</div><p>Tidak ada data perumahan sesuai filter ini.</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = data.map((r, i) => {
+      const parts = (r.t1_alamat||'').split(',').map(s => s.trim());
+      const prov = parts[0] || '-', kab = parts[1] || '-';
+      return `<tr>
+        <td>${i+1}</td>
+        <td>${prov}</td>
+        <td>${kab}</td>
+        <td><div class="td-name">${v(r.t1_nama_perumahan)}</div><div class="td-sub">${v(r.t1_id_sikumbang)}</div></td>
+        <td>${v(r.t1_nama_pt)}</td>
+        <td>${fmtTglSurvey(getTglSurveyObj(r))}</td>
+        <td>${fmt(getUnitTersurvei(r))} unit</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Peta ──
+  if (titikMarkersLayer) titikMarkersLayer.clearLayers();
+  let mapped = 0, unmapped = 0;
+  const bounds = [];
+  data.forEach(r => {
+    const coord = parseKoordinat(r.t1_koordinat);
+    if (!coord) { unmapped++; return; }
+    mapped++;
+    bounds.push([coord.lat, coord.lng]);
+    const parts = (r.t1_alamat||'').split(',').map(s => s.trim());
+    const prov = parts[0] || '-', kab = parts[1] || '-';
+    const marker = L.circleMarker([coord.lat, coord.lng], {
+      radius: 7, weight: 2, color: '#1A8FA5', fillColor: '#0B3D52', fillOpacity: .85
+    });
+    marker.bindPopup(`
+      <div class="titik-popup-title">${v(r.t1_nama_perumahan)}</div>
+      <div class="titik-popup-row">🏗️ ${v(r.t1_nama_pt)}</div>
+      <div class="titik-popup-row">📍 ${kab}, ${prov}</div>
+      <div class="titik-popup-row">📅 Survey: ${fmtTglSurvey(getTglSurveyObj(r))}</div>
+    `);
+    if (titikMarkersLayer) marker.addTo(titikMarkersLayer);
+  });
+
+  const countMapEl = document.getElementById('titik-count-map');
+  if (countMapEl) countMapEl.textContent = mapped;
+  const countNoKoordEl = document.getElementById('titik-count-nokoord');
+  if (countNoKoordEl) countNoKoordEl.textContent = unmapped ? `${unmapped} perumahan belum memiliki koordinat` : '';
+
+  if (titikMap && bounds.length) {
+    titikMap.fitBounds(bounds, { padding: [30,30], maxZoom: 11 });
+  } else if (titikMap) {
+    titikMap.setView([-2.5, 118], 5);
+  }
+}
+
+// ══════════════════════════════════════════════════════
 // VERIFIKASI (Sheet 2)
 // ══════════════════════════════════════════════════════
 const DOK_LABELS = [
@@ -1132,6 +1474,186 @@ function renderVerifikasi() {
       }).join('')}
     </tr>`;
   }).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--g400);padding:20px">Belum ada data</td></tr>';
+}
+
+// ══════════════════════════════════════════════════════
+// VERIFIKASI — FORM TAMBAH DATA (modal, mengikuti Form 1
+// "Verifikasi Data Objek Perumahan" pada Form Survei Pengendalian)
+// ══════════════════════════════════════════════════════
+const VFY_GAS_URL = 'https://script.google.com/macros/s/AKfycbwL_U155tjBT1nim0SxD4Qu4LM2EsWc7wlWTEcokU-SfAiglJlhG4Qt7iBJ6X5sEgfr6A/exec';
+
+// Sama persis urutan & pengelompokan dokumen dengan form survei,
+// sehingga index dok_ada_0..8 tetap konsisten dengan DOK_LABELS di atas.
+const VFY_DOK_GROUPS = [
+  { tahap: 'Tahap Perencanaan', items: [
+    'Gambar Site Plan Perumahan',
+    'DED (Detailed Engineering Design) Perumahan',
+    'Rencana Kerja dan Syarat-syarat (RKS)',
+    'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)',
+  ]},
+  { tahap: 'Tahap Perizinan', items: [
+    'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL atau Dokumen Lain Sesuai Ketentuan)',
+    'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)',
+  ]},
+  { tahap: 'Tahap Pelaksanaan', items: [
+    'As Built Drawing',
+  ]},
+  { tahap: 'Tahap Pasca Konstruksi', items: [
+    'Sertifikat Laik Fungsi (SLF)',
+    'Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi',
+  ]},
+];
+
+let vfyDokBuilt = false;
+
+function vfyHighlightRadios(container) {
+  container.querySelectorAll('input[type=radio]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      container.querySelectorAll(`input[name="${inp.name}"]`).forEach(sib => {
+        sib.closest('label')?.classList.toggle('checked', sib.checked);
+      });
+    });
+  });
+}
+
+function buildVfyDokumenList() {
+  if (vfyDokBuilt) return;
+  const wrap = document.getElementById('vfy-dokumen-list');
+  if (!wrap) return;
+  let idx = 0;
+  VFY_DOK_GROUPS.forEach(grp => {
+    const h = document.createElement('div');
+    h.className = 'vfy-dok-tahap';
+    h.textContent = grp.tahap;
+    wrap.appendChild(h);
+    grp.items.forEach(dok => {
+      const i = idx++;
+      const row = document.createElement('div');
+      row.className = 'vfy-doc-wrapper';
+      row.innerHTML = `
+        <div class="vfy-doc-name">${dok}</div>
+        <div class="vfy-doc-row">
+          <div class="vfy-radio-group" data-name="vfy_dok_ada_${i}">
+            <label><input type="radio" name="vfy_dok_ada_${i}" value="Ada"> Ada</label>
+            <label><input type="radio" name="vfy_dok_ada_${i}" value="Tidak Ada"> Tidak Ada</label>
+          </div>
+          <div class="vfy-radio-group" data-name="vfy_dok_sesuai_${i}">
+            <label><input type="radio" name="vfy_dok_sesuai_${i}" value="Sesuai"> Sesuai</label>
+            <label><input type="radio" name="vfy_dok_sesuai_${i}" value="Tidak Sesuai"> Tidak Sesuai</label>
+          </div>
+        </div>
+        <div class="vfy-catatan-box" id="vfy-dok-catatan-box-${i}">
+          <div class="vfy-catatan-label">Catatan Dokumen</div>
+          <textarea id="vfy_catatan_dok_ada_${i}" placeholder="Catatan (opsional)..."></textarea>
+        </div>`;
+      wrap.appendChild(row);
+      vfyHighlightRadios(row);
+      // Tampilkan kotak catatan otomatis kalau salah satu jawaban negatif
+      row.querySelectorAll('input[type=radio]').forEach(inp => {
+        inp.addEventListener('change', () => {
+          const adaVal = row.querySelector(`input[name="vfy_dok_ada_${i}"]:checked`)?.value;
+          const sesuaiVal = row.querySelector(`input[name="vfy_dok_sesuai_${i}"]:checked`)?.value;
+          const box = document.getElementById(`vfy-dok-catatan-box-${i}`);
+          const negative = adaVal === 'Tidak Ada' || sesuaiVal === 'Tidak Sesuai';
+          box.classList.toggle('visible', !!negative);
+        });
+      });
+    });
+  });
+  vfyDokBuilt = true;
+}
+
+function onVfySikumbangChange() {
+  const val = document.querySelector('input[name="vfy_status_sikumbang"]:checked')?.value;
+  document.getElementById('vfy-sikumbang-catatan-box').classList.toggle('visible', val === 'Tidak Sesuai');
+}
+
+function openVfyModal() {
+  buildVfyDokumenList();
+  vfyHighlightRadios(document.getElementById('vfy-sikumbang-group'));
+  document.getElementById('vfy-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVfyModal() {
+  document.getElementById('vfy-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function resetVfyForm() {
+  const modal = document.getElementById('vfy-overlay');
+  modal.querySelectorAll('input[type=text], textarea').forEach(el => el.value = '');
+  modal.querySelectorAll('input[type=radio]').forEach(el => { el.checked = false; el.closest('label')?.classList.remove('checked'); });
+  modal.querySelectorAll('.vfy-catatan-box').forEach(el => el.classList.remove('visible'));
+}
+
+function collectVfyData() {
+  const data = {};
+  const modal = document.getElementById('vfy-overlay');
+  modal.querySelectorAll('input[type=text], textarea').forEach(el => { if (el.id) data[el.id.replace(/^vfy_/, '')] = el.value; });
+  const radioNames = new Set();
+  modal.querySelectorAll('input[type=radio]').forEach(el => radioNames.add(el.name));
+  radioNames.forEach(n => {
+    const checked = modal.querySelector(`input[name="${n}"]:checked`);
+    data[n.replace(/^vfy_/, '')] = checked ? checked.value : '';
+  });
+  return data;
+}
+
+async function submitVfyForm() {
+  const surveyor = document.getElementById('vfy_surveyor');
+  const nama = document.getElementById('vfy_t1_nama_perumahan');
+  if (!surveyor.value.trim()) { alert('⚠️ Harap isi nama surveyor terlebih dahulu!'); surveyor.focus(); return; }
+  if (!nama.value.trim()) { alert('⚠️ Harap isi nama perumahan terlebih dahulu!'); nama.focus(); return; }
+
+  const btn = document.getElementById('vfy-btn-submit');
+  btn.disabled = true; btn.textContent = '⏳ Mengirim...';
+
+  try {
+    const data = collectVfyData();
+    data['Timestamp'] = new Date().toLocaleString('id-ID');
+    data['Nama Surveyor'] = surveyor.value.trim();
+    data['surveyor0'] = surveyor.value.trim();
+    data['Form'] = 'Verifikasi Data Objek Perumahan';
+    const payload = { data: data, fotoUrls: {}, fotos: [] };
+
+    if (!VFY_GAS_URL || VFY_GAS_URL.indexOf('GANTI_DENGAN_URL_ANDA') > -1) {
+      throw new Error('URL Apps Script belum dikonfigurasi.');
+    }
+
+    const iid = 'vfy_ifr_' + Date.now();
+    const ifr = document.createElement('iframe');
+    ifr.name = iid; ifr.style.display = 'none';
+    const frm = document.createElement('form');
+    frm.method = 'POST'; frm.action = VFY_GAS_URL; frm.target = iid; frm.style.display = 'none';
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'payload'; inp.value = JSON.stringify(payload);
+    frm.appendChild(inp);
+    document.body.appendChild(ifr); document.body.appendChild(frm);
+
+    const cleanup = () => { try { document.body.removeChild(frm); document.body.removeChild(ifr); } catch(e){} };
+    let vfyDone = false;
+    const finish = () => {
+      if (vfyDone) return;
+      vfyDone = true;
+      cleanup();
+      btn.disabled = false; btn.textContent = 'Kirim Data';
+      alert('✅ Data verifikasi berhasil dikirim! Menyinkronkan data terbaru...');
+      resetVfyForm();
+      closeVfyModal();
+      // Data ditulis ke Google Sheets lalu dibaca kembali lewat publish-to-web CSV,
+      // yang bisa butuh beberapa saat untuk ter-update di sisi Google.
+      setTimeout(() => syncFromGoogleSheets(true), 3000);
+    };
+    ifr.onload = finish;
+    // Fallback kalau event onload tidak terpicu (beberapa browser)
+    setTimeout(finish, 8000);
+    frm.submit();
+  } catch (err) {
+    console.error(err);
+    alert('❌ Gagal mengirim data: ' + err.message);
+    btn.disabled = false; btn.textContent = 'Kirim Data';
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1750,6 +2272,8 @@ function refreshAllViews() {
   initFilters();
   initBAFilter();
   renderOverview();
+  initTitikFilters();
+  renderTitikLokasi();
   renderPerumahan();
   renderVerifikasi();
   renderPSU();
@@ -1767,6 +2291,10 @@ function showPage(id, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   if (btn) btn.classList.add('active');
+  if (id === 'titik') {
+    initTitikMap();
+    setTimeout(() => { if (titikMap) titikMap.invalidateSize(); }, 80);
+  }
 }
 
 function goHome() {
