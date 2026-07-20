@@ -1023,6 +1023,10 @@ body.is-locked > *:not(#lock-screen){display:none !important}
     <select class="filter-select" id="chv-filter-prov" onchange="renderCHV()">
       <option value="">Semua Provinsi</option>
     </select>
+    <select class="filter-select" id="chv-filter-tahap" onchange="setCHVTahap(this.value)" title="Pilih tahap yang ingin ditampilkan pada CHV">
+      <option value="penyaluran">🏗️ Tahap Penyaluran</option>
+      <option value="pasca">🏠 Tahap Pasca Penyaluran</option>
+    </select>
     <button class="btn-header btn-upload" style="margin-left:auto;padding:8px 16px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;border:none"
       onclick="exportCHVWord()" id="btn-chv-export">📄 Export Word (.doc)</button>
     <button class="btn-header" style="padding:8px 16px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;background:var(--green);color:#fff;border:none"
@@ -3128,11 +3132,21 @@ function loadCHVRek(rekId) {
   }
 }
 
+// Mode tahap yang sedang ditampilkan pada CHV: 'penyaluran' atau 'pasca'
+let chvTahapMode = 'penyaluran';
+
+function setCHVTahap(mode) {
+  chvTahapMode = (mode === 'pasca') ? 'pasca' : 'penyaluran';
+  renderCHV();
+}
+
 function initCHVFilters() {
   const allNames = DB.objek.map(r => r.t1_nama_perumahan).filter(Boolean);
   const allProv  = DB.objek.map(r => (r.t1_alamat||'').split(',')[0].trim()).filter(Boolean);
   populateSelect('chv-filter-perumahan', [...new Set(allNames)], 'Semua Perumahan');
   populateSelect('chv-filter-prov', [...new Set(allProv)], 'Semua Provinsi');
+  const tahapEl = document.getElementById('chv-filter-tahap');
+  if (tahapEl) tahapEl.value = chvTahapMode;
 }
 
 function renderCHV() {
@@ -3410,180 +3424,186 @@ function buildCHVCard(obj) {
     </div>
   </div>`;
 
-  // Section D: Fisik Bangunan Tahap Penyaluran
-  let fisikRows = '';
-  let fisikNo = 0;
-  CHV_FISIK_SALUR.forEach((grp, gi) => {
-    fisikRows += `<tr class="chv-grp-hdr"><td colspan="5">${grp.aspek}</td></tr>`;
-    grp.subs.forEach(sub => {
-      fisikNo++;
-      let hasil = '-', catatan = '';
-      if (salur) {
-        const raw = salur[sub.field];
-        hasil = raw != null ? String(raw) : '-';
-        // Penutup Atap/Lantai/Dinding/RLH/Penghijauan → catatan_tambahan group
-        // Pondasi/Sloof/Kolom/RingBalok/RangkaAtap → catatan per sub-field
-        // Utilitas → catatan_ts_py_ per sub-field
-        catatan = grp.useTambahan
-          ? (salur[grp.tambahan] || '')
-          : (salur[`catatan_${sub.field}`] || salur[`catatan_ts_py_${sub.field}`] || '');
-      }
-      fisikRows += `<tr>
-        <td class="chv-no" style="color:var(--g400);font-size:10px">${sub.aspek||''}</td>
-        <td>${sub.label}</td>
-        <td style="font-size:10px;color:var(--g600)">${sub.acuan}</td>
-        <td class="chv-center">${sub.type === 'kondisi' ? chvPillHTML(hasil) : `<span style="font-size:11px">${hasil !== '-' ? hasil : ''}</span>`}</td>
-        <td style="font-size:11px">${catatan}</td>
+  // Section D: Fisik Bangunan Tahap Penyaluran (hanya ditampilkan jika mode = 'penyaluran')
+  let secD = '';
+  if (chvTahapMode === 'penyaluran') {
+    let fisikRows = '';
+    let fisikNo = 0;
+    CHV_FISIK_SALUR.forEach((grp, gi) => {
+      fisikRows += `<tr class="chv-grp-hdr"><td colspan="5">${grp.aspek}</td></tr>`;
+      grp.subs.forEach(sub => {
+        fisikNo++;
+        let hasil = '-', catatan = '';
+        if (salur) {
+          const raw = salur[sub.field];
+          hasil = raw != null ? String(raw) : '-';
+          // Penutup Atap/Lantai/Dinding/RLH/Penghijauan → catatan_tambahan group
+          // Pondasi/Sloof/Kolom/RingBalok/RangkaAtap → catatan per sub-field
+          // Utilitas → catatan_ts_py_ per sub-field
+          catatan = grp.useTambahan
+            ? (salur[grp.tambahan] || '')
+            : (salur[`catatan_${sub.field}`] || salur[`catatan_ts_py_${sub.field}`] || '');
+        }
+        fisikRows += `<tr>
+          <td class="chv-no" style="color:var(--g400);font-size:10px">${sub.aspek||''}</td>
+          <td>${sub.label}</td>
+          <td style="font-size:10px;color:var(--g600)">${sub.acuan}</td>
+          <td class="chv-center">${sub.type === 'kondisi' ? chvPillHTML(hasil) : `<span style="font-size:11px">${hasil !== '-' ? hasil : ''}</span>`}</td>
+          <td style="font-size:11px">${catatan}</td>
+        </tr>`;
+      });
+      const rekId = `rek_D_${id}_grp_${gi}`;
+      const rekSaved = loadCHVRek(rekId);
+      fisikRows += `<tr class="chv-rek-row"><td colspan="5">
+        <div class="chv-rek-label">Rekomendasi / Tindak Lanjut — ${grp.aspek}</div>
+        <textarea id="${rekId}" placeholder="Isi rekomendasi untuk aspek ${grp.aspek}..." rows="2" oninput="saveCHVRek('${rekId}')">${rekSaved}</textarea>
+      </td></tr>`;
+    });
+    secD = `
+    <div class="chv-section">
+      <div class="chv-sec-title">D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN</div>
+      <div class="tbl-wrap">
+        <table class="chv-tbl">
+          <thead>
+            <tr class="chv-tbl-head">
+              <th style="width:90px">Aspek</th>
+              <th>Sub-Aspek yang Dinilai</th>
+              <th style="width:180px">Acuan Penilaian</th>
+              <th style="width:120px">Hasil</th>
+              <th>Catatan Hasil Review</th>
+            </tr>
+          </thead>
+          <tbody>${fisikRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // Section E (ditampilkan sebagai "D") — Kondisi Pasca Penyaluran, hanya jika mode = 'pasca'
+  let secE = '';
+  if (chvTahapMode === 'pasca') {
+    // E1: Keterhunian
+    let keterhunianRows = '';
+    pasca.forEach((r, i) => {
+      keterhunianRows += `<tr>
+        <td class="chv-no">${i+1}</td>
+        <td>${r.p3_nomor_rumah||'-'}</td>
+        <td>${r.tahun_akad||r.tahun_huni||'-'}</td>
+        <td>${chvPillHTML(r.status_huni)}</td>
+        <td>${r.kerja_penghuni||'-'}</td>
+        <td>${r.gaji_penghuni||'-'}</td>
+        <td>${chvPillHTML(r.sticker)}</td>
+        <td>${chvPillHTML(r.sertif)}</td>
+        <td>${r.penghuni||'-'}</td>
+        <td>${r.tahun_huni||'-'}</td>
+        <td>${r.renovasi||'-'}</td>
+        <td>${r.fungsi==='Ya'?'<span class="pill pill-amber">Ya</span>':'Tidak'}</td>
       </tr>`;
     });
-    const rekId = `rek_D_${id}_grp_${gi}`;
-    const rekSaved = loadCHVRek(rekId);
-    fisikRows += `<tr class="chv-rek-row"><td colspan="5">
-      <div class="chv-rek-label">Rekomendasi / Tindak Lanjut — ${grp.aspek}</div>
-      <textarea id="${rekId}" placeholder="Isi rekomendasi untuk aspek ${grp.aspek}..." rows="2" oninput="saveCHVRek('${rekId}')">${rekSaved}</textarea>
-    </td></tr>`;
-  });
-  const secD = `
-  <div class="chv-section">
-    <div class="chv-sec-title">D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN</div>
-    <div class="tbl-wrap">
-      <table class="chv-tbl">
-        <thead>
-          <tr class="chv-tbl-head">
-            <th style="width:90px">Aspek</th>
-            <th>Sub-Aspek yang Dinilai</th>
-            <th style="width:180px">Acuan Penilaian</th>
-            <th style="width:120px">Hasil</th>
-            <th>Catatan Hasil Review</th>
-          </tr>
-        </thead>
-        <tbody>${fisikRows}</tbody>
-      </table>
-    </div>
-  </div>`;
+    if (!keterhunianRows) keterhunianRows = '<tr><td colspan="12" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data keterhunian</td></tr>';
 
-  // Section E: Kondisi Pasca Penyaluran
-  // E1: Keterhunian
-  let keterhunianRows = '';
-  pasca.forEach((r, i) => {
-    keterhunianRows += `<tr>
-      <td class="chv-no">${i+1}</td>
-      <td>${r.p3_nomor_rumah||'-'}</td>
-      <td>${r.tahun_akad||r.tahun_huni||'-'}</td>
-      <td>${chvPillHTML(r.status_huni)}</td>
-      <td>${r.kerja_penghuni||'-'}</td>
-      <td>${r.gaji_penghuni||'-'}</td>
-      <td>${chvPillHTML(r.sticker)}</td>
-      <td>${chvPillHTML(r.sertif)}</td>
-      <td>${r.penghuni||'-'}</td>
-      <td>${r.tahun_huni||'-'}</td>
-      <td>${r.renovasi||'-'}</td>
-      <td>${r.fungsi==='Ya'?'<span class="pill pill-amber">Ya</span>':'Tidak'}</td>
-    </tr>`;
-  });
-  if (!keterhunianRows) keterhunianRows = '<tr><td colspan="12" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data keterhunian</td></tr>';
+    // E2: Komponen Fisik per Unit
+    let komponenRows = '';
+    pasca.forEach((r, i) => {
+      const utilDetail = [
+        { label: 'Air Bersih',       ada: r.pf_util_air,       kondisi: r.pf_util_air_kondisi },
+        { label: 'Listrik',          ada: r.pf_util_listrik,    kondisi: r.pf_util_listrik_kondisi },
+        { label: 'Sanitasi',         ada: r.pf_util_sanitasi,   kondisi: r.pf_util_sanitasi_kondisi },
+        { label: 'Fiber Optik',      ada: r.pf_util_fiber,      kondisi: r.pf_util_fiber_kondisi },
+        { label: 'Proteksi Kebakaran', ada: r.pf_util_kebakaran, kondisi: r.pf_util_kebakaran_kondisi },
+        { label: 'Air Limbah',       ada: r.pf_util_airlimbah,  kondisi: r.pf_util_airlimbah_kondisi },
+      ];
+      const utilHTML = utilDetail.map(u =>
+        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;font-size:11px">
+          <span style="min-width:110px;color:var(--g600)">${u.label}:</span>
+          ${chvPillHTML(u.ada)}
+          ${u.ada && !/tidak/i.test(u.ada||'') ? chvPillHTML(u.kondisi) : ''}
+        </div>`
+      ).join('');
+      komponenRows += `<tr>
+        <td class="chv-no">${i+1}</td>
+        <td>${r.p3_nomor_rumah||'-'}</td>
+        <td>${chvPillHTML(r.pf_lantai_kondisi)} <small style="color:var(--g400)">${r.pf_lantai_jenis||''}</small></td>
+        <td>${chvPillHTML(r.pf_dinding_kondisi)} <small style="color:var(--g400)">${r.pf_dinding_jenis||''}</small></td>
+        <td>${chvPillHTML(r.pf_atap_kondisi)} <small style="color:var(--g400)">${r.pf_atap_penutup||''}</small></td>
+        <td>${r.pf_atap_plafon||'-'}</td>
+        <td style="min-width:260px">${utilHTML}</td>
+        <td>${chvPillHTML(r.py_hijau_kavling||r.pf_hijau||'-')}</td>
+      </tr>`;
+    });
+    if (!komponenRows) komponenRows = '<tr><td colspan="8" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data komponen fisik</td></tr>';
 
-  // E2: Komponen Fisik per Unit
-  let komponenRows = '';
-  pasca.forEach((r, i) => {
-    const utilDetail = [
-      { label: 'Air Bersih',       ada: r.pf_util_air,       kondisi: r.pf_util_air_kondisi },
-      { label: 'Listrik',          ada: r.pf_util_listrik,    kondisi: r.pf_util_listrik_kondisi },
-      { label: 'Sanitasi',         ada: r.pf_util_sanitasi,   kondisi: r.pf_util_sanitasi_kondisi },
-      { label: 'Fiber Optik',      ada: r.pf_util_fiber,      kondisi: r.pf_util_fiber_kondisi },
-      { label: 'Proteksi Kebakaran', ada: r.pf_util_kebakaran, kondisi: r.pf_util_kebakaran_kondisi },
-      { label: 'Air Limbah',       ada: r.pf_util_airlimbah,  kondisi: r.pf_util_airlimbah_kondisi },
-    ];
-    const utilHTML = utilDetail.map(u =>
-      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;font-size:11px">
-        <span style="min-width:110px;color:var(--g600)">${u.label}:</span>
-        ${chvPillHTML(u.ada)}
-        ${u.ada && !/tidak/i.test(u.ada||'') ? chvPillHTML(u.kondisi) : ''}
-      </div>`
-    ).join('');
-    komponenRows += `<tr>
-      <td class="chv-no">${i+1}</td>
-      <td>${r.p3_nomor_rumah||'-'}</td>
-      <td>${chvPillHTML(r.pf_lantai_kondisi)} <small style="color:var(--g400)">${r.pf_lantai_jenis||''}</small></td>
-      <td>${chvPillHTML(r.pf_dinding_kondisi)} <small style="color:var(--g400)">${r.pf_dinding_jenis||''}</small></td>
-      <td>${chvPillHTML(r.pf_atap_kondisi)} <small style="color:var(--g400)">${r.pf_atap_penutup||''}</small></td>
-      <td>${r.pf_atap_plafon||'-'}</td>
-      <td style="min-width:260px">${utilHTML}</td>
-      <td>${chvPillHTML(r.py_hijau_kavling||r.pf_hijau||'-')}</td>
-    </tr>`;
-  });
-  if (!komponenRows) komponenRows = '<tr><td colspan="8" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data komponen fisik</td></tr>';
+    // E3: Penilaian Penerima Manfaat
+    let penilaianRows = '';
+    pasca.forEach((r, i) => {
+      penilaianRows += `<tr>
+        <td class="chv-no">${i+1}</td>
+        <td>${r.p3_nomor_rumah||'-'}</td>
+        <td class="chv-center">${chvPillHTML(r.info_kpr)}</td>
+        <td class="chv-center">${chvPillHTML(r.tahu_pkp)}</td>
+        <td class="chv-center">${chvPillHTML(r.syarat_bank)}</td>
+        <td class="chv-center">${chvPillHTML(r.proses_bank)}</td>
+        <td style="font-size:11px">${r.catatan_tambahan_pf_4_0||r.catatan_tambahan_pf_5_0||r.catatan_tambahan_pf_6_0||''}</td>
+      </tr>`;
+    });
+    if (!penilaianRows) penilaianRows = '<tr><td colspan="7" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data penilaian</td></tr>';
 
-  // E3: Penilaian Penerima Manfaat
-  let penilaianRows = '';
-  pasca.forEach((r, i) => {
-    penilaianRows += `<tr>
-      <td class="chv-no">${i+1}</td>
-      <td>${r.p3_nomor_rumah||'-'}</td>
-      <td class="chv-center">${chvPillHTML(r.info_kpr)}</td>
-      <td class="chv-center">${chvPillHTML(r.tahu_pkp)}</td>
-      <td class="chv-center">${chvPillHTML(r.syarat_bank)}</td>
-      <td class="chv-center">${chvPillHTML(r.proses_bank)}</td>
-      <td style="font-size:11px">${r.catatan_tambahan_pf_4_0||r.catatan_tambahan_pf_5_0||r.catatan_tambahan_pf_6_0||''}</td>
-    </tr>`;
-  });
-  if (!penilaianRows) penilaianRows = '<tr><td colspan="7" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data penilaian</td></tr>';
+    secE = `
+    <div class="chv-section">
+      <div class="chv-sec-title">D. KONDISI PASCA PENYALURAN</div>
 
-  const secE = `
-  <div class="chv-section">
-    <div class="chv-sec-title">E. KONDISI PASCA PENYALURAN</div>
+      <div class="chv-subsec-title">D.1 Keterhunian Perumahan FLPP</div>
+      <div class="tbl-wrap">
+        <table class="chv-tbl">
+          <thead>
+            <tr class="chv-tbl-head">
+              <th>No</th><th>Nomor Rumah</th><th>Tahun Akad</th><th>Status Huni</th>
+              <th>Pekerjaan</th><th>Penghasilan</th><th>Sticker KPR</th><th>Sertifikat</th>
+              <th>Jml Penghuni</th><th>Tahun Huni</th><th>Renovasi</th><th>Alih Fungsi</th>
+            </tr>
+          </thead>
+          <tbody>${keterhunianRows}</tbody>
+        </table>
+      </div>
 
-    <div class="chv-subsec-title">E.1 Keterhunian Perumahan FLPP</div>
-    <div class="tbl-wrap">
-      <table class="chv-tbl">
-        <thead>
-          <tr class="chv-tbl-head">
-            <th>No</th><th>Nomor Rumah</th><th>Tahun Akad</th><th>Status Huni</th>
-            <th>Pekerjaan</th><th>Penghasilan</th><th>Sticker KPR</th><th>Sertifikat</th>
-            <th>Jml Penghuni</th><th>Tahun Huni</th><th>Renovasi</th><th>Alih Fungsi</th>
-          </tr>
-        </thead>
-        <tbody>${keterhunianRows}</tbody>
-      </table>
-    </div>
+      <div class="chv-subsec-title" style="margin-top:18px">D.2 Komponen Fisik Bangunan per Unit</div>
+      <div class="tbl-wrap">
+        <table class="chv-tbl">
+          <thead>
+            <tr class="chv-tbl-head">
+              <th>No</th><th>Nomor Rumah</th><th>Lantai</th><th>Dinding</th><th>Atap</th>
+              <th>Plafond</th><th>Jaringan Utilitas</th><th>Penghijauan</th>
+            </tr>
+          </thead>
+          <tbody>${komponenRows}</tbody>
+        </table>
+      </div>
 
-    <div class="chv-subsec-title" style="margin-top:18px">E.2 Komponen Fisik Bangunan per Unit</div>
-    <div class="tbl-wrap">
-      <table class="chv-tbl">
-        <thead>
-          <tr class="chv-tbl-head">
-            <th>No</th><th>Nomor Rumah</th><th>Lantai</th><th>Dinding</th><th>Atap</th>
-            <th>Plafond</th><th>Jaringan Utilitas</th><th>Penghijauan</th>
-          </tr>
-        </thead>
-        <tbody>${komponenRows}</tbody>
-      </table>
-    </div>
-
-    <div class="chv-subsec-title" style="margin-top:18px">E.3 Penilaian Penerima Manfaat</div>
-    <div class="tbl-wrap">
-      <table class="chv-tbl">
-        <thead>
-          <tr class="chv-tbl-head">
-            <th>No</th><th>Nomor Rumah</th>
-            <th>Kemudahan Info KPR Bersubsidi</th>
-            <th>Mengetahui Program PKP</th>
-            <th>Kemudahan Persyaratan</th>
-            <th>Kecepatan Proses Kredit</th>
-            <th>Masukan/Catatan</th>
-          </tr>
-        </thead>
-        <tbody>${penilaianRows}</tbody>
-      </table>
-    </div>
-  </div>`;
+      <div class="chv-subsec-title" style="margin-top:18px">D.3 Penilaian Penerima Manfaat</div>
+      <div class="tbl-wrap">
+        <table class="chv-tbl">
+          <thead>
+            <tr class="chv-tbl-head">
+              <th>No</th><th>Nomor Rumah</th>
+              <th>Kemudahan Info KPR Bersubsidi</th>
+              <th>Mengetahui Program PKP</th>
+              <th>Kemudahan Persyaratan</th>
+              <th>Kecepatan Proses Kredit</th>
+              <th>Masukan/Catatan</th>
+            </tr>
+          </thead>
+          <tbody>${penilaianRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
 
   return `
 <div class="chv-card" id="chv-${obj.t1_id_sikumbang||nama.replace(/\s/g,'_')}">
   <div class="chv-card-header">
     <div>
       <div class="chv-card-title">📋 ${nama}</div>
-      <div class="chv-card-sub">${id} · ${obj.t1_nama_pt||'-'} · ${prov}</div>
+      <div class="chv-card-sub">${id} · ${obj.t1_nama_pt||'-'} · ${prov} · ${chvTahapMode === 'penyaluran' ? '🏗️ Tahap Penyaluran' : '🏠 Tahap Pasca Penyaluran'}</div>
     </div>
     <button class="chv-toggle-btn" onclick="this.closest('.chv-card').querySelector('.chv-card-body').classList.toggle('collapsed');this.textContent=this.textContent==='▲ Lipat'?'▼ Buka':'▲ Lipat'">▲ Lipat</button>
   </div>
@@ -3729,61 +3749,65 @@ function exportCHVWord() {
       });
       pages += `</table>`;
 
-      // D. Fisik Penyaluran
-      pages += secTitle('D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN');
-      pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('Aspek')}${th('Sub-Aspek yang Dinilai')}${th('Acuan Penilaian')}${th('Hasil','width:60pt;')}${th('Catatan Hasil Review')}</tr>`;
-      let dNo=0;
-      CHV_FISIK_SALUR.forEach(grp => {
-        pages += grpTr(grp.aspek, 6);
-        grp.subs.forEach(sub => {
-          dNo++;
-          const raw = salur ? (salur[sub.field]!=null ? String(salur[sub.field]) : '') : '';
-          const cat = salur
-            ? (grp.useTambahan ? (salur[grp.tambahan]||'')
-              : (salur[`catatan_${sub.field}`]||salur[`catatan_ts_py_${sub.field}`]||''))
-            : '';
-          pages += `<tr>${tdc(dNo)}${td(grp.aspek)}${td(sub.label)}${td(sub.acuan)}${tdc(raw)}${td(cat)}</tr>`;
+      // D. Fisik Penyaluran (hanya jika mode = 'penyaluran')
+      if (chvTahapMode === 'penyaluran') {
+        pages += secTitle('D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN');
+        pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('Aspek')}${th('Sub-Aspek yang Dinilai')}${th('Acuan Penilaian')}${th('Hasil','width:60pt;')}${th('Catatan Hasil Review')}</tr>`;
+        let dNo=0;
+        CHV_FISIK_SALUR.forEach(grp => {
+          pages += grpTr(grp.aspek, 6);
+          grp.subs.forEach(sub => {
+            dNo++;
+            const raw = salur ? (salur[sub.field]!=null ? String(salur[sub.field]) : '') : '';
+            const cat = salur
+              ? (grp.useTambahan ? (salur[grp.tambahan]||'')
+                : (salur[`catatan_${sub.field}`]||salur[`catatan_ts_py_${sub.field}`]||''))
+              : '';
+            pages += `<tr>${tdc(dNo)}${td(grp.aspek)}${td(sub.label)}${td(sub.acuan)}${tdc(raw)}${td(cat)}</tr>`;
+          });
+          pages += `<tr><td colspan="6" style="padding:6px 8px;border:1px solid #aaa;background:#FFF7E0;font-size:10pt;"><strong>Rekomendasi/Tindak Lanjut — ${grp.aspek}:</strong><div style="min-height:24pt;border-bottom:1px solid #999;margin-top:4pt;"></div></td></tr>`;
         });
-        pages += `<tr><td colspan="6" style="padding:6px 8px;border:1px solid #aaa;background:#FFF7E0;font-size:10pt;"><strong>Rekomendasi/Tindak Lanjut — ${grp.aspek}:</strong><div style="min-height:24pt;border-bottom:1px solid #999;margin-top:4pt;"></div></td></tr>`;
-      });
-      pages += `</table>`;
+        pages += `</table>`;
+      }
 
-      // E. Pasca
-      pages += secTitle('E. KONDISI PASCA PENYALURAN');
+      // D. Pasca (ditampilkan sebagai "D", hanya jika mode = 'pasca')
+      if (chvTahapMode === 'pasca') {
+        pages += secTitle('D. KONDISI PASCA PENYALURAN');
 
-      // E1
-      pages += `<p style="font-family:Times New Roman;font-size:11pt;font-weight:bold;margin:8pt 0 4pt 0;">E.1 Keterhunian Perumahan FLPP</p>`;
-      pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('No. Rumah')}${th('Tahun Akad')}${th('Status Huni')}${th('Pekerjaan')}${th('Penghasilan')}${th('Sticker KPR')}${th('Sertifikat')}${th('Jml Penghuni')}${th('Tahun Huni')}${th('Alih Fungsi')}</tr>`;
-      if (pasca.length) {
-        pasca.forEach((r,i)=>{ pages+=`<tr>${tdc(i+1)}${td(r.p3_nomor_rumah||'-')}${td(r.tahun_akad||r.tahun_huni||'-')}${td(r.status_huni||'-')}${td(r.kerja_penghuni||'-')}${td(r.gaji_penghuni||'-')}${td(r.sticker||'-')}${td(r.sertif||'-')}${tdc(r.penghuni||'-')}${td(r.tahun_huni||'-')}${td(r.fungsi||'-')}</tr>`; });
-      } else { pages += `<tr><td colspan="11" style="padding:6px;border:1px solid #aaa;text-align:center;color:#888;font-style:italic;">Belum ada data keterhunian</td></tr>`; }
-      pages += `</table>`;
+        // D1
+        pages += `<p style="font-family:Times New Roman;font-size:11pt;font-weight:bold;margin:8pt 0 4pt 0;">D.1 Keterhunian Perumahan FLPP</p>`;
+        pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('No. Rumah')}${th('Tahun Akad')}${th('Status Huni')}${th('Pekerjaan')}${th('Penghasilan')}${th('Sticker KPR')}${th('Sertifikat')}${th('Jml Penghuni')}${th('Tahun Huni')}${th('Alih Fungsi')}</tr>`;
+        if (pasca.length) {
+          pasca.forEach((r,i)=>{ pages+=`<tr>${tdc(i+1)}${td(r.p3_nomor_rumah||'-')}${td(r.tahun_akad||r.tahun_huni||'-')}${td(r.status_huni||'-')}${td(r.kerja_penghuni||'-')}${td(r.gaji_penghuni||'-')}${td(r.sticker||'-')}${td(r.sertif||'-')}${tdc(r.penghuni||'-')}${td(r.tahun_huni||'-')}${td(r.fungsi||'-')}</tr>`; });
+        } else { pages += `<tr><td colspan="11" style="padding:6px;border:1px solid #aaa;text-align:center;color:#888;font-style:italic;">Belum ada data keterhunian</td></tr>`; }
+        pages += `</table>`;
 
-      // E2
-      pages += `<p style="font-family:Times New Roman;font-size:11pt;font-weight:bold;margin:8pt 0 4pt 0;">E.2 Komponen Fisik Bangunan per Unit</p>`;
-      pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('No. Rumah')}${th('Lantai')}${th('Dinding')}${th('Atap')}${th('Plafond')}${th('Utilitas')}${th('Penghijauan')}</tr>`;
-      if (pasca.length) {
-        pasca.forEach((r,i)=>{
-          const util=[
-            'Air Bersih: '+(r.pf_util_air||'-')+(r.pf_util_air&&!/tidak/i.test(r.pf_util_air||'')?'  – '+(r.pf_util_air_kondisi||'-'):''),
-            'Listrik: '+(r.pf_util_listrik||'-')+(r.pf_util_listrik&&!/tidak/i.test(r.pf_util_listrik||'')?'  – '+(r.pf_util_listrik_kondisi||'-'):''),
-            'Sanitasi: '+(r.pf_util_sanitasi||'-')+(r.pf_util_sanitasi&&!/tidak/i.test(r.pf_util_sanitasi||'')?'  – '+(r.pf_util_sanitasi_kondisi||'-'):''),
-            'Fiber Optik: '+(r.pf_util_fiber||'-')+(r.pf_util_fiber&&!/tidak/i.test(r.pf_util_fiber||'')?'  – '+(r.pf_util_fiber_kondisi||'-'):''),
-            'Proteksi Kebakaran: '+(r.pf_util_kebakaran||'-')+(r.pf_util_kebakaran&&!/tidak/i.test(r.pf_util_kebakaran||'')?'  – '+(r.pf_util_kebakaran_kondisi||'-'):''),
-            'Air Limbah: '+(r.pf_util_airlimbah||'-')+(r.pf_util_airlimbah&&!/tidak/i.test(r.pf_util_airlimbah||'')?'  – '+(r.pf_util_airlimbah_kondisi||'-'):''),
-          ].join('\n');
-          pages+=`<tr>${tdc(i+1)}${td(r.p3_nomor_rumah||'-')}${td((r.pf_lantai_kondisi||'-')+' '+(r.pf_lantai_jenis||''))}${td((r.pf_dinding_kondisi||'-')+' '+(r.pf_dinding_jenis||''))}${td((r.pf_atap_kondisi||'-')+' '+(r.pf_atap_penutup||''))}${td(r.pf_atap_plafon||'-')}${td(util)}${td(r.py_hijau_kavling||r.pf_hijau||'-')}</tr>`;
-        });
-      } else { pages += `<tr><td colspan="8" style="padding:6px;border:1px solid #aaa;text-align:center;color:#888;font-style:italic;">Belum ada data komponen fisik</td></tr>`; }
-      pages += `</table>`;
+        // D2
+        pages += `<p style="font-family:Times New Roman;font-size:11pt;font-weight:bold;margin:8pt 0 4pt 0;">D.2 Komponen Fisik Bangunan per Unit</p>`;
+        pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('No. Rumah')}${th('Lantai')}${th('Dinding')}${th('Atap')}${th('Plafond')}${th('Utilitas')}${th('Penghijauan')}</tr>`;
+        if (pasca.length) {
+          pasca.forEach((r,i)=>{
+            const util=[
+              'Air Bersih: '+(r.pf_util_air||'-')+(r.pf_util_air&&!/tidak/i.test(r.pf_util_air||'')?'  – '+(r.pf_util_air_kondisi||'-'):''),
+              'Listrik: '+(r.pf_util_listrik||'-')+(r.pf_util_listrik&&!/tidak/i.test(r.pf_util_listrik||'')?'  – '+(r.pf_util_listrik_kondisi||'-'):''),
+              'Sanitasi: '+(r.pf_util_sanitasi||'-')+(r.pf_util_sanitasi&&!/tidak/i.test(r.pf_util_sanitasi||'')?'  – '+(r.pf_util_sanitasi_kondisi||'-'):''),
+              'Fiber Optik: '+(r.pf_util_fiber||'-')+(r.pf_util_fiber&&!/tidak/i.test(r.pf_util_fiber||'')?'  – '+(r.pf_util_fiber_kondisi||'-'):''),
+              'Proteksi Kebakaran: '+(r.pf_util_kebakaran||'-')+(r.pf_util_kebakaran&&!/tidak/i.test(r.pf_util_kebakaran||'')?'  – '+(r.pf_util_kebakaran_kondisi||'-'):''),
+              'Air Limbah: '+(r.pf_util_airlimbah||'-')+(r.pf_util_airlimbah&&!/tidak/i.test(r.pf_util_airlimbah||'')?'  – '+(r.pf_util_airlimbah_kondisi||'-'):''),
+            ].join('\n');
+            pages+=`<tr>${tdc(i+1)}${td(r.p3_nomor_rumah||'-')}${td((r.pf_lantai_kondisi||'-')+' '+(r.pf_lantai_jenis||''))}${td((r.pf_dinding_kondisi||'-')+' '+(r.pf_dinding_jenis||''))}${td((r.pf_atap_kondisi||'-')+' '+(r.pf_atap_penutup||''))}${td(r.pf_atap_plafon||'-')}${td(util)}${td(r.py_hijau_kavling||r.pf_hijau||'-')}</tr>`;
+          });
+        } else { pages += `<tr><td colspan="8" style="padding:6px;border:1px solid #aaa;text-align:center;color:#888;font-style:italic;">Belum ada data komponen fisik</td></tr>`; }
+        pages += `</table>`;
 
-      // E3
-      pages += `<p style="font-family:Times New Roman;font-size:11pt;font-weight:bold;margin:8pt 0 4pt 0;">E.3 Penilaian Penerima Manfaat</p>`;
-      pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('No. Rumah')}${th('Kemudahan Info KPR')}${th('Mengetahui Prog. PKP')}${th('Kemudahan Syarat')}${th('Kecepatan Proses')}${th('Masukan/Catatan')}</tr>`;
-      if (pasca.length) {
-        pasca.forEach((r,i)=>{ pages+=`<tr>${tdc(i+1)}${td(r.p3_nomor_rumah||'-')}${tdc(r.info_kpr||'-')}${tdc(r.tahu_pkp||'-')}${tdc(r.syarat_bank||'-')}${tdc(r.proses_bank||'-')}${td(r.catatan_tambahan_pf_4_0||r.catatan_tambahan_pf_5_0||'')}</tr>`; });
-      } else { pages += `<tr><td colspan="7" style="padding:6px;border:1px solid #aaa;text-align:center;color:#888;font-style:italic;">Belum ada data penilaian</td></tr>`; }
-      pages += `</table>`;
+        // D3
+        pages += `<p style="font-family:Times New Roman;font-size:11pt;font-weight:bold;margin:8pt 0 4pt 0;">D.3 Penilaian Penerima Manfaat</p>`;
+        pages += `<table style="${tblStyle}"><tr>${th('No','width:28px;text-align:center;')}${th('No. Rumah')}${th('Kemudahan Info KPR')}${th('Mengetahui Prog. PKP')}${th('Kemudahan Syarat')}${th('Kecepatan Proses')}${th('Masukan/Catatan')}</tr>`;
+        if (pasca.length) {
+          pasca.forEach((r,i)=>{ pages+=`<tr>${tdc(i+1)}${td(r.p3_nomor_rumah||'-')}${tdc(r.info_kpr||'-')}${tdc(r.tahu_pkp||'-')}${tdc(r.syarat_bank||'-')}${tdc(r.proses_bank||'-')}${td(r.catatan_tambahan_pf_4_0||r.catatan_tambahan_pf_5_0||'')}</tr>`; });
+        } else { pages += `<tr><td colspan="7" style="padding:6px;border:1px solid #aaa;text-align:center;color:#888;font-style:italic;">Belum ada data penilaian</td></tr>`; }
+        pages += `</table>`;
+      }
     });
 
     // ── Buat file .doc (HTML-as-Word, tanpa library eksternal) ───────────────
@@ -4069,117 +4093,121 @@ async function exportCHVExcel() {
       });
       addBlank();
 
-      // D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN
-      addSecTitle('D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN');
-      r = ws.addRow(['No','Aspek','Sub-Aspek yang Dinilai','Acuan Penilaian','Hasil','Catatan Hasil Review']);
-      ws.mergeCells(r.number, 6, r.number, NCOL);
-      styleTableHead(r);
-      let dNo = 0;
-      CHV_FISIK_SALUR.forEach(grp => {
-        r = ws.addRow([grp.aspek]);
+      // D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN (hanya jika mode = 'penyaluran')
+      if (chvTahapMode === 'penyaluran') {
+        addSecTitle('D. KONDISI FISIK BANGUNAN TAHAP PENYALURAN');
+        r = ws.addRow(['No','Aspek','Sub-Aspek yang Dinilai','Acuan Penilaian','Hasil','Catatan Hasil Review']);
+        ws.mergeCells(r.number, 6, r.number, NCOL);
+        styleTableHead(r);
+        let dNo = 0;
+        CHV_FISIK_SALUR.forEach(grp => {
+          r = ws.addRow([grp.aspek]);
+          ws.mergeCells(r.number, 1, r.number, NCOL);
+          styleGroupHead(r);
+          grp.subs.forEach(sub => {
+            dNo++;
+            const raw = salur ? (salur[sub.field] != null ? String(salur[sub.field]) : '') : '';
+            const cat = salur
+              ? (grp.useTambahan
+                ? (salur[grp.tambahan] || '')
+                : (salur[`catatan_${sub.field}`] || salur[`catatan_ts_py_${sub.field}`] || ''))
+              : '';
+            r = ws.addRow([dNo, grp.aspek, sub.label, sub.acuan, raw, cat]);
+            ws.mergeCells(r.number, 6, r.number, NCOL);
+            styleDataRow(r, [1,5]);
+          });
+          // baris Rekomendasi manual di akhir tiap aspek
+          r = ws.addRow([`Rekomendasi / Tindak Lanjut — ${grp.aspek} :`]);
+          ws.mergeCells(r.number, 1, r.number, NCOL);
+          r.eachCell({ includeEmpty:true }, c => {
+            c.font = { bold:true, color:{argb:COL.navyTx}, size:10, name:'Calibri' };
+            c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF7E0'} };
+            c.alignment = { vertical:'middle', wrapText:true };
+            c.border = allBorder;
+          });
+          r.height = 26;
+        });
+        addBlank();
+      }
+
+      // D. KONDISI PASCA PENYALURAN (ditampilkan sebagai "D", hanya jika mode = 'pasca')
+      if (chvTahapMode === 'pasca') {
+        addSecTitle('D. KONDISI PASCA PENYALURAN');
+
+        // D1 Keterhunian
+        r = ws.addRow(['D.1 Keterhunian Perumahan FLPP']);
         ws.mergeCells(r.number, 1, r.number, NCOL);
         styleGroupHead(r);
-        grp.subs.forEach(sub => {
-          dNo++;
-          const raw = salur ? (salur[sub.field] != null ? String(salur[sub.field]) : '') : '';
-          const cat = salur
-            ? (grp.useTambahan
-              ? (salur[grp.tambahan] || '')
-              : (salur[`catatan_${sub.field}`] || salur[`catatan_ts_py_${sub.field}`] || ''))
-            : '';
-          r = ws.addRow([dNo, grp.aspek, sub.label, sub.acuan, raw, cat]);
-          ws.mergeCells(r.number, 6, r.number, NCOL);
-          styleDataRow(r, [1,5]);
-        });
-        // baris Rekomendasi manual di akhir tiap aspek
-        r = ws.addRow([`Rekomendasi / Tindak Lanjut — ${grp.aspek} :`]);
-        ws.mergeCells(r.number, 1, r.number, NCOL);
-        r.eachCell({ includeEmpty:true }, c => {
-          c.font = { bold:true, color:{argb:COL.navyTx}, size:10, name:'Calibri' };
-          c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF7E0'} };
-          c.alignment = { vertical:'middle', wrapText:true };
-          c.border = allBorder;
-        });
-        r.height = 26;
-      });
-      addBlank();
+        r = ws.addRow(['No','No. Rumah','Tahun Akad','Status Huni','Pekerjaan','Penghasilan','Sticker KPR']);
+        styleTableHead(r);
+        if (pasca.length) {
+          pasca.forEach((p,i) => {
+            r = ws.addRow([
+              i+1, p.p3_nomor_rumah||'-', p.tahun_akad||p.tahun_huni||'-', p.status_huni||'-',
+              p.kerja_penghuni||'-', p.gaji_penghuni||'-', p.sticker||'-',
+            ]);
+            styleDataRow(r, [1,3,4]);
+          });
+        } else {
+          r = ws.addRow(['Belum ada data keterhunian']);
+          ws.mergeCells(r.number, 1, r.number, NCOL);
+          styleDataRow(r, []);
+        }
+        addBlank();
 
-      // E. KONDISI PASCA PENYALURAN
-      addSecTitle('E. KONDISI PASCA PENYALURAN');
-
-      // E1 Keterhunian
-      r = ws.addRow(['E.1 Keterhunian Perumahan FLPP']);
-      ws.mergeCells(r.number, 1, r.number, NCOL);
-      styleGroupHead(r);
-      r = ws.addRow(['No','No. Rumah','Tahun Akad','Status Huni','Pekerjaan','Penghasilan','Sticker KPR']);
-      styleTableHead(r);
-      if (pasca.length) {
-        pasca.forEach((p,i) => {
-          r = ws.addRow([
-            i+1, p.p3_nomor_rumah||'-', p.tahun_akad||p.tahun_huni||'-', p.status_huni||'-',
-            p.kerja_penghuni||'-', p.gaji_penghuni||'-', p.sticker||'-',
-          ]);
-          styleDataRow(r, [1,3,4]);
-        });
-      } else {
-        r = ws.addRow(['Belum ada data keterhunian']);
+        // D2 Komponen Fisik
+        r = ws.addRow(['D.2 Komponen Fisik Bangunan per Unit']);
         ws.mergeCells(r.number, 1, r.number, NCOL);
-        styleDataRow(r, []);
-      }
-      addBlank();
+        styleGroupHead(r);
+        r = ws.addRow(['No','No. Rumah','Lantai','Dinding','Atap','Plafond','Utilitas / Penghijauan']);
+        styleTableHead(r);
+        if (pasca.length) {
+          pasca.forEach((p,i) => {
+            const util = [
+              'Air Bersih: '+(p.pf_util_air||'-')+(p.pf_util_air&&!/tidak/i.test(p.pf_util_air||'') ? ' - '+(p.pf_util_air_kondisi||'-') : ''),
+              'Listrik: '+(p.pf_util_listrik||'-')+(p.pf_util_listrik&&!/tidak/i.test(p.pf_util_listrik||'') ? ' - '+(p.pf_util_listrik_kondisi||'-') : ''),
+              'Sanitasi: '+(p.pf_util_sanitasi||'-')+(p.pf_util_sanitasi&&!/tidak/i.test(p.pf_util_sanitasi||'') ? ' - '+(p.pf_util_sanitasi_kondisi||'-') : ''),
+              'Fiber Optik: '+(p.pf_util_fiber||'-')+(p.pf_util_fiber&&!/tidak/i.test(p.pf_util_fiber||'') ? ' - '+(p.pf_util_fiber_kondisi||'-') : ''),
+              'Proteksi Kebakaran: '+(p.pf_util_kebakaran||'-')+(p.pf_util_kebakaran&&!/tidak/i.test(p.pf_util_kebakaran||'') ? ' - '+(p.pf_util_kebakaran_kondisi||'-') : ''),
+              'Air Limbah: '+(p.pf_util_airlimbah||'-')+(p.pf_util_airlimbah&&!/tidak/i.test(p.pf_util_airlimbah||'') ? ' - '+(p.pf_util_airlimbah_kondisi||'-') : ''),
+              'Penghijauan: '+(p.py_hijau_kavling||p.pf_hijau||'-'),
+            ].join('\n');
+            r = ws.addRow([
+              i+1, p.p3_nomor_rumah||'-',
+              (p.pf_lantai_kondisi||'-')+' '+(p.pf_lantai_jenis||''),
+              (p.pf_dinding_kondisi||'-')+' '+(p.pf_dinding_jenis||''),
+              (p.pf_atap_kondisi||'-')+' '+(p.pf_atap_penutup||''),
+              p.pf_atap_plafon||'-',
+              util,
+            ]);
+            styleDataRow(r, [1]);
+          });
+        } else {
+          r = ws.addRow(['Belum ada data komponen fisik']);
+          ws.mergeCells(r.number, 1, r.number, NCOL);
+          styleDataRow(r, []);
+        }
+        addBlank();
 
-      // E2 Komponen Fisik
-      r = ws.addRow(['E.2 Komponen Fisik Bangunan per Unit']);
-      ws.mergeCells(r.number, 1, r.number, NCOL);
-      styleGroupHead(r);
-      r = ws.addRow(['No','No. Rumah','Lantai','Dinding','Atap','Plafond','Utilitas / Penghijauan']);
-      styleTableHead(r);
-      if (pasca.length) {
-        pasca.forEach((p,i) => {
-          const util = [
-            'Air Bersih: '+(p.pf_util_air||'-')+(p.pf_util_air&&!/tidak/i.test(p.pf_util_air||'') ? ' - '+(p.pf_util_air_kondisi||'-') : ''),
-            'Listrik: '+(p.pf_util_listrik||'-')+(p.pf_util_listrik&&!/tidak/i.test(p.pf_util_listrik||'') ? ' - '+(p.pf_util_listrik_kondisi||'-') : ''),
-            'Sanitasi: '+(p.pf_util_sanitasi||'-')+(p.pf_util_sanitasi&&!/tidak/i.test(p.pf_util_sanitasi||'') ? ' - '+(p.pf_util_sanitasi_kondisi||'-') : ''),
-            'Fiber Optik: '+(p.pf_util_fiber||'-')+(p.pf_util_fiber&&!/tidak/i.test(p.pf_util_fiber||'') ? ' - '+(p.pf_util_fiber_kondisi||'-') : ''),
-            'Proteksi Kebakaran: '+(p.pf_util_kebakaran||'-')+(p.pf_util_kebakaran&&!/tidak/i.test(p.pf_util_kebakaran||'') ? ' - '+(p.pf_util_kebakaran_kondisi||'-') : ''),
-            'Air Limbah: '+(p.pf_util_airlimbah||'-')+(p.pf_util_airlimbah&&!/tidak/i.test(p.pf_util_airlimbah||'') ? ' - '+(p.pf_util_airlimbah_kondisi||'-') : ''),
-            'Penghijauan: '+(p.py_hijau_kavling||p.pf_hijau||'-'),
-          ].join('\n');
-          r = ws.addRow([
-            i+1, p.p3_nomor_rumah||'-',
-            (p.pf_lantai_kondisi||'-')+' '+(p.pf_lantai_jenis||''),
-            (p.pf_dinding_kondisi||'-')+' '+(p.pf_dinding_jenis||''),
-            (p.pf_atap_kondisi||'-')+' '+(p.pf_atap_penutup||''),
-            p.pf_atap_plafon||'-',
-            util,
-          ]);
-          styleDataRow(r, [1]);
-        });
-      } else {
-        r = ws.addRow(['Belum ada data komponen fisik']);
+        // D3 Penilaian
+        r = ws.addRow(['D.3 Penilaian Penerima Manfaat']);
         ws.mergeCells(r.number, 1, r.number, NCOL);
-        styleDataRow(r, []);
-      }
-      addBlank();
-
-      // E3 Penilaian
-      r = ws.addRow(['E.3 Penilaian Penerima Manfaat']);
-      ws.mergeCells(r.number, 1, r.number, NCOL);
-      styleGroupHead(r);
-      r = ws.addRow(['No','No. Rumah','Kemudahan Info KPR','Mengetahui Prog. PKP','Kemudahan Syarat','Kecepatan Proses','Masukan/Catatan']);
-      styleTableHead(r);
-      if (pasca.length) {
-        pasca.forEach((p,i) => {
-          r = ws.addRow([
-            i+1, p.p3_nomor_rumah||'-', p.info_kpr||'-', p.tahu_pkp||'-',
-            p.syarat_bank||'-', p.proses_bank||'-', p.catatan_tambahan_pf_4_0||p.catatan_tambahan_pf_5_0||'',
-          ]);
-          styleDataRow(r, [1]);
-        });
-      } else {
-        r = ws.addRow(['Belum ada data penilaian']);
-        ws.mergeCells(r.number, 1, r.number, NCOL);
-        styleDataRow(r, []);
+        styleGroupHead(r);
+        r = ws.addRow(['No','No. Rumah','Kemudahan Info KPR','Mengetahui Prog. PKP','Kemudahan Syarat','Kecepatan Proses','Masukan/Catatan']);
+        styleTableHead(r);
+        if (pasca.length) {
+          pasca.forEach((p,i) => {
+            r = ws.addRow([
+              i+1, p.p3_nomor_rumah||'-', p.info_kpr||'-', p.tahu_pkp||'-',
+              p.syarat_bank||'-', p.proses_bank||'-', p.catatan_tambahan_pf_4_0||p.catatan_tambahan_pf_5_0||'',
+            ]);
+            styleDataRow(r, [1]);
+          });
+        } else {
+          r = ws.addRow(['Belum ada data penilaian']);
+          ws.mergeCells(r.number, 1, r.number, NCOL);
+          styleDataRow(r, []);
+        }
       }
     });
 
