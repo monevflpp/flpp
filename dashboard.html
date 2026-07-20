@@ -606,21 +606,15 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 
 
 <nav class="nav-bar">
-  <button class="nav-btn active" data-page="overview" onclick="showPage('overview',this)">📊 Ringkasan</button>
-  <button class="nav-btn" data-page="titik" onclick="showPage('titik',this)">📍 Titik Lokasi</button>
-  <button class="nav-btn" data-page="perumahan" onclick="showPage('perumahan',this)">🏘️ Perumahan</button>
-  <button class="nav-btn" data-page="verifikasi" onclick="showPage('verifikasi',this)">✅ Verifikasi</button>
-  <button class="nav-btn" data-page="psu" onclick="showPage('psu',this)">🌿 Kondisi PSU</button>
-  <button class="nav-btn" data-page="penyaluran" onclick="showPage('penyaluran',this)">🏗️ Penyaluran</button>
-  <button class="nav-btn" data-page="pasca" onclick="showPage('pasca',this)">👤 Pasca Penyaluran</button>
+  <button class="nav-btn active" data-page="titik" onclick="showPage('titik',this)">📍 Dashboard</button>
   <button class="nav-btn" data-page="beritaacara" onclick="showPage('beritaacara',this)">📝 Berita Acara</button>
-  <button class="nav-btn" data-page="chv" onclick="showPage('chv',this)">📋 CHV</button>
+  <button class="nav-btn" data-page="chv" onclick="showPage('chv',this)">📋 Laporan</button>
 </nav>
 
 <main class="main">
 
-<!-- ══ RINGKASAN ══ -->
-<div class="page active" id="page-overview">
+<!-- ══ RINGKASAN (tab dihapus dari navigasi, tetap dirender di background untuk data) ══ -->
+<div class="page" id="page-overview">
   <div class="kpi-strip" id="kpi-strip"></div>
   <div class="grid-2">
     <div class="card">
@@ -668,8 +662,8 @@ body.is-locked > *:not(#lock-screen){display:none !important}
   </div>
 </div>
 
-<!-- ══ TITIK LOKASI PERUMAHAN TERSURVEY ══ -->
-<div class="page" id="page-titik">
+<!-- ══ TITIK LOKASI PERUMAHAN TERSURVEY (kini tab "Dashboard") ══ -->
+<div class="page active" id="page-titik">
   <div class="sec-title">Titik Lokasi Perumahan Tersurvey</div>
 
   <div class="kpi-strip" id="titik-kpi-strip"></div>
