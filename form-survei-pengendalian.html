@@ -262,6 +262,19 @@
   .vd-doc-kosong{background:var(--gray-100);color:var(--gray-400)}
   .vd-doc-alasan{font-size:11.5px;color:var(--gray-600);margin-top:3px;font-style:italic}
   .vd-doc-row.vd-tidaksesuai{background:#FEF2F2;margin:0 -10px;padding:9px 10px;border-radius:8px}
+  .vd-doc-row{flex-wrap:wrap}
+  .vd-doc-preview{width:100%;margin-top:6px}
+  .vd-doc-thumb{display:inline-block;cursor:zoom-in;border-radius:8px;overflow:hidden;border:1.5px solid var(--gray-200);line-height:0}
+  .vd-doc-thumb img{width:72px;height:72px;object-fit:cover;display:block;transition:opacity .15s}
+  .vd-doc-thumb:hover img{opacity:.85}
+  .vd-doc-linkbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--white);color:var(--navy);font-size:11.5px;font-weight:700;text-decoration:none;cursor:pointer;transition:all .15s}
+  .vd-doc-linkbtn:hover{border-color:var(--navy);background:var(--gray-50)}
+  .vd-doc-nofile{font-size:11.5px;color:var(--gray-400);font-style:italic}
+  #docPreviewModal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:600}
+  #docPreviewModal.open{opacity:1;pointer-events:auto}
+  #docPreviewModal img{max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  #docPreviewModal .doc-preview-close{position:absolute;top:18px;right:22px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  #docPreviewModal .doc-preview-close:hover{background:rgba(255,255,255,.3)}
   .vd-section-catatan{margin-top:14px}
   .vd-section-catatan label{display:block;font-size:11.5px;font-weight:700;color:var(--gray-600);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:5px}
   .vd-section-catatan textarea{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);resize:vertical;min-height:50px}
@@ -301,6 +314,12 @@
       </button>
     </div>
   </div>
+</div>
+
+<!-- MODAL PREVIEW DOKUMEN/FOTO -->
+<div id="docPreviewModal">
+  <button type="button" class="doc-preview-close" id="docPreviewClose">✕</button>
+  <img id="docPreviewImg" src="" alt="Preview dokumen">
 </div>
 
 <!-- MODAL KONFIRMASI KIRIM DATA -->
@@ -2262,7 +2281,12 @@ function showToast(msg, isErr) {
     'legalitas_tanah_ada,legalitas_tanah_jenis,legalitas_tanah_jenis_lainnya,alasan_legalitas_tanah'.split(','));
   Object.keys(VD_TIPE_RUMAH_FIELDS).forEach(function(k){ VD_TIPE_RUMAH_FIELDS[k].forEach(function(g){ VD_KNOWN_KEYS=VD_KNOWN_KEYS.concat(g); }); });
   Object.keys(VD_STATUS_RUMAH_FIELDS).forEach(function(k){ VD_STATUS_RUMAH_FIELDS[k].forEach(function(p){ VD_KNOWN_KEYS.push(p[0]); }); });
-  for (var vd_d=1; vd_d<=11; vd_d++){ VD_KNOWN_KEYS.push('dok_ada_'+vd_d); VD_KNOWN_KEYS.push('alasan_dok_'+vd_d); }
+  for (var vd_d=1; vd_d<=11; vd_d++){
+    VD_KNOWN_KEYS.push('dok_ada_'+vd_d); VD_KNOWN_KEYS.push('alasan_dok_'+vd_d); VD_KNOWN_KEYS.push('dok_url_'+vd_d);
+    VD_KNOWN_KEYS.push('Foto: dok_'+vd_d); VD_KNOWN_KEYS.push('Foto: dok_ada_'+vd_d); VD_KNOWN_KEYS.push('Foto: dok_'+vd_d+'_foto');
+  }
+  VD_KNOWN_KEYS.push('legalitas_tanah_url');
+  VD_KNOWN_KEYS.push('Foto: legalitas_tanah'); VD_KNOWN_KEYS.push('Foto: legalitas_tanah_ada'); VD_KNOWN_KEYS.push('Foto: legalitas_tanah_foto');
 
   var vdAllRows = [];
   var vdSelectedRow = null;
@@ -2310,6 +2334,68 @@ function showToast(msg, isErr) {
   }
 
   // ---------- Checkbox checklist khusus baris dokumen (doc-row) ----------
+  // ---------- Preview dokumen/foto asli dari pengembang ----------
+  function vdToDirectUrl(url){
+    if (!url) return '';
+    url = String(url).trim();
+    var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m && m[1] && /drive\.google\.com/.test(url)) {
+      return 'https://drive.google.com/uc?export=view&id=' + m[1];
+    }
+    return url;
+  }
+  function vdIsImageUrl(url){
+    return /\.(jpe?g|png|gif|webp|bmp)(\?|$)/i.test(url) || (/drive\.google\.com\/uc\?export=view/.test(url));
+  }
+  function vdFirstVal(row, keys){
+    for (var i=0;i<keys.length;i++){
+      if (row[keys[i]]) return row[keys[i]];
+    }
+    return '';
+  }
+  function vdDocPreview(rawUrl){
+    var wrap = el('div',{cls:'vd-doc-preview'});
+    var url = vdToDirectUrl(rawUrl);
+    if (!url) {
+      wrap.appendChild(el('span',{cls:'vd-doc-nofile',text:'Belum ada file diupload pengembang'}));
+      return wrap;
+    }
+    if (vdIsImageUrl(url)) {
+      var thumb = el('div',{cls:'vd-doc-thumb'});
+      var img = el('img'); img.src = url; img.loading = 'lazy';
+      img.onerror = function(){
+        thumb.remove();
+        var link = el('a',{cls:'vd-doc-linkbtn',text:'📄 Lihat Dokumen'});
+        link.href = url; link.target = '_blank'; link.rel = 'noopener';
+        wrap.appendChild(link);
+      };
+      thumb.appendChild(img);
+      thumb.addEventListener('click', function(){ openDocPreviewModal(url); });
+      wrap.appendChild(thumb);
+    } else {
+      var link2 = el('a',{cls:'vd-doc-linkbtn',text:'📄 Lihat Dokumen'});
+      link2.href = url; link2.target = '_blank'; link2.rel = 'noopener';
+      wrap.appendChild(link2);
+    }
+    return wrap;
+  }
+  function openDocPreviewModal(url){
+    var modal = document.getElementById('docPreviewModal');
+    var img = document.getElementById('docPreviewImg');
+    if (!modal || !img) return;
+    img.src = url;
+    modal.classList.add('open');
+  }
+  (function(){
+    var modal = document.getElementById('docPreviewModal');
+    var closeBtn = document.getElementById('docPreviewClose');
+    if (!modal) return;
+    function closeIt(){ modal.classList.remove('open'); }
+    if (closeBtn) closeBtn.addEventListener('click', closeIt);
+    modal.addEventListener('click', function(e){ if (e.target === modal) closeIt(); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeIt(); });
+  })();
+
   function vdAttachDocChecklist(rowEl, fieldKey){
     var checked = vdChecklistState[fieldKey] !== false; // default: Sesuai (dicentang)
     var wrap = el('label',{style:'display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;font-family:\'Plus Jakarta Sans\',sans-serif;cursor:pointer;color:var(--gray-600);white-space:nowrap'});
@@ -2521,6 +2607,9 @@ function showToast(msg, isErr) {
     }
     legRow.appendChild(legMain);
     vdAttachDocChecklist(legRow, 'legalitas_tanah_ada');
+    if (legAda === 'Ada') legRow.appendChild(vdDocPreview(vdFirstVal(row, [
+      'Foto: legalitas_tanah', 'Foto: legalitas_tanah_ada', 'Foto: legalitas_tanah_foto', 'legalitas_tanah_url'
+    ])));
     dokBox.appendChild(legRow);
     if (legAda==='Tidak Ada' && row['alasan_legalitas_tanah']){
       dokBox.appendChild(el('div',{cls:'vd-doc-alasan',text:'Alasan: '+row['alasan_legalitas_tanah']}));
@@ -2536,6 +2625,9 @@ function showToast(msg, isErr) {
       else rMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-kosong',text:'Belum diisi'}));
       r.appendChild(rMain);
       vdAttachDocChecklist(r, 'dok_ada_'+i);
+      if (ada === 'Ada') r.appendChild(vdDocPreview(vdFirstVal(row, [
+        'Foto: dok_'+i, 'Foto: dok_ada_'+i, 'Foto: dok_'+i+'_foto', 'dok_url_'+i
+      ])));
       dokBox.appendChild(r);
       if (ada==='Tidak Ada' && row['alasan_dok_'+i]){
         dokBox.appendChild(el('div',{cls:'vd-doc-alasan',text:'Alasan: '+row['alasan_dok_'+i]}));
