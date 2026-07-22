@@ -260,6 +260,19 @@ tr:hover td{background:var(--g50)}
 .ba-ttd-input-row input{padding:5px 8px;border:1.5px solid var(--g200);border-radius:8px;font-family:inherit;font-size:11px;color:var(--g800);background:var(--white);outline:none;width:100%}
 .ba-ttd-input-row input:focus{border-color:var(--navy2)}
 .ba-ttd-input-row input::placeholder{color:var(--g400);font-size:10px}
+.ba-stage-toggle{display:flex;gap:8px;margin-bottom:2px}
+.ba-stage-btn{flex:1;padding:10px 8px;border:1.5px solid var(--g200);border-radius:10px;background:var(--white);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;color:var(--g600);text-align:center;transition:all .15s;line-height:1.3}
+.ba-stage-btn:hover{border-color:var(--navy2)}
+.ba-stage-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.ba-stage-pasca{display:none}
+.titik-stage-toggle{display:flex;gap:8px;margin-bottom:14px}
+.titik-stage-btn{flex:1;padding:11px 14px;border:1.5px solid var(--g200);border-radius:10px;background:var(--white);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--g600);text-align:center;transition:all .15s}
+.titik-stage-btn:hover{border-color:var(--navy2)}
+.titik-stage-btn.active{color:#fff;border-color:transparent}
+.titik-stage-btn.active[data-stage="semua"]{background:var(--navy)}
+.titik-stage-btn.active[data-stage="penyaluran"]{background:var(--teal)}
+.titik-stage-btn.active[data-stage="pasca"]{background:var(--amber)}
+.titik-legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
 
 @media print{
   body *{visibility:hidden}
@@ -668,10 +681,20 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 
   <div class="kpi-strip" id="titik-kpi-strip"></div>
 
+  <div class="titik-stage-toggle">
+    <button type="button" class="titik-stage-btn active" data-stage="semua" onclick="titikSetStage('semua',this)">🗺️ Semua Tahap</button>
+    <button type="button" class="titik-stage-btn" data-stage="penyaluran" onclick="titikSetStage('penyaluran',this)">🏗️ Tahap Penyaluran</button>
+    <button type="button" class="titik-stage-btn" data-stage="pasca" onclick="titikSetStage('pasca',this)">👤 Tahap Pasca Penyaluran</button>
+  </div>
+
   <div class="titik-map-wrap">
     <div id="titik-map"></div>
-    <div class="titik-legend">
-      <span><span class="titik-dot"></span><b id="titik-count-map">0</b> titik terpetakan</span>
+    <div class="titik-legend" id="titik-legend">
+      <span id="tlg-penyaluran"><span class="titik-legend-dot" style="background:var(--teal)"></span>Tahap Penyaluran</span>
+      <span id="tlg-pasca"><span class="titik-legend-dot" style="background:var(--amber)"></span>Tahap Pasca Penyaluran</span>
+      <span id="tlg-kedua"><span class="titik-legend-dot" style="background:var(--green)"></span>Kedua Tahap</span>
+      <span id="tlg-belum"><span class="titik-legend-dot" style="background:var(--g400)"></span>Belum Disurvei</span>
+      <span><b id="titik-count-map">0</b> titik terpetakan</span>
       <span id="titik-count-nokoord"></span>
     </div>
   </div>
@@ -923,6 +946,15 @@ body.is-locked > *:not(#lock-screen){display:none !important}
     <!-- SIDEBAR FORM -->
     <div class="ba-sidebar card" style="padding:20px">
 
+      <!-- Pilih Tahap -->
+      <div class="ba-form-section">
+        <h4>🗂️ Tahap Berita Acara</h4>
+        <div class="ba-stage-toggle">
+          <button type="button" class="ba-stage-btn active" data-stage="penyaluran" onclick="baSetStage('penyaluran',this)">🏗️ Tahap<br>Penyaluran</button>
+          <button type="button" class="ba-stage-btn" data-stage="pasca" onclick="baSetStage('pasca',this)">👤 Tahap Pasca<br>Penyaluran</button>
+        </div>
+      </div>
+
       <!-- Pilih Perumahan -->
       <div class="ba-form-section">
         <h4>📌 Pilih Perumahan</h4>
@@ -967,10 +999,10 @@ body.is-locked > *:not(#lock-screen){display:none !important}
         <h4>📋 Keterangan Kondisi</h4>
         <div class="ba-field"><label>Kondisi Dokumen Data Dukung</label><textarea id="ba-ket-dok" placeholder="Misal: Dokumen lengkap dan sesuai, terdapat catatan pada..."></textarea></div>
         <div class="ba-field"><label>Kondisi PSU</label><textarea id="ba-ket-psu" placeholder="Misal: Jalan dan drainase dalam kondisi baik..."></textarea></div>
-        <div class="ba-field"><label>Jml Unit Penyaluran Diperiksa</label><input type="text" id="ba-unit-salur" placeholder="5 (20)"></div>
-        <div class="ba-field"><label>Kondisi Fisik Penyaluran</label><textarea id="ba-ket-salur" placeholder="Misal: Pondasi sesuai standar, sloof dan kolom baik..."></textarea></div>
-        <div class="ba-field"><label>Jml Unit Pasca Diperiksa</label><input type="text" id="ba-unit-pasca" placeholder="5 (25)"></div>
-        <div class="ba-field"><label>Kondisi Fisik Pasca Penyaluran</label><textarea id="ba-ket-pasca" placeholder="Misal: Kondisi bangunan umumnya baik, status hunian..."></textarea></div>
+        <div class="ba-field ba-stage-salur"><label>Jml Unit Penyaluran Diperiksa</label><input type="text" id="ba-unit-salur" placeholder="5 (20)"></div>
+        <div class="ba-field ba-stage-salur"><label>Kondisi Fisik Penyaluran</label><textarea id="ba-ket-salur" placeholder="Misal: Pondasi sesuai standar, sloof dan kolom baik..."></textarea></div>
+        <div class="ba-field ba-stage-pasca"><label>Jml Unit Pasca Diperiksa</label><input type="text" id="ba-unit-pasca" placeholder="5 (25)"></div>
+        <div class="ba-field ba-stage-pasca"><label>Kondisi Fisik Pasca Penyaluran</label><textarea id="ba-ket-pasca" placeholder="Misal: Kondisi bangunan umumnya baik, status hunian..."></textarea></div>
       </div>
 
       <!-- Rekomendasi -->
@@ -1286,6 +1318,20 @@ function renderPerumahan() {
 // TITIK LOKASI PERUMAHAN TERSURVEY
 // ══════════════════════════════════════════════════════
 let titikMap = null, titikMarkersLayer = null;
+let titikStage = 'semua';
+
+function titikSetStage(stage, btn) {
+  titikStage = stage;
+  document.querySelectorAll('.titik-stage-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTitikLokasi();
+}
+
+function titikStageStatus(r) {
+  const hasSalur = DB.salur.some(s => (r.t1_id_sikumbang && s.p2_id_sikumbang===r.t1_id_sikumbang) || (r.t1_nama_perumahan && s.p2_nama_perumahan===r.t1_nama_perumahan));
+  const hasPasca = DB.pasca.some(s => (r.t1_id_sikumbang && s.p3_id_sikumbang===r.t1_id_sikumbang) || (r.t1_nama_perumahan && s.p3_nama_perumahan===r.t1_nama_perumahan));
+  return { hasSalur, hasPasca };
+}
 
 // Menerima berbagai format: "-6.123, 106.456" / "-6.123,106.456" / link Google Maps
 function parseKoordinat(str) {
@@ -1365,6 +1411,8 @@ function renderTitikLokasi() {
   if (provF) data = data.filter(r => (r.t1_alamat||'').split(',')[0]?.trim() === provF);
   if (kabF)  data = data.filter(r => (r.t1_alamat||'').split(',')[1]?.trim() === kabF);
   if (perF)  data = data.filter(r => r.t1_nama_perumahan === perF);
+  if (titikStage === 'penyaluran') data = data.filter(r => titikStageStatus(r).hasSalur);
+  else if (titikStage === 'pasca') data = data.filter(r => titikStageStatus(r).hasPasca);
 
   // ── KPI: jumlah sudah tersurvei ──
   const provSet = new Set(data.map(r => (r.t1_alamat||'').split(',')[0]?.trim()).filter(Boolean));
@@ -1400,6 +1448,13 @@ function renderTitikLokasi() {
     }).join('');
   }
 
+  // ── Legend toggle sesuai tahap terpilih ──
+  const showEl = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
+  showEl('tlg-penyaluran', titikStage !== 'pasca');
+  showEl('tlg-pasca', titikStage !== 'penyaluran');
+  showEl('tlg-kedua', titikStage === 'semua');
+  showEl('tlg-belum', titikStage === 'semua');
+
   // ── Peta ──
   if (titikMarkersLayer) titikMarkersLayer.clearLayers();
   let mapped = 0, unmapped = 0;
@@ -1411,14 +1466,22 @@ function renderTitikLokasi() {
     bounds.push([coord.lat, coord.lng]);
     const parts = (r.t1_alamat||'').split(',').map(s => s.trim());
     const prov = parts[0] || '-', kab = parts[1] || '-';
+    const { hasSalur, hasPasca } = titikStageStatus(r);
+    let dotColor = '#9A9280', stageLabel = 'Belum Disurvei';
+    if (titikStage === 'penyaluran') { dotColor = '#1A8FA5'; stageLabel = 'Tahap Penyaluran'; }
+    else if (titikStage === 'pasca') { dotColor = '#D97706'; stageLabel = 'Tahap Pasca Penyaluran'; }
+    else if (hasSalur && hasPasca) { dotColor = '#059669'; stageLabel = 'Kedua Tahap'; }
+    else if (hasSalur) { dotColor = '#1A8FA5'; stageLabel = 'Tahap Penyaluran'; }
+    else if (hasPasca) { dotColor = '#D97706'; stageLabel = 'Tahap Pasca Penyaluran'; }
     const marker = L.circleMarker([coord.lat, coord.lng], {
-      radius: 7, weight: 2, color: '#1A8FA5', fillColor: '#0B3D52', fillOpacity: .85
+      radius: 7, weight: 2, color: dotColor, fillColor: dotColor, fillOpacity: .85
     });
     marker.bindPopup(`
       <div class="titik-popup-title">${v(r.t1_nama_perumahan)}</div>
       <div class="titik-popup-row">🏗️ ${v(r.t1_nama_pt)}</div>
       <div class="titik-popup-row">📍 ${kab}, ${prov}</div>
       <div class="titik-popup-row">📅 Survey: ${fmtTglSurvey(getTglSurveyObj(r))}</div>
+      <div class="titik-popup-row">🏷️ Status: ${stageLabel}</div>
     `);
     if (titikMarkersLayer) marker.addTo(titikMarkersLayer);
   });
@@ -2318,6 +2381,17 @@ const SALUR_BA = ['Pondasi','Sloof','Kolom','Ring Balok','Rangka Atap','Penutup 
 const PASCA_BA_FISIK = ['Atap','Lantai','Dinding','Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)','Ketentuan Rumah Layak Huni'];
 const PASCA_BA_HUNI  = ['Status Penghunian','Fungsi Bangunan'];
 
+let baStage = 'penyaluran';
+function baSetStage(stage, btn) {
+  baStage = stage;
+  document.querySelectorAll('.ba-stage-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else { const b2 = document.querySelector(`.ba-stage-btn[data-stage="${stage}"]`); if (b2) b2.classList.add('active'); }
+  document.querySelectorAll('.ba-stage-salur').forEach(el => el.style.display = stage === 'penyaluran' ? '' : 'none');
+  document.querySelectorAll('.ba-stage-pasca').forEach(el => el.style.display = stage === 'pasca' ? '' : 'none');
+  baRenderPreview();
+}
+
 function baOnPerumahanChange() {
   const sel = document.getElementById('ba-sel-perumahan');
   const idx = parseInt(sel.value);
@@ -2397,6 +2471,7 @@ function baGetDokCondisi(perIdx) {
 
   // Dokumen ada/kondisi
   const dokKet = {};
+  const dokKetNote = {};
   if (vfy) {
     DOK_BA.forEach((grp,gi) => {
       let offset = 0; DOK_BA.slice(0,gi).forEach(g2=>offset+=g2.items.length);
@@ -2405,12 +2480,14 @@ function baGetDokCondisi(perIdx) {
         const ada = vfy[`dok_ada_${idx}`]||'';
         const sesuai = vfy[`dok_sesuai_${idx}`]||'';
         dokKet[item] = ada && sesuai ? `${ada}, ${sesuai}` : (ada||sesuai||'');
+        dokKetNote[item] = vfy[`catatan_dok_sesuai_${idx}`] || '';
       });
     });
   }
 
   // PSU kondisi
   const psuKet = {};
+  const psuKetNote = {};
   if (psu) {
     psuKet['Jaringan Jalan']     = psu.psu_k_0_0 || '';
     psuKet['Drainase']           = psu.psu_k_1_0 || '';
@@ -2418,10 +2495,17 @@ function baGetDokCondisi(perIdx) {
     psuKet['Persampahan']        = psu.psu_k_4_0 || '';
     psuKet['Penerangan Jalan']   = psu.psu_k_6_0 || '';
     psuKet['PSU Lainnya']        = '';
+    psuKetNote['Jaringan Jalan']     = psu.ket_psu_0_0 || '';
+    psuKetNote['Drainase']           = psu.ket_psu_1_0 || '';
+    psuKetNote['Penyediaan Air Bersih'] = psu.ket_psu_2_0 || '';
+    psuKetNote['Persampahan']        = psu.ket_psu_4_0 || '';
+    psuKetNote['Penerangan Jalan']   = psu.ket_psu_6_0 || '';
+    psuKetNote['PSU Lainnya']        = '';
   }
 
   // Salur kondisi
   const salKet = {};
+  const salKetNote = {};
   if (sal) {
     const sesuaiCount = f => (sal[f]==='Sesuai'?'Sesuai':'Tidak Sesuai');
     salKet['Pondasi']          = `${sal.py_pondasi_jenis||''} — Mortar: ${sesuaiCount('py_pondasi_mortar')}`;
@@ -2435,15 +2519,27 @@ function baGetDokCondisi(perIdx) {
     salKet['Ketentuan Rumah Layak Huni'] = sal.py_rlh_luas==='Memenuhi'?'Memenuhi':'Perlu perhatian';
     salKet['Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)'] =
       `Air:${sal.py_util_air||'-'}, Listrik:${sal.py_util_listrik||'-'}, Sanitasi:${sal.py_util_sanitasi||'-'}`;
+    salKetNote['Pondasi']          = sal.catatan_tambahan_py_1_0 || '';
+    salKetNote['Sloof']            = sal.catatan_tambahan_py_2_0 || '';
+    salKetNote['Kolom']            = sal.catatan_tambahan_py_3_0 || '';
+    salKetNote['Ring Balok']       = sal.catatan_tambahan_py_4_0 || '';
+    salKetNote['Rangka Atap']      = sal.catatan_tambahan_py_5_0 || '';
+    salKetNote['Penutup Atap & Plafon'] = sal.catatan_tambahan_py_6_0 || '';
+    salKetNote['Lantai']           = sal.catatan_tambahan_py_7_0 || '';
+    salKetNote['Dinding']          = sal.catatan_tambahan_py_8_0 || '';
+    salKetNote['Ketentuan Rumah Layak Huni'] = sal.catatan_tambahan_py_9_0 || '';
+    salKetNote['Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)'] = sal.catatan_tambahan_py_10_0 || '';
   }
 
   // Pasca kondisi (rata-rata dari semua unit)
   const pasKet = {};
+  const pasKetNote = {};
   if (pas.length) {
     const kondisiMaj = field => {
       const c = {}; pas.forEach(r=>{ const v=r[field]||''; if(v) c[v]=(c[v]||0)+1; });
       return Object.entries(c).sort((a,b)=>b[1]-a[1])[0]?.[0] || '';
     };
+    const firstNote = field => (pas.map(r=>r[field]).filter(Boolean)[0] || '');
     pasKet['Atap']    = kondisiMaj('pf_atap_kondisi');
     pasKet['Lantai']  = kondisiMaj('pf_lantai_kondisi');
     pasKet['Dinding'] = kondisiMaj('pf_dinding_kondisi');
@@ -2452,26 +2548,65 @@ function baGetDokCondisi(perIdx) {
     pasKet['Ketentuan Rumah Layak Huni'] = pas.filter(r=>/memenuhi/i.test(r.pf_rlh_luas||'')).length+'/'+pas.length+' memenuhi luas';
     pasKet['Status Penghunian'] = pas.filter(r=>r.status_huni==='Dihuni Sendiri').length+'/'+pas.length+' dihuni sendiri';
     pasKet['Fungsi Bangunan']   = pas.filter(r=>r.fungsi==='Ya').length > 0 ? 'Terdapat alih fungsi' : 'Tidak ada alih fungsi';
+
+    pasKetNote['Lantai']  = firstNote('catatan_tambahan_pf_4_0');
+    pasKetNote['Dinding'] = firstNote('catatan_tambahan_pf_5_0');
+    pasKetNote['Atap']    = firstNote('catatan_tambahan_pf_6_0');
+    pasKetNote['Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)'] = firstNote('catatan_tambahan_pf_8_0');
+    pasKetNote['Ketentuan Rumah Layak Huni'] = firstNote('catatan_tambahan_pf_9_0');
+    pasKetNote['Status Penghunian'] = firstNote('masukan_saran');
+    pasKetNote['Fungsi Bangunan']   = '';
   }
 
-  return { dokKet, psuKet, salKet, pasKet };
+  return { dokKet, dokKetNote, psuKet, psuKetNote, salKet, salKetNote, pasKet, pasKetNote };
 }
 
 function baRenderPreview() {
   const d = baGetFormData();
   const perIdx = parseInt(document.getElementById('ba-sel-perumahan')?.value);
   const cond = baGetDokCondisi(perIdx);
+  const stageLabel = baStage === 'penyaluran' ? 'TAHAP PENYALURAN' : 'TAHAP PASCA PENYALURAN';
 
   const tglTTD = d.tanggal_ttd ? (() => {
     const dt = new Date(d.tanggal_ttd);
     return `${dt.getDate()} ${BULAN_ID[dt.getMonth()]} ${dt.getFullYear()}`;
   })() : '___________';
 
+  const sectionFisik = baStage === 'penyaluran' ? `
+  <!-- 3. PENYALURAN -->
+  <div class="ba-section-title">3. Kondisi Fisik Bangunan Rumah (Tahap Penyaluran)</div>
+  <p style="font-size:11px;margin-bottom:6px">Dalam kegiatan tinjauan lapangan ini dilakukan pemeriksaan terhadap <strong>${d.unit_salur||'______ (__)' }</strong> unit rumah penerima KPR FLPP untuk mengetahui kondisi penyaluran.</p>
+  <p style="font-size:11px;margin-bottom:6px">Secara umum kondisi fisik bangunan rumah yang dicek pada Tahap Penyaluran adalah sebagai berikut:</p>
+  <table class="ba-tbl">
+    <tr><th style="width:30%">Komponen Fisik Bangunan Rumah</th><th style="width:25%">Kondisi</th><th>Keterangan</th></tr>
+    ${SALUR_BA.map(item => `<tr><td>${item}</td><td>${cond.salKet?.[item]||''}</td><td>${cond.salKetNote?.[item]||''}</td></tr>`).join('')}
+  </table>
+  <div class="ba-catatan">
+    <div style="font-size:11px;margin-bottom:4px">Catatan/Temuan:</div>
+    ${d.ket_salur ? `<div style="font-size:11px">${d.ket_salur}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
+  </div>` : `
+  <!-- 3. PASCA -->
+  <div class="ba-section-title">3. Kondisi Fisik Bangunan dan Pemanfaatan/Penghunian Rumah (Tahap Pasca Penyaluran)</div>
+  <p style="font-size:11px;margin-bottom:6px">Dalam kegiatan tinjauan lapangan ini dilakukan pemeriksaan terhadap <strong>${d.unit_pasca||'______ (__)'}</strong> unit rumah penerima KPR FLPP untuk mengetahui kondisi pasca penyaluran.</p>
+  <p style="font-size:11px;margin-bottom:6px">Secara umum kondisi fisik bangunan dan pemanfaatan/penghunian rumah yang dicek pada Tahap Pasca Penyaluran adalah sebagai berikut:</p>
+  <table class="ba-tbl">
+    <tr><th style="width:30%">Komponen Fisik Bangunan Rumah</th><th style="width:25%">Kondisi</th><th>Keterangan</th></tr>
+    <tr class="hdr-row"><td colspan="3">Kondisi Fisik Bangunan Rumah</td></tr>
+    ${PASCA_BA_FISIK.map(item => `<tr><td>${item}</td><td>${cond.pasKet?.[item]||''}</td><td>${cond.pasKetNote?.[item]||''}</td></tr>`).join('')}
+    <tr class="hdr-row"><td colspan="3">Kondisi Pemanfaatan/Penghunian Rumah</td></tr>
+    ${PASCA_BA_HUNI.map(item => `<tr><td>${item}</td><td>${cond.pasKet?.[item]||''}</td><td>${cond.pasKetNote?.[item]||''}</td></tr>`).join('')}
+  </table>
+  <div class="ba-catatan">
+    <div style="font-size:11px;margin-bottom:4px">Catatan/Temuan:</div>
+    ${d.ket_pasca ? `<div style="font-size:11px">${d.ket_pasca}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
+  </div>`;
+
   let html = `
   <div class="ba-center">
     <div class="judul"><strong>BERITA ACARA</strong></div>
     <div class="sub"><strong>HASIL TINJAUAN LAPANGAN PEMANTAUAN DAN EVALUASI PELAKSANAAN PENYALURAN KREDIT PEMILIKAN RUMAH<br>(KPR) FASILITAS LIKUIDITAS PEMBIAYAAN PERUMAHAN (FLPP)</strong></div>
     <div class="lokasi"><strong>DI LINGKUNGAN DIREKTORAT JENDERAL PERUMAHAN PERDESAAN</strong></div>
+    <div class="lokasi" style="margin-top:2px"><strong>${stageLabel}</strong></div>
   </div>
 
   <div class="ba-opening">
@@ -2491,10 +2626,10 @@ function baRenderPreview() {
   <div class="ba-section-title">1. Data Dukung/Dokumen Perumahan</div>
   <p style="font-size:11px;margin-bottom:6px">Secara umum kondisi dokumen data dukung perumahan adalah sebagai berikut:</p>
   <table class="ba-tbl">
-    <tr><th style="width:55%">Data Dukung/Dokumen</th><th>Keterangan Kondisi</th></tr>
+    <tr><th style="width:40%">Data Dukung/Dokumen</th><th style="width:20%">Kondisi</th><th>Keterangan</th></tr>
     ${DOK_BA.map(grp => `
-      <tr class="hdr-row"><td colspan="2">${grp.tahap}</td></tr>
-      ${grp.items.map(item => `<tr><td>${item}</td><td>${cond.dokKet?.[item]||''}</td></tr>`).join('')}
+      <tr class="hdr-row"><td colspan="3">${grp.tahap}</td></tr>
+      ${grp.items.map(item => `<tr><td>${item}</td><td>${cond.dokKet?.[item]||''}</td><td>${cond.dokKetNote?.[item]||''}</td></tr>`).join('')}
     `).join('')}
   </table>
   <div class="ba-catatan">
@@ -2506,42 +2641,14 @@ function baRenderPreview() {
   <div class="ba-section-title">2. Kondisi Prasarana, Sarana, dan Utilitas Umum (PSU) Perumahan</div>
   <p style="font-size:11px;margin-bottom:6px">Secara umum kondisi prasarana, sarana, dan utilitas umum adalah sebagai berikut:</p>
   <table class="ba-tbl">
-    <tr><th style="width:40%">Komponen PSU</th><th>Keterangan Kondisi</th></tr>
-    ${PSU_BA.map(item => `<tr><td>${item}</td><td>${cond.psuKet?.[item]||''}</td></tr>`).join('')}
+    <tr><th style="width:30%">Komponen PSU</th><th style="width:20%">Kondisi</th><th>Keterangan</th></tr>
+    ${PSU_BA.map(item => `<tr><td>${item}</td><td>${cond.psuKet?.[item]||''}</td><td>${cond.psuKetNote?.[item]||''}</td></tr>`).join('')}
   </table>
   <div class="ba-catatan">
     <div style="font-size:11px;margin-bottom:4px">Catatan/Temuan:</div>
     ${d.ket_psu ? `<div style="font-size:11px">${d.ket_psu}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
   </div>
-
-  <!-- 3. PENYALURAN -->
-  <div class="ba-section-title">3. Kondisi Fisik Bangunan Rumah (Tahap Penyaluran)</div>
-  <p style="font-size:11px;margin-bottom:6px">Dalam kegiatan tinjauan lapangan ini dilakukan pemeriksaan terhadap <strong>${d.unit_salur||'______ (__)' }</strong> unit rumah penerima KPR FLPP untuk mengetahui kondisi pasca penyaluran.</p>
-  <p style="font-size:11px;margin-bottom:6px">Secara umum kondisi fisik bangunan rumah yang dicek pada Tahap Penyaluran adalah sebagai berikut:</p>
-  <table class="ba-tbl">
-    <tr><th style="width:40%">Komponen Fisik Bangunan Rumah</th><th>Keterangan Kondisi</th></tr>
-    ${SALUR_BA.map(item => `<tr><td>${item}</td><td>${cond.salKet?.[item]||''}</td></tr>`).join('')}
-  </table>
-  <div class="ba-catatan">
-    <div style="font-size:11px;margin-bottom:4px">Catatan/Temuan:</div>
-    ${d.ket_salur ? `<div style="font-size:11px">${d.ket_salur}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
-  </div>
-
-  <!-- 4. PASCA -->
-  <div class="ba-section-title">4. Kondisi Fisik Bangunan dan Pemanfaatan/Penghunian Rumah (Tahap Pasca Penyaluran)</div>
-  <p style="font-size:11px;margin-bottom:6px">Dalam kegiatan tinjauan lapangan ini dilakukan pemeriksaan terhadap <strong>${d.unit_pasca||'______ (__)'}</strong> unit rumah penerima KPR FLPP untuk mengetahui kondisi pasca penyaluran.</p>
-  <p style="font-size:11px;margin-bottom:6px">Secara umum kondisi fisik bangunan dan pemanfaatan/penghunian rumah yang dicek pada Tahap Pasca Penyaluran adalah sebagai berikut:</p>
-  <table class="ba-tbl">
-    <tr><th style="width:40%">Komponen Fisik Bangunan Rumah</th><th>Keterangan Kondisi</th></tr>
-    <tr class="hdr-row"><td colspan="2">Kondisi Fisik Bangunan Rumah</td></tr>
-    ${PASCA_BA_FISIK.map(item => `<tr><td>${item}</td><td>${cond.pasKet?.[item]||''}</td></tr>`).join('')}
-    <tr class="hdr-row"><td colspan="2">Kondisi Pemanfaatan/Penghunian Rumah</td></tr>
-    ${PASCA_BA_HUNI.map(item => `<tr><td>${item}</td><td>${cond.pasKet?.[item]||''}</td></tr>`).join('')}
-  </table>
-  <div class="ba-catatan">
-    <div style="font-size:11px;margin-bottom:4px">Catatan/Temuan:</div>
-    ${d.ket_pasca ? `<div style="font-size:11px">${d.ket_pasca}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
-  </div>
+  ${sectionFisik}
 
   <!-- REKOMENDASI -->
   <div class="ba-opening" style="margin-top:14px">
@@ -2593,6 +2700,7 @@ async function generateBeritaAcara() {
       return `${dt.getDate()} ${BULAN_ID[dt.getMonth()]} ${dt.getFullYear()}`;
     })() : '___________';
     const tglNum = d.tanggal ? new Date(d.tanggal).getDate() : '______';
+    const stageLabel = baStage === 'penyaluran' ? 'TAHAP PENYALURAN' : 'TAHAP PASCA PENYALURAN';
 
     const W = 9746; // content width DXA (A4, margin kiri/kanan 1080 dxa, sama dengan file referensi)
     const brd = { style: BorderStyle.SINGLE, size: 4, color: '555555' };
@@ -2623,70 +2731,83 @@ async function generateBeritaAcara() {
     }
 
     function dokTable() {
+      const wA = Math.round(W*0.4), wB = Math.round(W*0.2), wC = W - wA - wB;
       const rows = [
         new TableRow({ children: [
-          tableCell('Data Dukung/Dokumen', { bold:true, shade:true, width:Math.round(W*0.55) }),
-          tableCell('Keterangan Kondisi', { bold:true, shade:true, width:Math.round(W*0.45) }),
+          tableCell('Data Dukung/Dokumen', { bold:true, shade:true, width:wA }),
+          tableCell('Kondisi', { bold:true, shade:true, width:wB }),
+          tableCell('Keterangan', { bold:true, shade:true, width:wC }),
         ]}),
         ...DOK_BA.flatMap(grp => [
           new TableRow({ children: [
-            tableCell(grp.tahap, { shade2:true, bold:true, colspan:2, width:W }),
+            tableCell(grp.tahap, { shade2:true, bold:true, colspan:3, width:W }),
           ]}),
           ...grp.items.map(item => new TableRow({ children: [
-            tableCell(item, { width:Math.round(W*0.55) }),
-            tableCell(cond.dokKet?.[item]||'', { width:Math.round(W*0.45) }),
+            tableCell(item, { width:wA }),
+            tableCell(cond.dokKet?.[item]||'', { width:wB }),
+            tableCell(cond.dokKetNote?.[item]||'', { width:wC }),
           ]})),
         ]),
       ];
-      return new Table({ width:{size:W,type:WidthType.DXA}, columnWidths:[Math.round(W*0.55),Math.round(W*0.45)], rows });
+      return new Table({ width:{size:W,type:WidthType.DXA}, columnWidths:[wA,wB,wC], rows });
     }
 
     function psuTable() {
+      const wA = Math.round(W*0.3), wB = Math.round(W*0.2), wC = W - wA - wB;
       const rows = [
         new TableRow({ children:[
-          tableCell('Komponen PSU', {bold:true, shade:true, width:Math.round(W*0.4)}),
-          tableCell('Keterangan Kondisi', {bold:true, shade:true, width:Math.round(W*0.6)}),
+          tableCell('Komponen PSU', {bold:true, shade:true, width:wA}),
+          tableCell('Kondisi', {bold:true, shade:true, width:wB}),
+          tableCell('Keterangan', {bold:true, shade:true, width:wC}),
         ]}),
         ...PSU_BA.map(item => new TableRow({ children:[
-          tableCell(item, {width:Math.round(W*0.4)}),
-          tableCell(cond.psuKet?.[item]||'', {width:Math.round(W*0.6)}),
+          tableCell(item, {width:wA}),
+          tableCell(cond.psuKet?.[item]||'', {width:wB}),
+          tableCell(cond.psuKetNote?.[item]||'', {width:wC}),
         ]})),
       ];
-      return new Table({ width:{size:W,type:WidthType.DXA}, columnWidths:[Math.round(W*0.4),Math.round(W*0.6)], rows });
+      return new Table({ width:{size:W,type:WidthType.DXA}, columnWidths:[wA,wB,wC], rows });
     }
 
-    function kompTable(items, ketObj) {
+    function kompTable(items, ketObj, noteObj) {
+      const wA = Math.round(W*0.3), wB = Math.round(W*0.25), wC = W - wA - wB;
       const rows = [
         new TableRow({ children:[
-          tableCell('Komponen Fisik Bangunan Rumah', {bold:true, shade:true, width:Math.round(W*0.4)}),
-          tableCell('Keterangan Kondisi', {bold:true, shade:true, width:Math.round(W*0.6)}),
+          tableCell('Komponen Fisik Bangunan Rumah', {bold:true, shade:true, width:wA}),
+          tableCell('Kondisi', {bold:true, shade:true, width:wB}),
+          tableCell('Keterangan', {bold:true, shade:true, width:wC}),
         ]}),
         ...items.map(item => new TableRow({ children:[
-          tableCell(item, {width:Math.round(W*0.4)}),
-          tableCell(ketObj?.[item]||'', {width:Math.round(W*0.6)}),
+          tableCell(item, {width:wA}),
+          tableCell(ketObj?.[item]||'', {width:wB}),
+          tableCell(noteObj?.[item]||'', {width:wC}),
         ]})),
       ];
-      return new Table({ width:{size:W,type:WidthType.DXA}, columnWidths:[Math.round(W*0.4),Math.round(W*0.6)], rows });
+      return new Table({ width:{size:W,type:WidthType.DXA}, columnWidths:[wA,wB,wC], rows });
     }
 
     function pascaTable() {
+      const wA = Math.round(W*0.3), wB = Math.round(W*0.25), wC = W - wA - wB;
       const rows = [
         new TableRow({ children:[
-          tableCell('Komponen Fisik Bangunan Rumah', {bold:true, shade:true, width:Math.round(W*0.4)}),
-          tableCell('Keterangan Kondisi', {bold:true, shade:true, width:Math.round(W*0.6)}),
+          tableCell('Komponen Fisik Bangunan Rumah', {bold:true, shade:true, width:wA}),
+          tableCell('Kondisi', {bold:true, shade:true, width:wB}),
+          tableCell('Keterangan', {bold:true, shade:true, width:wC}),
         ]}),
-        new TableRow({ children:[tableCell('Kondisi Fisik Bangunan Rumah', {shade2:true, bold:true, colspan:2, width:W})] }),
+        new TableRow({ children:[tableCell('Kondisi Fisik Bangunan Rumah', {shade2:true, bold:true, colspan:3, width:W})] }),
         ...PASCA_BA_FISIK.map(item => new TableRow({ children:[
-          tableCell(item, {width:Math.round(W*0.4)}),
-          tableCell(cond.pasKet?.[item]||'', {width:Math.round(W*0.6)}),
+          tableCell(item, {width:wA}),
+          tableCell(cond.pasKet?.[item]||'', {width:wB}),
+          tableCell(cond.pasKetNote?.[item]||'', {width:wC}),
         ]})),
-        new TableRow({ children:[tableCell('Kondisi Pemanfaatan/Penghunian Rumah', {shade2:true, bold:true, colspan:2, width:W})] }),
+        new TableRow({ children:[tableCell('Kondisi Pemanfaatan/Penghunian Rumah', {shade2:true, bold:true, colspan:3, width:W})] }),
         ...PASCA_BA_HUNI.map(item => new TableRow({ children:[
-          tableCell(item, {width:Math.round(W*0.4)}),
-          tableCell(cond.pasKet?.[item]||'', {width:Math.round(W*0.6)}),
+          tableCell(item, {width:wA}),
+          tableCell(cond.pasKet?.[item]||'', {width:wB}),
+          tableCell(cond.pasKetNote?.[item]||'', {width:wC}),
         ]})),
       ];
-      return new Table({ width:{size:W,type:WidthType.DXA}, columnWidths:[Math.round(W*0.4),Math.round(W*0.6)], rows });
+      return new Table({ width:{size:W,type:WidthType.DXA}, columnWidths:[wA,wB,wC], rows });
     }
 
     const spacingNormal = { before:100, after:100 };
@@ -2708,6 +2829,8 @@ async function generateBeritaAcara() {
           par([txt('(KPR) FASILITAS LIKUIDITAS PEMBIAYAAN PERUMAHAN (FLPP)',{bold:true,size:20})],
             {alignment:AlignmentType.CENTER,spacing:{before:0,after:60}}),
           par([txt('DI LINGKUNGAN DIREKTORAT JENDERAL PERUMAHAN PERDESAAN',{bold:true,size:20})],
+            {alignment:AlignmentType.CENTER,spacing:{before:0,after:60}}),
+          par([txt(stageLabel,{bold:true,size:20})],
             {alignment:AlignmentType.CENTER,spacing:{before:0,after:180}}),
 
           // ── PEMBUKAAN ──
@@ -2746,33 +2869,34 @@ async function generateBeritaAcara() {
             border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
           par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
 
-          // ── 3. PENYALURAN ──
-          par([txt('3. Kondisi Fisik Bangunan Rumah (Tahap Penyaluran)',{bold:true})],{spacing:spacingSection}),
-          par([
-            txt('Dalam kegiatan tinjauan lapangan ini dilakukan pemeriksaan terhadap '),
-            txt(d.unit_salur||'________ (__)',{bold:true}),
-            txt(' unit rumah penerima KPR FLPP untuk mengetahui kondisi pasca penyaluran.'),
-          ],{alignment:AlignmentType.JUSTIFIED,spacing:{before:60,after:40}}),
-          par([txt('Secara umum kondisi fisik bangunan rumah yang dicek pada Tahap Penyaluran adalah sebagai berikut:')],{spacing:{before:40,after:80}}),
-          kompTable(SALUR_BA, cond.salKet),
-          par([txt('Catatan/Temuan:')],{spacing:{before:120,after:40}}),
-          par([txt(d.ket_salur||'')],{spacing:{before:40,after:80},
-            border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
-          par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
-
-          // ── 4. PASCA ──
-          par([txt('4. Kondisi Fisik Bangunan dan Pemanfaatan/Penghunian Rumah (Tahap Pasca Penyaluran)',{bold:true})],{spacing:spacingSection}),
-          par([
-            txt('Dalam kegiatan tinjauan lapangan ini dilakukan pemeriksaan terhadap '),
-            txt(d.unit_pasca||'________ (__)',{bold:true}),
-            txt(' unit rumah penerima KPR FLPP untuk mengetahui kondisi pasca penyaluran.'),
-          ],{alignment:AlignmentType.JUSTIFIED,spacing:{before:60,after:40}}),
-          par([txt('Secara umum kondisi fisik bangunan dan pemanfaatan/penghunian rumah yang dicek pada Tahap Pasca Penyaluran adalah sebagai berikut:')],{spacing:{before:40,after:80}}),
-          pascaTable(),
-          par([txt('Catatan/Temuan:')],{spacing:{before:120,after:40}}),
-          par([txt(d.ket_pasca||'')],{spacing:{before:40,after:80},
-            border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
-          par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+          // ── 3. FISIK (sesuai tahap terpilih) ──
+          ...(baStage === 'penyaluran' ? [
+            par([txt('3. Kondisi Fisik Bangunan Rumah (Tahap Penyaluran)',{bold:true})],{spacing:spacingSection}),
+            par([
+              txt('Dalam kegiatan tinjauan lapangan ini dilakukan pemeriksaan terhadap '),
+              txt(d.unit_salur||'________ (__)',{bold:true}),
+              txt(' unit rumah penerima KPR FLPP untuk mengetahui kondisi penyaluran.'),
+            ],{alignment:AlignmentType.JUSTIFIED,spacing:{before:60,after:40}}),
+            par([txt('Secara umum kondisi fisik bangunan rumah yang dicek pada Tahap Penyaluran adalah sebagai berikut:')],{spacing:{before:40,after:80}}),
+            kompTable(SALUR_BA, cond.salKet, cond.salKetNote),
+            par([txt('Catatan/Temuan:')],{spacing:{before:120,after:40}}),
+            par([txt(d.ket_salur||'')],{spacing:{before:40,after:80},
+              border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+            par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+          ] : [
+            par([txt('3. Kondisi Fisik Bangunan dan Pemanfaatan/Penghunian Rumah (Tahap Pasca Penyaluran)',{bold:true})],{spacing:spacingSection}),
+            par([
+              txt('Dalam kegiatan tinjauan lapangan ini dilakukan pemeriksaan terhadap '),
+              txt(d.unit_pasca||'________ (__)',{bold:true}),
+              txt(' unit rumah penerima KPR FLPP untuk mengetahui kondisi pasca penyaluran.'),
+            ],{alignment:AlignmentType.JUSTIFIED,spacing:{before:60,after:40}}),
+            par([txt('Secara umum kondisi fisik bangunan dan pemanfaatan/penghunian rumah yang dicek pada Tahap Pasca Penyaluran adalah sebagai berikut:')],{spacing:{before:40,after:80}}),
+            pascaTable(),
+            par([txt('Catatan/Temuan:')],{spacing:{before:120,after:40}}),
+            par([txt(d.ket_pasca||'')],{spacing:{before:40,after:80},
+              border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+            par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+          ]),
 
           // ── REKOMENDASI ──
           par([txt('Berdasarkan hasil tinjauan lapangan dengan kondisi tersebut di atas, diperoleh beberapa catatan dan/atau rekomendasi sebagai berikut:')],
@@ -2800,7 +2924,7 @@ async function generateBeritaAcara() {
     const url = URL.createObjectURL(buf);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Berita_Acara_${(d.nama||'FLPP').replace(/\s+/g,'_')}_${d.tanggal||new Date().toISOString().split('T')[0]}.docx`;
+    a.download = `Berita_Acara_${baStage === 'penyaluran' ? 'TahapPenyaluran' : 'TahapPascaPenyaluran'}_${(d.nama||'FLPP').replace(/\s+/g,'_')}_${d.tanggal||new Date().toISOString().split('T')[0]}.docx`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
