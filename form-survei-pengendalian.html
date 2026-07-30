@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -269,6 +270,10 @@
   .vd-doc-linkbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--white);color:var(--navy);font-size:11.5px;font-weight:700;text-decoration:none;cursor:pointer;transition:all .15s}
   .vd-doc-linkbtn:hover{border-color:var(--navy);background:var(--gray-50)}
   .vd-doc-nofile{font-size:11.5px;color:var(--gray-400);font-style:italic}
+  .vd-doc-ket-wrap{width:100%;margin-top:6px}
+  .vd-doc-ket-input{width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:12.5px;font-family:'Inter',sans-serif;background:var(--white)}
+  .vd-doc-ket-input:focus{outline:none;border-color:var(--navy)}
+  .vd-doc-ket-wrap.vd-doc-ket-missing .vd-doc-ket-input{border-color:var(--red);background:#FEF2F2}
   #docPreviewModal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:600}
   #docPreviewModal.open{opacity:1;pointer-events:auto}
   #docPreviewModal img{max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
@@ -2373,7 +2378,10 @@ function showToast(msg, isErr) {
     t1_kontraktor: 'Nama Kontraktor',
     t1_alamat: 'Alamat Perumahan',
     t1_koordinat: 'Koordinat Lokasi',
-    t1_luas_perumahan: 'Luas Perumahan (m²)'
+    t1_luas_perumahan: 'Luas Perumahan (m²)',
+    pengisi_nama: 'Nama Pengisi',
+    pengisi_jabatan: 'Jabatan Pengisi',
+    pengisi_telepon: 'No. Telepon Pengisi'
   };
   var VD_TIPE_RUMAH_FIELDS = {
     'Rumah Subsidi': [
@@ -2413,14 +2421,17 @@ function showToast(msg, isErr) {
   for (var vd_d=1; vd_d<=11; vd_d++){
     VD_KNOWN_KEYS.push('dok_ada_'+vd_d); VD_KNOWN_KEYS.push('alasan_dok_'+vd_d); VD_KNOWN_KEYS.push('dok_url_'+vd_d);
     VD_KNOWN_KEYS.push('Foto: dok_'+vd_d); VD_KNOWN_KEYS.push('Foto: dok_ada_'+vd_d); VD_KNOWN_KEYS.push('Foto: dok_'+vd_d+'_foto');
+    VD_KNOWN_KEYS.push('Foto: '+VD_DOK_LABELS[vd_d]);
   }
   VD_KNOWN_KEYS.push('legalitas_tanah_url');
   VD_KNOWN_KEYS.push('Foto: legalitas_tanah'); VD_KNOWN_KEYS.push('Foto: legalitas_tanah_ada'); VD_KNOWN_KEYS.push('Foto: legalitas_tanah_foto');
+  VD_KNOWN_KEYS.push('Foto: Legalitas Penguasaan Tanah');
 
   var vdAllRows = [];
   var vdSelectedRow = null;
   var vdChecklistState = {};   // { fieldKey: true(Sesuai) / false(Tidak Sesuai) }
   var vdCatatanBagian = {};    // { namaSection: teks catatan manual }
+  var vdDocKeteranganState = {}; // { fieldKey: teks keterangan wajib saat dokumen Tidak Sesuai }
 
   function vdFmtVal(v){
     if (v===undefined || v===null || v==='') return null;
@@ -2535,12 +2546,28 @@ function showToast(msg, isErr) {
     wrap.appendChild(cb);
     var txt = document.createTextNode(checked ? 'Sesuai' : 'Tidak Sesuai');
     wrap.appendChild(txt);
+    rowEl.appendChild(wrap);
+
+    // Kotak Keterangan wajib diisi saat "Tidak Sesuai"
+    var ketWrap = el('div',{cls:'vd-doc-ket-wrap'});
+    var ketInput = el('input',{type:'text',cls:'vd-doc-ket-input',placeholder:'Keterangan (wajib diisi karena Tidak Sesuai)...'});
+    ketInput.value = vdDocKeteranganState[fieldKey] || '';
+    ketInput.addEventListener('input', function(){
+      vdDocKeteranganState[fieldKey] = ketInput.value;
+      ketWrap.classList.toggle('vd-doc-ket-missing', !ketInput.value.trim());
+    });
+    ketWrap.appendChild(ketInput);
+    ketWrap.style.display = checked ? 'none' : '';
+    if (!checked && !ketInput.value.trim()) ketWrap.classList.add('vd-doc-ket-missing');
+    rowEl.appendChild(ketWrap);
+
     cb.addEventListener('change', function(){
       vdChecklistState[fieldKey] = cb.checked;
       rowEl.classList.toggle('vd-tidaksesuai', !cb.checked);
       wrap.replaceChild(document.createTextNode(cb.checked ? 'Sesuai' : 'Tidak Sesuai'), wrap.lastChild);
+      ketWrap.style.display = cb.checked ? 'none' : '';
+      ketWrap.classList.toggle('vd-doc-ket-missing', !cb.checked && !ketInput.value.trim());
     });
-    rowEl.appendChild(wrap);
   }
 
   // ---------- Kotak catatan manual per section ----------
@@ -2646,6 +2673,8 @@ function showToast(msg, isErr) {
     catch(e){ vdChecklistState = {}; }
     try { vdCatatanBagian = row['Catatan Bagian'] ? JSON.parse(row['Catatan Bagian']) : {}; }
     catch(e){ vdCatatanBagian = {}; }
+    try { vdDocKeteranganState = row['Keterangan Tidak Sesuai'] ? JSON.parse(row['Keterangan Tidak Sesuai']) : {}; }
+    catch(e){ vdDocKeteranganState = {}; }
 
     vdRenderDetail(row);
     vdRenderVerifForm(row);
@@ -2737,7 +2766,7 @@ function showToast(msg, isErr) {
     legRow.appendChild(legMain);
     vdAttachDocChecklist(legRow, 'legalitas_tanah_ada');
     if (legAda === 'Ada') legRow.appendChild(vdDocPreview(vdFirstVal(row, [
-      'Foto: legalitas_tanah', 'Foto: legalitas_tanah_ada', 'Foto: legalitas_tanah_foto', 'legalitas_tanah_url'
+      'Foto: Legalitas Penguasaan Tanah', 'Foto: legalitas_tanah', 'Foto: legalitas_tanah_ada', 'Foto: legalitas_tanah_foto', 'legalitas_tanah_url'
     ])));
     dokBox.appendChild(legRow);
     if (legAda==='Tidak Ada' && row['alasan_legalitas_tanah']){
@@ -2755,7 +2784,7 @@ function showToast(msg, isErr) {
       r.appendChild(rMain);
       vdAttachDocChecklist(r, 'dok_ada_'+i);
       if (ada === 'Ada') r.appendChild(vdDocPreview(vdFirstVal(row, [
-        'Foto: dok_'+i, 'Foto: dok_ada_'+i, 'Foto: dok_'+i+'_foto', 'dok_url_'+i
+        'Foto: '+VD_DOK_LABELS[i], 'Foto: dok_'+i, 'Foto: dok_ada_'+i, 'Foto: dok_'+i+'_foto', 'dok_url_'+i
       ])));
       dokBox.appendChild(r);
       if (ada==='Tidak Ada' && row['alasan_dok_'+i]){
@@ -2802,6 +2831,21 @@ function showToast(msg, isErr) {
     if (!nama){ showToast('⚠️ Isi Nama Verifikator terlebih dahulu.', true); return; }
     if (!statusRadio){ showToast('⚠️ Pilih Status Verifikasi terlebih dahulu.', true); return; }
 
+    // Validasi: setiap dokumen yang ditandai "Tidak Sesuai" wajib punya Keterangan
+    var docKeys = ['legalitas_tanah_ada'];
+    for (var vk=1; vk<=11; vk++) docKeys.push('dok_ada_'+vk);
+    var belumLengkap = docKeys.filter(function(k){
+      return vdChecklistState[k] === false && !(vdDocKeteranganState[k] && vdDocKeteranganState[k].trim());
+    });
+    if (belumLengkap.length){
+      showToast('⚠️ Ada '+belumLengkap.length+' dokumen "Tidak Sesuai" yang Keterangannya belum diisi. Cek bagian Data Dukung/Dokumen.', true);
+      document.querySelectorAll('.vd-doc-ket-wrap').forEach(function(w){
+        var inp = w.querySelector('.vd-doc-ket-input');
+        if (inp && !inp.value.trim() && w.style.display !== 'none') w.classList.add('vd-doc-ket-missing');
+      });
+      return;
+    }
+
     var payload = {
       action: 'verify',
       row: vdSelectedRow._row,
@@ -2811,7 +2855,8 @@ function showToast(msg, isErr) {
         'Nama Verifikator': nama,
         'Tanggal Verifikasi': document.getElementById('vd-vTanggal').value,
         'Checklist Detail': JSON.stringify(vdChecklistState),
-        'Catatan Bagian': JSON.stringify(vdCatatanBagian)
+        'Catatan Bagian': JSON.stringify(vdCatatanBagian),
+        'Keterangan Tidak Sesuai': JSON.stringify(vdDocKeteranganState)
       }
     };
 
