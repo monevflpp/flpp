@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -522,6 +521,13 @@
           </div>
         </div>
       </div>
+      <div class="section">
+        <div class="section-header"><span class="section-num">UNIT</span><h3>Identitas Unit</h3></div>
+        <div class="section-body">
+          <div class="field"><label>Nomor Rumah</label><input type="text" id="p2_unit_nomor_rumah" name="p2_unit_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
+          <div class="field"><label>Upload Foto Tampak Depan</label><div id="p2_foto_tampak_depan_wrap"></div></div>
+        </div>
+      </div>
       <div id="penyaluran-sections"></div>
       <div class="send-area">
         <div class="draft-info" id="draft-info-panel-2">
@@ -570,12 +576,18 @@
           </div>
         </div>
       </div>
+      <div class="section">
+        <div class="section-header"><span class="section-num">UNIT</span><h3>Identitas Unit</h3></div>
+        <div class="section-body">
+          <div class="field"><label>Nomor Rumah</label><input type="text" id="p3_unit_nomor_rumah" name="p3_unit_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
+          <div class="field"><label>Upload Foto Tampak Depan</label><div id="p3_foto_tampak_depan_wrap"></div></div>
+        </div>
+      </div>
       <div class="divider-banner"><span class="divider-badge">KETERHUNIAN</span><div><h3>Kondisi Keterhunian Rumah</h3><p>Profil penghuni, tipe unit, dan status keterhunian perumahan FLPP</p></div></div>
       <div class="section">
         <div class="section-header"><span class="section-num">1.0</span><h3>Profil Penghuni</h3></div>
         <div class="section-body">
           <div class="subsection"><div class="subsection-title">Data Responden</div>
-            <div class="field"><label>Nomor Rumah</label><input type="text" id="p3_nomor_rumah" name="nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
             <div class="field-row">
               <div class="field"><label>Nama Lengkap</label><input type="text" id="p3_nama_responden" name="nama_responden"></div>
               <div class="field"><label>NIK</label><input type="text" id="p3_nik_responden" name="nik_responden" maxlength="16"></div>
@@ -692,10 +704,28 @@
             <label><input type="checkbox" value="Keamanan"> Keamanan</label>
             <label><input type="checkbox" value="Estetika"> Estetika</label>
           </div></div>
-          <div class="field-row">
-            <div class="field"><label>Perubahan Fungsi Bangunan</label><div class="radio-group"><label><input type="radio" name="fungsi" value="Ya"> Ya</label><label><input type="radio" name="fungsi" value="Tidak"> Tidak</label></div></div>
-            <div class="field"><label>Jika Ya, Sebagai</label><input type="text"></div>
+          <div class="field"><label>Perubahan Fungsi Bangunan</label><div class="radio-group">
+            <label><input type="radio" name="fungsi" value="Ya"> Ya</label>
+            <label><input type="radio" name="fungsi" value="Tidak"> Tidak</label>
           </div>
+          <div class="catatan-box-info" id="box_fungsi_ya">
+            <div class="catatan-label">✏️ Jika Ya, Sebagai</div>
+            <input type="text" id="fungsi_sebagai" name="fungsi_sebagai" placeholder="Contoh: Ruko, Tempat Usaha/Warung, Kos-kosan, dll">
+          </div></div>
+          <div class="field"><label>Renovasi Bangunan</label><div class="radio-group">
+            <label><input type="radio" name="renovasi_bangunan" value="Ya"> Ya</label>
+            <label><input type="radio" name="renovasi_bangunan" value="Tidak"> Tidak</label>
+          </div>
+          <div class="catatan-box-info" id="box_renovasi_ya">
+            <div class="catatan-label">🛠️ Jika Ya, Klasifikasi Renovasi</div>
+            <div class="radio-group" id="klasifikasi_renovasi_group">
+              <label><input type="radio" name="klasifikasi_renovasi" value="1. Renovasi Ringan"> 1. Renovasi Ringan</label>
+              <label><input type="radio" name="klasifikasi_renovasi" value="2. Renovasi Sedang"> 2. Renovasi Sedang</label>
+              <label><input type="radio" name="klasifikasi_renovasi" value="3. Renovasi Berat"> 3. Renovasi Berat</label>
+              <label><input type="radio" name="klasifikasi_renovasi" value="4. Rekonstruksi / Bangun Ulang"> 4. Rekonstruksi / Bangun Ulang</label>
+            </div>
+            <div id="klasifikasi_renovasi_desc" style="display:none;font-size:12px;line-height:1.5;color:var(--gray-600);margin-top:8px;padding:10px 14px;background:var(--white);border:1px solid var(--gray-200);border-radius:12px"></div>
+          </div></div>
           <div class="field"><label>Keterangan</label><textarea id="ket_keterhunian" name="ket_keterhunian" placeholder="Tuliskan keterangan tambahan untuk Keterhunian Perumahan FLPP..."></textarea></div>
         </div>
       </div>
@@ -1656,6 +1686,7 @@ window.addEventListener('load', function() {
     ]},
     { num:'5.0', label:'Komponen Fisik Bangunan — Dinding', fields:[
       { label:'Jenis Dinding',      name:'pf_dinding_jenis',  type:'radio_other', opts:['Bata Merah','Bata Ringan','Lainnya'] },
+      { label:'Double Dinding',     name:'pf_dinding_double', type:'radio', opts:['Ya','Tidak'] },
       { label:'Komponen Visual',    name:'pf_dinding_visual', type:'check', opts:['Tidak Ada Cacat','Retak Rambut','Retak Struktur','Rembes Air','Berjamur/Berlumut','Cat Mengelupas','Plesteran Rontok'] },
       { label:'Kondisi',            name:'pf_dinding_kondisi',type:'kondisi3' }
     ]},
@@ -1954,6 +1985,70 @@ window.addEventListener('load', function() {
         } else if (r.value === 'Tidak') {
           boxTidak.classList.add('visible'); boxYa.classList.remove('visible');
         }
+      });
+    });
+  })();
+
+  // ---- Identitas Unit: Upload Foto Tampak Depan (Penyaluran & Pasca Penyaluran) ----
+  (function() {
+    var targets = [
+      {wrapId:'p2_foto_tampak_depan_wrap', fieldName:'p2_foto_tampak_depan'},
+      {wrapId:'p3_foto_tampak_depan_wrap', fieldName:'p3_foto_tampak_depan'}
+    ];
+    targets.forEach(function(t) {
+      var wrap = document.getElementById(t.wrapId);
+      if (!wrap) return;
+      var fo = makeFotoUpload(t.fieldName);
+      wrap.appendChild(fo.wrap[0]);
+      wrap.appendChild(fo.wrap[1]);
+    });
+  })();
+
+  // ---- Keterhunian: Perubahan Fungsi Bangunan -> Ya menampilkan input "Sebagai" ----
+  (function() {
+    var box = document.getElementById('box_fungsi_ya');
+    if (!box) return;
+    document.querySelectorAll('input[type=radio][name="fungsi"]').forEach(function(r) {
+      r.addEventListener('change', function() {
+        if (!r.checked) return;
+        if (r.value === 'Ya') {
+          box.classList.add('visible');
+        } else {
+          box.classList.remove('visible');
+          var inp = box.querySelector('input'); if (inp) inp.value = '';
+        }
+      });
+    });
+  })();
+
+  // ---- Keterhunian: Renovasi Bangunan -> Ya menampilkan klasifikasi renovasi ----
+  (function() {
+    var box = document.getElementById('box_renovasi_ya');
+    if (!box) return;
+    var descEl = document.getElementById('klasifikasi_renovasi_desc');
+    var deskripsi = {
+      '1. Renovasi Ringan': 'Perbaikan bersifat kosmetik dan pemeliharaan tanpa mengubah struktur maupun tata ruang. Contoh: pengecatan, penggantian keramik, plafon, kusen, pintu, jendela, sanitair, perbaikan atap bocor, penggantian instalasi listrik/air sebagian.',
+      '2. Renovasi Sedang': 'Mengubah sebagian elemen bangunan non-struktural atau memperbaiki sebagian struktur ringan dengan perubahan tata ruang terbatas. Contoh: membongkar dan membangun kembali kamar mandi atau dapur, mengganti rangka atap, menambah atau memindahkan sekat ruangan, memperbaiki sebagian pondasi atau kolom, mengganti seluruh penutup atap.',
+      '3. Renovasi Berat': 'Melibatkan perubahan struktur utama atau pembangunan kembali sebagian besar bangunan. Nilai pekerjaan umumnya cukup besar dibandingkan nilai bangunan eksisting. Contoh: perkuatan pondasi, penggantian kolom dan balok, membangun lantai tambahan, perubahan total denah, pembongkaran dan pembangunan kembali sebagian besar rumah.',
+      '4. Rekonstruksi / Bangun Ulang': 'Bangunan lama dibongkar hampir seluruhnya dan dibangun kembali sehingga secara teknis mendekati pembangunan rumah baru. Contoh: pembongkaran total rumah dan pembangunan kembali pada lahan yang sama.'
+    };
+    document.querySelectorAll('input[type=radio][name="renovasi_bangunan"]').forEach(function(r) {
+      r.addEventListener('change', function() {
+        if (!r.checked) return;
+        if (r.value === 'Ya') {
+          box.classList.add('visible');
+        } else {
+          box.classList.remove('visible');
+          box.querySelectorAll('input[type=radio]').forEach(function(x){ x.checked = false; });
+          if (descEl) { descEl.style.display = 'none'; descEl.textContent = ''; }
+        }
+      });
+    });
+    document.querySelectorAll('input[type=radio][name="klasifikasi_renovasi"]').forEach(function(r) {
+      r.addEventListener('change', function() {
+        if (!r.checked || !descEl) return;
+        descEl.textContent = deskripsi[r.value] || '';
+        descEl.style.display = deskripsi[r.value] ? 'block' : 'none';
       });
     });
   })();
