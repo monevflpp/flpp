@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -529,7 +530,7 @@
       <div class="section">
         <div class="section-header"><span class="section-num">UNIT</span><h3>Identitas Unit</h3></div>
         <div class="section-body">
-          <div class="field"><label>Nomor Rumah</label><input type="text" id="p2_unit_nomor_rumah" name="p2_unit_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
+          <div class="field"><label>Nomor Rumah</label><input type="text" id="p2_nomor_rumah" name="p2_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
           <div class="field"><label>Upload Foto Tampak Depan</label><div id="p2_foto_tampak_depan_wrap"></div></div>
         </div>
       </div>
@@ -584,7 +585,7 @@
       <div class="section">
         <div class="section-header"><span class="section-num">UNIT</span><h3>Identitas Unit</h3></div>
         <div class="section-body">
-          <div class="field"><label>Nomor Rumah</label><input type="text" id="p3_unit_nomor_rumah" name="p3_unit_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
+          <div class="field"><label>Nomor Rumah</label><input type="text" id="p3_nomor_rumah" name="p3_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
           <div class="field"><label>Upload Foto Tampak Depan</label><div id="p3_foto_tampak_depan_wrap"></div></div>
         </div>
       </div>
@@ -651,9 +652,9 @@
         <div class="section-header"><span class="section-num">2.0</span><h3>Tipe Unit Rumah</h3></div>
         <div class="section-body">
           <div class="field-row three">
-            <div class="field"><label>Luas Tanah (m²)</label><input type="text" inputmode="numeric" class="num-ribuan"></div>
-            <div class="field"><label>Luas Bangunan (m²)</label><input type="text" inputmode="numeric" class="num-ribuan"></div>
-            <div class="field"><label>Jumlah Kamar</label><input type="text" inputmode="numeric" class="num-ribuan"></div>
+            <div class="field"><label>Luas Tanah (m²)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_luas_tanah" name="p3_luas_tanah"></div>
+            <div class="field"><label>Luas Bangunan (m²)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_luas_bangunan" name="p3_luas_bangunan"></div>
+            <div class="field"><label>Jumlah Kamar</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_jumlah_kamar" name="p3_jumlah_kamar"></div>
           </div>
           <div class="field">
             <label>Koordinat Titik Rumah</label>
@@ -664,19 +665,19 @@
             <div class="geo-status" id="geoStatus_t3_koordinat"></div>
           </div>
           <div class="field-row">
-            <div class="field"><label>Harga Rumah (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div>
-            <div class="field"><label>Tenor Kredit (tahun)</label><input type="text" inputmode="numeric" class="num-ribuan"></div>
+            <div class="field"><label>Harga Rumah (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_harga_rumah" name="p3_harga_rumah"></div>
+            <div class="field"><label>Tenor Kredit (tahun)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_tenor_kredit" name="p3_tenor_kredit"></div>
           </div>
           <div class="field-row">
-            <div class="field"><label>DP Awal (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div>
-            <div class="field"><label>Cicilan per Bulan (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan"></div>
+            <div class="field"><label>DP Awal (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_dp_awal" name="p3_dp_awal"></div>
+            <div class="field"><label>Cicilan per Bulan (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_cicilan_bulan" name="p3_cicilan_bulan"></div>
           </div>
         </div>
       </div>
       <div class="section">
         <div class="section-header"><span class="section-num">3.0</span><h3>Keterhunian Perumahan FLPP</h3></div>
         <div class="section-body">
-          <div class="field"><label>Jenis Program Penerima Manfaat</label><div class="check-group"><label><input type="checkbox" value="FLPP"> FLPP</label><label><input type="checkbox" value="SBUM"> SBUM</label></div></div>
+          <div class="field"><label>Jenis Program Penerima Manfaat</label><div class="check-group"><label><input type="checkbox" name="program_manfaat" value="FLPP"> FLPP</label><label><input type="checkbox" name="program_manfaat" value="SBUM"> SBUM</label></div></div>
           <div class="field"><label>Sticker/Plat KPR Bersubsidi</label><div class="radio-group"><label><input type="radio" name="sticker" value="Tersedia"> Tersedia</label><label><input type="radio" name="sticker" value="Tidak Tersedia"> Tidak Tersedia</label></div><div class="catatan-box" id="catatan_box_sticker"><div class="catatan-label">✏️ Keterangan (deskripsi kondisi dilapangan)</div><textarea id="catatan_sticker" name="catatan_sticker" placeholder="Jelaskan alasan tidak tersedia..."></textarea></div></div>
           <div class="field"><label>Sertifikat Rumah</label><div class="radio-group"><label><input type="radio" name="sertif" value="Tersedia"> Tersedia</label><label><input type="radio" name="sertif" value="Tidak Tersedia"> Tidak Tersedia</label></div><div class="catatan-box" id="catatan_box_sertif"><div class="catatan-label">✏️ Keterangan (deskripsi kondisi dilapangan)</div><textarea id="catatan_sertif" name="catatan_sertif" placeholder="Jelaskan alasan tidak tersedia..."></textarea></div></div>
           <div class="field"><label>Jumlah Penghuni</label><div class="radio-group">
@@ -702,12 +703,12 @@
             <label><input type="radio" name="tahun_huni" value="2025"> 2025</label>
           </div></div>
           <div class="field"><label>Renovasi yang Pernah Dilakukan</label><div class="check-group">
-            <label><input type="checkbox" value="Tidak Pernah"> Tidak Pernah</label>
-            <label><input type="checkbox" value="Perbaikan Sarana"> Perbaikan Sarana</label>
-            <label><input type="checkbox" value="Perluasan Horizontal"> Perluasan Horizontal</label>
-            <label><input type="checkbox" value="Perluasan Vertikal"> Perluasan Vertikal</label>
-            <label><input type="checkbox" value="Keamanan"> Keamanan</label>
-            <label><input type="checkbox" value="Estetika"> Estetika</label>
+            <label><input type="checkbox" name="renovasi_pernah" value="Tidak Pernah"> Tidak Pernah</label>
+            <label><input type="checkbox" name="renovasi_pernah" value="Perbaikan Sarana"> Perbaikan Sarana</label>
+            <label><input type="checkbox" name="renovasi_pernah" value="Perluasan Horizontal"> Perluasan Horizontal</label>
+            <label><input type="checkbox" name="renovasi_pernah" value="Perluasan Vertikal"> Perluasan Vertikal</label>
+            <label><input type="checkbox" name="renovasi_pernah" value="Keamanan"> Keamanan</label>
+            <label><input type="checkbox" name="renovasi_pernah" value="Estetika"> Estetika</label>
           </div></div>
           <div class="field"><label>Perubahan Fungsi Bangunan</label><div class="radio-group">
             <label><input type="radio" name="fungsi" value="Ya"> Ya</label>
@@ -1639,7 +1640,7 @@ window.addEventListener('load', function() {
   // ---- Tambahan: Catatan "Tidak Tersedia" untuk section 8 Dinding (py_dinding_angkur) ----
   // dan section 10 Jaringan Utilitas Bangunan (util-row radios)
   setTimeout(function() {
-    var pyPanel = document.getElementById('panel-1');
+    var pyPanel = document.getElementById('panel-2');
     if (!pyPanel) return;
 
     function makeTidakTersediaBox(radioName) {
