@@ -767,7 +767,7 @@ body.is-locked > *:not(#lock-screen){display:none !important}
       <table>
         <thead><tr>
           <th>Perumahan</th><th>Surveyor</th><th>Status SIKUMBANG</th>
-          <th>Site Plan</th><th>DED</th><th>RKS</th><th>Brosur</th><th>AMDAL/UKL</th><th>IMB/PBG</th><th>As Built</th><th>SLF</th><th>Ket. SKKF</th>
+          <th>Legalitas Tanah</th><th>Site Plan</th><th>DED</th><th>RKS</th><th>Brosur</th><th>NIB</th><th>KKPR</th><th>AMDAL/UKL</th><th>IMB/PBG</th><th>As Built</th><th>SLF</th><th>SKKF Pengawas</th>
         </tr></thead>
         <tbody id="vfy-tbody"></tbody>
       </table>
@@ -1631,40 +1631,137 @@ function renderTitikLokasi() {
 // ══════════════════════════════════════════════════════
 // VERIFIKASI (Sheet 2)
 // ══════════════════════════════════════════════════════
-const DOK_LABELS = [
-  'Gambar Site Plan','DED','RKS','Brosur Pemasaran',
-  'AMDAL/UKL-UPL','IMB/PBG','As Built Drawing','SLF','SKKF Pengawas'
+// ══════════════════════════════════════════════════════
+// DAFTAR DATA DUKUNG — SUMBER TUNGGAL
+// Disalin persis dari dokumenGroups di form-objek-perumahan.html.
+// Penomorannya penting: indeks 0 dipakai Legalitas Penguasaan Tanah
+// (kolomnya legalitas_tanah_ada, bukan dok_ada_0), lalu dokumen lain
+// memakai dok_ada_1 sampai dok_ada_11.
+// Versi dashboard sebelumnya hanya punya 9 dokumen, tergeser satu indeks,
+// dan sama sekali tidak memuat NIB serta KKPR.
+// ══════════════════════════════════════════════════════
+const DOK_MASTER = [
+  { idx: 0,  tahap: 'Tahap Awal/Persiapan', label: 'Legalitas Penguasaan Tanah',                singkat: 'Legalitas Tanah' },
+  { idx: 1,  tahap: 'Tahap Perencanaan',    label: 'Gambar Site Plan Perumahan',                singkat: 'Site Plan' },
+  { idx: 2,  tahap: 'Tahap Perencanaan',    label: 'DED (Detailed Engineering Design) Perumahan', singkat: 'DED' },
+  { idx: 3,  tahap: 'Tahap Perencanaan',    label: 'Rencana Kerja dan Syarat-syarat (RKS)',     singkat: 'RKS' },
+  { idx: 4,  tahap: 'Tahap Perencanaan',    label: 'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)', singkat: 'Brosur' },
+  { idx: 5,  tahap: 'Tahap Perizinan',      label: 'Nomor Induk Berusaha (NIB)',                singkat: 'NIB' },
+  { idx: 6,  tahap: 'Tahap Perizinan',      label: 'Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR)', singkat: 'KKPR' },
+  { idx: 7,  tahap: 'Tahap Perizinan',      label: 'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL atau Dokumen Lain Sesuai Ketentuan)', singkat: 'AMDAL/UKL-UPL' },
+  { idx: 8,  tahap: 'Tahap Perizinan',      label: 'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)', singkat: 'IMB/PBG' },
+  { idx: 9,  tahap: 'Tahap Pelaksanaan',    label: 'As Built Drawing',                          singkat: 'As Built' },
+  { idx: 10, tahap: 'Tahap Pasca Konstruksi', label: 'Sertifikat Laik Fungsi (SLF)',            singkat: 'SLF' },
+  { idx: 11, tahap: 'Tahap Pasca Konstruksi', label: 'Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi', singkat: 'SKKF Pengawas' }
 ];
+
+// Dikelompokkan per tahap, untuk tabel Berita Acara
+const DOK_BA = (() => {
+  const out = [];
+  DOK_MASTER.forEach(d => {
+    let g = out.find(x => x.tahap === d.tahap);
+    if (!g) { g = { tahap: d.tahap, items: [] }; out.push(g); }
+    g.items.push(d.label);
+  });
+  return out;
+})();
+
+const DOK_LABELS = DOK_MASTER.map(d => d.singkat);
+
+// Ketersediaan satu dokumen pada satu baris data objek perumahan.
+// Indeks 0 dibaca dari kolom legalitas yang terpisah.
+function dokAda(row, idx) {
+  if (!row) return '';
+  if (idx === 0) {
+    const ada = row.legalitas_tanah_ada || '';
+    if (ada !== 'Ada') return ada;
+    const jenis = row.legalitas_tanah_jenis || '';
+    const lain  = (jenis === 'Lainnya' && row.legalitas_tanah_jenis_lainnya) ? ': ' + row.legalitas_tanah_jenis_lainnya : '';
+    return jenis ? 'Ada — ' + jenis + lain : 'Ada';
+  }
+  return row['dok_ada_' + idx] || '';
+}
+function dokAlasan(row, idx) {
+  if (!row) return '';
+  return (idx === 0 ? row.alasan_legalitas_tanah : row['alasan_dok_' + idx]) || '';
+}
+function dokTersedia(row, idx) {
+  const t = String(dokAda(row, idx) || '');
+  return /ada/i.test(t) && !/tidak\s*ada/i.test(t);
+}
+
+// ══════════════════════════════════════════════════════
+// HASIL VERIFIKASI LAPANGAN
+// Ditulis oleh panel "Verifikasi Data Dukung" pada form survei,
+// tersimpan di sheet Data Objek Perumahan (bukan sheet Verifikasi lama).
+// Tiga kolom terakhir berisi JSON, jadi perlu diurai dulu.
+// ══════════════════════════════════════════════════════
+function hasilVerifikasi(obj) {
+  const amanParse = (teks) => {
+    if (!teks || typeof teks !== 'string') return {};
+    try { const o = JSON.parse(teks); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  };
+  if (!obj) return { ada: false, status: '', catatan: '', verifikator: '', tanggal: '', checklist: {}, catatanBagian: {}, keterangan: {} };
+  const status = obj['Status Verifikasi'] || '';
+  const checklist = amanParse(obj['Checklist Detail']);
+  return {
+    ada: !!(status || obj['Nama Verifikator'] || Object.keys(checklist).length),
+    status:      status,
+    catatan:     obj['Catatan Verifikasi'] || '',
+    verifikator: obj['Nama Verifikator'] || '',
+    tanggal:     obj['Tanggal Verifikasi'] || '',
+    checklist:   checklist,
+    catatanBagian: amanParse(obj['Catatan Bagian']),
+    keterangan:  amanParse(obj['Keterangan Tidak Sesuai'])
+  };
+}
+
+// Hasil verifikasi untuk satu dokumen: "Sesuai" / "Tidak Sesuai" / "" (belum diverifikasi)
+function dokSesuai(hv, idx) {
+  if (!hv || !hv.ada) return '';
+  const kunci = idx === 0 ? 'legalitas_tanah_ada' : 'dok_ada_' + idx;
+  // Pada form, centang "Sesuai" adalah keadaan bawaan dan hanya item yang
+  // diubah verifikator yang ikut tersimpan. Jadi item yang tidak muncul di
+  // JSON berarti dinilai Sesuai — bukan belum diperiksa.
+  return hv.checklist[kunci] === false ? 'Tidak Sesuai' : 'Sesuai';
+}
+function dokKeteranganVerif(hv, idx) {
+  if (!hv || !hv.ada) return '';
+  const kunci = idx === 0 ? 'legalitas_tanah_ada' : 'dok_ada_' + idx;
+  return hv.keterangan[kunci] || '';
+}
 
 function renderVerifikasi() {
   const filter = document.getElementById('vfy-filter')?.value || '';
-  let data = DB.verifikasi;
+  // Panel verifikasi pada form menulis hasilnya ke sheet Data Objek Perumahan.
+  // Sheet "Verifikasi Data Objek Perumahan" adalah sisa versi lama; dipakai
+  // hanya bila masih menyimpan baris.
+  let data = (DB.verifikasi && DB.verifikasi.length) ? DB.verifikasi : DB.objek;
   if (filter) data = data.filter(r => r.t1_nama_perumahan === filter);
 
   // KPI charts
-  const sikumData = count(data, 'status_sikumbang');
+  const sikumData = count(data.map(r => ({ st: r.status_sikumbang || r['Status Verifikasi'] || '' })), 'st');
   barChart(document.getElementById('vfy-bar-sikumbang'), sikumData, k => /sesuai/i.test(k) && !/tidak/i.test(k) ? 'var(--green)' : 'var(--red)', data.length);
 
   // Ketersediaan dok
-  const dokAda = {};
-  DOK_LABELS.forEach((lbl, i) => {
-    dokAda[lbl] = data.filter(r => /ada/i.test(String(r[`dok_ada_${i}`]||'')) && !/tidak/i.test(String(r[`dok_ada_${i}`]||''))).length;
+  const rekapDok = {};
+  DOK_MASTER.forEach(d => {
+    rekapDok[d.singkat] = data.filter(r => dokTersedia(r, d.idx)).length;
   });
-  barChart(document.getElementById('vfy-bar-dok-ada'), dokAda, () => 'var(--teal)', data.length);
+  barChart(document.getElementById('vfy-bar-dok-ada'), rekapDok, () => 'var(--teal)', data.length);
 
   // Table
   document.getElementById('vfy-tbody').innerHTML = data.map(r => {
-    const sikCls = /tidak sesuai/i.test(r.status_sikumbang||'') ? 'pill-red' : 'pill-green';
+    const statusVfy = r.status_sikumbang || r['Status Verifikasi'] || '';
+    const sikCls = /tidak sesuai|perlu perbaikan/i.test(statusVfy) ? 'pill-red' : 'pill-green';
     return `<tr>
       <td><div class="td-name">${v(r.t1_nama_perumahan)}</div><div class="td-sub">${v(r.t1_id_sikumbang)}</div></td>
       <td style="font-size:11px">${v(r.surveyor0||r['Nama Surveyor'])}</td>
-      <td><span class="pill ${sikCls}">${v(r.status_sikumbang)}</span></td>
-      ${[0,1,2,3,4,5,6,7,8].map(i => {
-        const ada = r[`dok_ada_${i}`];
-        return `<td>${pill(ada)}</td>`;
-      }).join('')}
+      <td><span class="pill ${sikCls}">${v(statusVfy)}</span></td>
+      ${DOK_MASTER.map(d => `<td>${pill(dokAda(r, d.idx))}</td>`).join('')}
     </tr>`;
-  }).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--g400);padding:20px">Belum ada data</td></tr>';
+  }).join('') || '<tr><td colspan="15" style="text-align:center;color:var(--g400);padding:20px">Belum ada data</td></tr>';
 }
 
 // ══════════════════════════════════════════════════════
@@ -2215,22 +2312,50 @@ function showReport(idx) {
   </div>`;
 
   // Verifikasi
-  html += `<div class="report-sec"><h3>2. Verifikasi Data Objek Perumahan</h3>`;
-  if (vfy) {
+  html += `<div class="report-sec"><h3>2. Verifikasi Data Dukung</h3>`;
+  {
+    const hv = hasilVerifikasi(obj);
     html += `<div class="report-grid">
-      ${fld('Surveyor', vfy.surveyor0||vfy['Nama Surveyor'])}
-      ${fld('Status SIKUMBANG', vfy.status_sikumbang)}
-      ${vfy.catatan_status_sikumbang ? fld('Catatan SIKUMBANG', vfy.catatan_status_sikumbang) : ''}
-    </div>
-    <table class="report-mini-table"><thead><tr><th>#</th><th>Dokumen</th><th>Tersedia</th><th>Sesuai</th><th>Keterangan</th></tr></thead><tbody>
-    ${DOK_LABELS.map((lbl,i) => `<tr>
-      <td>${i+1}</td><td>${lbl}</td>
-      <td>${vfy[`dok_ada_${i}`]||'-'}</td>
-      <td>${vfy[`dok_sesuai_${i}`]||'-'}</td>
-      <td style="font-size:10px;color:var(--g600)">${vfy[`catatan_dok_sesuai_${i}`]||'-'}</td>
-    </tr>`).join('')}
-    </tbody></table>`;
-  } else { html += `<div class="report-empty">Belum ada data verifikasi.</div>`; }
+      ${fld('Status Verifikasi', hv.status)}
+      ${fld('Nama Verifikator', hv.verifikator)}
+      ${fld('Tanggal Verifikasi', hv.tanggal)}
+      ${fld('Surveyor Pendata', (vfy && (vfy.surveyor0||vfy['Nama Surveyor'])) || '-')}
+    </div>`;
+    if (hv.catatan) html += `<div class="report-grid">${fld('Catatan Verifikasi', hv.catatan)}</div>`;
+
+    let tahapTerakhir = '';
+    html += `<table class="report-mini-table"><thead><tr>
+      <th>#</th><th>Data Dukung/Dokumen</th><th>Ketersediaan</th><th>Hasil Verifikasi</th><th>Keterangan</th>
+    </tr></thead><tbody>`;
+    DOK_MASTER.forEach(d => {
+      if (d.tahap !== tahapTerakhir) {
+        tahapTerakhir = d.tahap;
+        html += `<tr><td colspan="5" style="background:var(--g100);font-weight:700;font-size:10px">${d.tahap}</td></tr>`;
+      }
+      const ada    = dokAda(obj, d.idx);
+      const sesuai = dokSesuai(hv, d.idx);
+      // Keterangan: alasan dari pengembang bila dokumen tidak ada,
+      // atau keterangan wajib dari verifikator bila dinilai tidak sesuai.
+      const ket = [dokAlasan(obj, d.idx), dokKeteranganVerif(hv, d.idx)].filter(Boolean).join(' — ');
+      const warna = sesuai === 'Tidak Sesuai' ? 'var(--red)' : (sesuai === 'Sesuai' ? 'var(--green)' : 'var(--g400)');
+      html += `<tr>
+        <td>${d.idx + 1}</td><td>${d.label}</td>
+        <td>${ada || '-'}</td>
+        <td style="color:${warna};font-weight:600">${sesuai || 'Belum diverifikasi'}</td>
+        <td style="font-size:10px;color:var(--g600)">${ket || '-'}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+
+    const bagian = Object.keys(hv.catatanBagian).filter(k => String(hv.catatanBagian[k]||'').trim());
+    if (bagian.length) {
+      html += `<div style="margin-top:10px"><b style="font-size:11px">Catatan per Bagian</b>
+        <table class="report-mini-table"><tbody>
+        ${bagian.map(k => `<tr><td style="width:35%">${k}</td><td>${hv.catatanBagian[k]}</td></tr>`).join('')}
+        </tbody></table></div>`;
+    }
+    if (!hv.ada) html += `<div class="report-empty">Data dukung belum diverifikasi di lapangan.</div>`;
+  }
   html += `</div>`;
 
   // PSU
@@ -2506,12 +2631,6 @@ function goHome() {
 const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const HARI_ID  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 
-const DOK_BA = [
-  {tahap:'Tahap Perencanaan', items:['Gambar Site Plan Perumahan','DED (Detailed Engineering Design) Perumahan','Rencana Kerja dan Syarat-syarat (RKS)','Brosur Pemasaran (spesifikasi rumah/floor plan)']},
-  {tahap:'Tahap Perizinan', items:['Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL atau dokumen lain sesuai ketentuan)','Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)']},
-  {tahap:'Tahap Pelaksanaan', items:['As Built Drawing']},
-  {tahap:'Tahap Pasca Konstruksi', items:['Sertifikat Laik Fungsi (SLF)','Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi']},
-];
 
 const PSU_BA = ['Jaringan Jalan','Drainase','Penyediaan Air Bersih','Persampahan','Penerangan Jalan','PSU Lainnya'];
 const SALUR_BA = ['Pondasi','Sloof','Kolom','Ring Balok','Rangka Atap','Penutup Atap & Plafon','Lantai','Dinding','Ketentuan Rumah Layak Huni','Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)'];
@@ -2564,10 +2683,20 @@ function baOnPerumahanChange() {
     document.getElementById('ba-ket-pasca').value = ketPasca;
     document.getElementById('ba-unit-pasca').value = `${pascaRows.length}`;
   }
-  // Verifikasi catatan dokumen
-  const vfyRow = DB.verifikasi.find(r=>r.t1_id_sikumbang===obj.t1_id_sikumbang||r.t1_nama_perumahan===obj.t1_nama_perumahan);
-  if (vfyRow) {
-    document.getElementById('ba-ket-dok').value = vfyRow.catatan_status_sikumbang || '';
+  // Ringkasan kondisi data dukung, dirangkai dari hasil verifikasi lapangan.
+  {
+    const hv = hasilVerifikasi(obj);
+    const bagianDok = hv.catatanBagian['Data Dukung / Dokumen'] || '';
+    const tidakAda  = DOK_MASTER.filter(d => /tidak\s*ada/i.test(String(dokAda(obj, d.idx)))).map(d => d.singkat);
+    const tidakSesuai = DOK_MASTER.filter(d => dokSesuai(hv, d.idx) === 'Tidak Sesuai').map(d => d.singkat);
+    const bagian = [];
+    if (hv.status) bagian.push('Status verifikasi: ' + hv.status + '.');
+    if (tidakAda.length)    bagian.push('Belum tersedia: ' + tidakAda.join(', ') + '.');
+    if (tidakSesuai.length) bagian.push('Dinilai tidak sesuai: ' + tidakSesuai.join(', ') + '.');
+    if (!tidakAda.length && !tidakSesuai.length && hv.ada) bagian.push('Seluruh data dukung tersedia dan sesuai.');
+    if (bagianDok) bagian.push(bagianDok);
+    if (hv.catatan) bagian.push(hv.catatan);
+    document.getElementById('ba-ket-dok').value = bagian.join(' ');
   }
 
   // Auto tanggal & hari hari ini
@@ -2607,18 +2736,17 @@ function baGetDokCondisi(perIdx) {
   const pas = DB.pasca.filter(r=>r.p3_id_sikumbang===obj.t1_id_sikumbang||r.p3_nama_perumahan===obj.t1_nama_perumahan);
 
   // Dokumen ada/kondisi
+  // Ketersediaan diambil dari isian pengembang (sheet objek), hasil "Sesuai /
+  // Tidak Sesuai" dari checklist verifikator pada panel Verifikasi Data Dukung.
   const dokKet = {};
   const dokKetNote = {};
-  if (vfy) {
-    DOK_BA.forEach((grp,gi) => {
-      let offset = 0; DOK_BA.slice(0,gi).forEach(g2=>offset+=g2.items.length);
-      grp.items.forEach((item,ii) => {
-        const idx = offset+ii;
-        const ada = vfy[`dok_ada_${idx}`]||'';
-        const sesuai = vfy[`dok_sesuai_${idx}`]||'';
-        dokKet[item] = ada && sesuai ? `${ada}, ${sesuai}` : (ada||sesuai||'');
-        dokKetNote[item] = vfy[`catatan_dok_sesuai_${idx}`] || '';
-      });
+  {
+    const hv = hasilVerifikasi(obj);
+    DOK_MASTER.forEach(d => {
+      const ada    = dokAda(obj, d.idx);
+      const sesuai = dokSesuai(hv, d.idx);
+      dokKet[d.label] = (ada && sesuai) ? (ada + ', ' + sesuai) : (ada || sesuai || '');
+      dokKetNote[d.label] = [dokAlasan(obj, d.idx), dokKeteranganVerif(hv, d.idx)].filter(Boolean).join(' — ');
     });
   }
 
@@ -3215,25 +3343,17 @@ setTimeout(syncNavTop, 100);
 // ══════════════════════════════════════════════════════
 
 // Struktur B: Data Objek (dokumen)
-const CHV_DOK = [
-  { tahap: 'Tahap Perencanaan', items: [
-    'Gambar Site Plan Perumahan',
-    'DED (Detailed Engineering Design) Perumahan',
-    'Rencana Kerja dan Syarat-syarat (RKS)',
-    'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)',
-  ]},
-  { tahap: 'Tahap Perizinan', items: [
-    'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL atau Dokumen Lain Sesuai Ketentuan)',
-    'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)',
-  ]},
-  { tahap: 'Tahap Pelaksanaan', items: [
-    'As Built Drawing',
-  ]},
-  { tahap: 'Tahap Pasca Konstruksi', items: [
-    'Sertifikat Laik Fungsi (SLF)',
-    'Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi',
-  ]},
-];
+const CHV_DOK = (() => {
+  const out = [];
+  DOK_MASTER.forEach(d => {
+    let g = out.find(x => x.tahap === d.tahap);
+    if (!g) { g = { tahap: d.tahap, items: [] }; out.push(g); }
+    // Simpan indeks aslinya, jangan mengandalkan posisi dalam daftar rata —
+    // itu yang dulu membuat nama dokumen tidak cocok dengan nilainya.
+    g.items.push({ idx: d.idx, label: d.label });
+  });
+  return out;
+})();
 
 // Struktur C: PSU
 // CHV_PSU — field: kondisi radio, matField: checkbox material, ketField: keterangan textarea
@@ -3435,6 +3555,7 @@ function buildCHVCard(obj) {
   // Hitung total unit
   const totalUnit = (Number(obj.t1_subsidi_unit_1)||0)+(Number(obj.t1_subsidi_unit_2)||0)+(Number(obj.t1_subsidi_unit_3)||0);
   const { prov, kab } = wilayahObjek(obj);
+  const hvKepala = hasilVerifikasi(obj);
 
   // Section A: Data Perumahan
   const tipeSubsidi = [
@@ -3480,33 +3601,38 @@ function buildCHVCard(obj) {
       </tr>
       <tr>
         <td class="chv-lbl">Status Rumah di Perumahan<br><small style="font-weight:400;color:var(--g400)">(Sesuai Data SIKUMBANG)</small></td>
-        <td colspan="5">${chvPillHTML((obj.t1_status_sikumbang||obj.status_sikumbang||obj['Status Verifikasi']))}</td>
+        <td colspan="5">${chvPillHTML(obj.t1_status_sikumbang||obj.status_sikumbang||'')}</td>
       </tr>
+      <tr>
+        <td class="chv-lbl">Hasil Verifikasi Lapangan</td>
+        <td>${chvPillHTML(hvKepala.status)}</td>
+        <td class="chv-lbl">Verifikator</td><td>${hvKepala.verifikator||'-'}</td>
+        <td class="chv-lbl">Tanggal Verifikasi</td><td>${hvKepala.tanggal||'-'}</td>
+      </tr>
+      ${hvKepala.catatan ? `<tr>
+        <td class="chv-lbl" style="vertical-align:top">Catatan Verifikasi</td>
+        <td colspan="5">${hvKepala.catatan}</td>
+      </tr>` : ''}
     </table>
   </div>`;
 
   // Section B: Data Objek (Dokumen)
   let dokRows = '';
   let dokNo = 0;
+  const hvDetail = hasilVerifikasi(obj);
   CHV_DOK.forEach(grp => {
     dokRows += `<tr class="chv-grp-hdr"><td colspan="5">${grp.tahap}</td></tr>`;
     grp.items.forEach(item => {
       dokNo++;
-      let ada = '-', sesuai = '-', catatan = '-', rekomendasi = '-';
-      if (vfy) {
-        // Tentukan index berdasarkan posisi item flat
-        const flatItems = CHV_DOK.flatMap(g => g.items);
-        const idx = flatItems.indexOf(item);
-        ada = vfy[`dok_ada_${idx}`] || '-';
-        sesuai = vfy[`dok_sesuai_${idx}`] || '-';
-        catatan = vfy[`catatan_dok_sesuai_${idx}`] || '-';
-      }
+      const ada     = dokAda(obj, item.idx) || '-';
+      const sesuai  = dokSesuai(hvDetail, item.idx) || '-';
+      const catatan = [dokAlasan(obj, item.idx), dokKeteranganVerif(hvDetail, item.idx)].filter(Boolean).join(' — ');
       dokRows += `<tr>
         <td class="chv-no">${dokNo}</td>
-        <td>${item}</td>
+        <td>${item.label}</td>
         <td class="chv-center">${chvPillHTML(ada)}</td>
         <td class="chv-center">${chvPillHTML(sesuai)}</td>
-        <td>${catatan !== '-' ? catatan : ''}</td>
+        <td>${catatan}</td>
       </tr>`;
     });
   });
@@ -3939,23 +4065,24 @@ function exportCHVWord() {
         <tr>${th('Koordinat')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc(obj.t1_koordinat||'-')}</td></tr>
         <tr>${th('Tipe Rumah Subsidi')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc(tipeSubsidiTxt)}</td></tr>
         <tr>${th('Tipe Rumah Komersil')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc(tipeKomersilTxt)}</td></tr>
-        <tr>${th('Status Rumah di Perumahan (Sesuai SIKUMBANG)')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc((obj.t1_status_sikumbang||obj.status_sikumbang||obj['Status Verifikasi'])||'-')}</td></tr>
+        <tr>${th('Status Rumah di Perumahan (Sesuai SIKUMBANG)')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc((obj.t1_status_sikumbang||obj.status_sikumbang)||'-')}</td></tr>
+        <tr>${th('Hasil Verifikasi Lapangan')}${td(hasilVerifikasi(obj).status||'-')}${th('Verifikator')}${td(hasilVerifikasi(obj).verifikator||'-')}${th('Tanggal Verifikasi')}${td(hasilVerifikasi(obj).tanggal||'-')}</tr>
+        ${hasilVerifikasi(obj).catatan ? `<tr>${th('Catatan Verifikasi')}<td colspan="5" style="padding:5px 8px;border:1px solid #aaa;font-size:10pt;">${esc(hasilVerifikasi(obj).catatan)}</td></tr>` : ''}
       </table>`;
 
       // B. Data Objek
       pages += secTitle('B. DATA OBJEK PERUMAHAN');
       pages += `<table style="${tblStyle}"><tr>${th('No','width:32px;text-align:center;')}${th('Aspek yang Dinilai')}${th('Status Dokumen','width:110pt;')}${th('Status Kesesuaian','width:110pt;')}${th('Catatan Hasil Review')}</tr>`;
-      const flatItems = CHV_DOK.flatMap(g => g.items);
+      const hvDoc = hasilVerifikasi(obj);
       let bNo = 0;
       CHV_DOK.forEach(grp => {
         pages += grpTr(grp.tahap, 5);
         grp.items.forEach(item => {
           bNo++;
-          const idx = flatItems.indexOf(item);
-          const ada = (vfy&&vfy[`dok_ada_${idx}`]) || '';
-          const ses = (vfy&&vfy[`dok_sesuai_${idx}`]) || '';
-          const cat = (vfy&&vfy[`catatan_dok_sesuai_${idx}`]) || '';
-          pages += `<tr>${tdc(bNo)}${td(item)}${tdc(ada)}${tdc(ses)}${td(cat)}</tr>`;
+          const ada = dokAda(obj, item.idx);
+          const ses = dokSesuai(hvDoc, item.idx);
+          const cat = [dokAlasan(obj, item.idx), dokKeteranganVerif(hvDoc, item.idx)].filter(Boolean).join(' — ');
+          pages += `<tr>${tdc(bNo)}${td(item.label)}${tdc(ada)}${tdc(ses)}${td(cat)}</tr>`;
         });
       });
       pages += `</table>`;
@@ -4253,7 +4380,7 @@ async function exportCHVExcel() {
       r = ws.addRow(['Tipe Rumah Komersil', tipeKomersilXl]);
       ws.mergeCells(r.number, 2, r.number, NCOL);
       styleLabelCells(r, [1]);
-      r = ws.addRow(['Status Rumah di Perumahan (Sesuai SIKUMBANG)', (obj.t1_status_sikumbang||obj.status_sikumbang||obj['Status Verifikasi'])||'-']);
+      r = ws.addRow(['Status Rumah di Perumahan (Sesuai SIKUMBANG)', (obj.t1_status_sikumbang||obj.status_sikumbang)||'-']);
       ws.mergeCells(r.number, 2, r.number, NCOL);
       styleLabelCells(r, [1]);
       addBlank();
@@ -4263,7 +4390,7 @@ async function exportCHVExcel() {
       r = ws.addRow(['No','Aspek yang Dinilai','Status Dokumen','Status Kesesuaian','Catatan Hasil Review']);
       ws.mergeCells(r.number, 5, r.number, NCOL);
       styleTableHead(r);
-      const flatItems = CHV_DOK.flatMap(g => g.items);
+      const hvXls = hasilVerifikasi(obj);
       let bNo = 0;
       CHV_DOK.forEach(grp => {
         r = ws.addRow([grp.tahap]);
@@ -4271,11 +4398,10 @@ async function exportCHVExcel() {
         styleGroupHead(r);
         grp.items.forEach(item => {
           bNo++;
-          const idx = flatItems.indexOf(item);
-          const ada = (vfy&&vfy[`dok_ada_${idx}`]) || '';
-          const ses = (vfy&&vfy[`dok_sesuai_${idx}`]) || '';
-          const cat = (vfy&&vfy[`catatan_dok_sesuai_${idx}`]) || '';
-          r = ws.addRow([bNo, item, ada, ses, cat]);
+          const ada = dokAda(obj, item.idx);
+          const ses = dokSesuai(hvXls, item.idx);
+          const cat = [dokAlasan(obj, item.idx), dokKeteranganVerif(hvXls, item.idx)].filter(Boolean).join(' — ');
+          r = ws.addRow([bNo, item.label, ada, ses, cat]);
           ws.mergeCells(r.number, 5, r.number, NCOL);
           styleDataRow(r, [1,3,4]);
         });
