@@ -1076,6 +1076,95 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 // ══════════════════════════════════════════════════════
 // SHEET MAPPING — sesuai nama sheet di spreadsheet
 // ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// PENGENALAN WILAYAH DARI ALAMAT
+// t1_alamat diisi bebas oleh pengembang, formatnya tidak seragam:
+//   "JL. GUNUNG LAWU ... no. 1 JAWA BARAT, KOTA CIREBON, Harjamukti, Larangan"
+//   "JAWA BARAT, KAB BOGOR, Cileungsi, Mampir"
+//   "Desa Bojong, Klapanunggal, KAB BOGOR, JAWA BARAT"   <- urutan terbalik
+// Mengambil potongan koma ke-0 dan ke-1 karena itu sering salah.
+// Fungsi ini mencari nama provinsi yang dikenali di mana pun dalam teks,
+// dan mencari potongan yang diawali KAB/KOTA/KABUPATEN untuk kab/kota.
+// ══════════════════════════════════════════════════════
+const DAFTAR_PROVINSI = [
+  'Aceh','Sumatera Utara','Sumatera Barat','Riau','Kepulauan Riau','Jambi',
+  'Sumatera Selatan','Kepulauan Bangka Belitung','Bengkulu','Lampung',
+  'DKI Jakarta','Jawa Barat','Banten','Jawa Tengah','DI Yogyakarta','Jawa Timur',
+  'Bali','Nusa Tenggara Barat','Nusa Tenggara Timur',
+  'Kalimantan Barat','Kalimantan Tengah','Kalimantan Selatan','Kalimantan Timur','Kalimantan Utara',
+  'Sulawesi Utara','Gorontalo','Sulawesi Tengah','Sulawesi Barat','Sulawesi Selatan','Sulawesi Tenggara',
+  'Maluku','Maluku Utara',
+  'Papua','Papua Barat','Papua Barat Daya','Papua Tengah','Papua Pegunungan','Papua Selatan'
+];
+// Nama alternatif yang sering dipakai di lapangan
+const ALIAS_PROVINSI = {
+  'JAKARTA': 'DKI Jakarta', 'DKI': 'DKI Jakarta',
+  'YOGYAKARTA': 'DI Yogyakarta', 'DIY': 'DI Yogyakarta', 'JOGJA': 'DI Yogyakarta',
+  'NTB': 'Nusa Tenggara Barat', 'NTT': 'Nusa Tenggara Timur',
+  'BABEL': 'Kepulauan Bangka Belitung', 'KEPRI': 'Kepulauan Riau'
+};
+
+function wilayahDari(alamat) {
+  const teks = String(alamat || '').trim();
+  if (!teks) return { prov: '', kab: '' };
+  const besar = teks.toUpperCase();
+
+  // ── Provinsi: cari nama terpanjang dulu, supaya "Papua Barat Daya"
+  //    tidak keburu tertangkap sebagai "Papua Barat" atau "Papua".
+  let prov = '';
+  const urut = DAFTAR_PROVINSI.slice().sort((a, b) => b.length - a.length);
+  for (const nama of urut) {
+    if (besar.includes(nama.toUpperCase())) { prov = nama; break; }
+  }
+  if (!prov) {
+    for (const kunci of Object.keys(ALIAS_PROVINSI)) {
+      if (new RegExp('\\b' + kunci + '\\b').test(besar)) { prov = ALIAS_PROVINSI[kunci]; break; }
+    }
+  }
+
+  // ── Kab/Kota: potongan yang diawali KAB/KOTA/KABUPATEN.
+  //    Yang paling pendek dipilih, karena potongan panjang biasanya
+  //    masih tercampur nama jalan atau nomor blok.
+  let kab = '';
+  const kandidat = teks.split(',').map(x => x.trim())
+    .filter(x => /^(KAB\.?|KABUPATEN|KOTA)\b/i.test(x));
+  if (kandidat.length) {
+    kandidat.sort((a, b) => a.length - b.length);
+    kab = kandidat[0];
+  }
+  return { prov: prov, kab: kab };
+}
+
+// Ambil wilayah objek perumahan. Kalau alamat tidak terbaca, pakai isian
+// provinsi/kabupaten dari panel surveyor (dropdown, jadi lebih tepercaya).
+function wilayahObjek(obj) {
+  if (!obj) return { prov: '-', kab: '-' };
+  // Sumber paling tepercaya: dropdown Provinsi/Kab-Kota di form pengembang.
+  // Baru kalau kosong (data lama sebelum kolom ini ada), alamat ditelaah.
+  let prov = (obj.t1_provinsi || '').trim();
+  let kab  = (obj.t1_kabupaten || '').trim();
+  if (!prov || !kab) {
+    const dariAlamat = wilayahDari(obj.t1_alamat);
+    if (!prov) prov = dariAlamat.prov;
+    if (!kab)  kab  = dariAlamat.kab;
+  }
+  if (!prov || !kab) {
+    const id = obj.t1_id_sikumbang, nama = obj.t1_nama_perumahan;
+    const cocok = [
+      (DB.psu   || []).find(r => r.p1_id_sikumbang === id || r.p1_nama_perumahan === nama),
+      (DB.salur || []).find(r => r.p2_id_sikumbang === id || r.p2_nama_perumahan === nama),
+      (DB.pasca || []).find(r => r.p3_id_sikumbang === id || r.p3_nama_perumahan === nama)
+    ];
+    const pasangan = [['prov_panel1','kab_panel1'],['prov_panel2','kab_panel2'],['prov_panel3','kab_panel3']];
+    for (let i = 0; i < cocok.length; i++) {
+      if (!cocok[i]) continue;
+      if (!prov && cocok[i][pasangan[i][0]]) prov = cocok[i][pasangan[i][0]];
+      if (!kab  && cocok[i][pasangan[i][1]]) kab  = cocok[i][pasangan[i][1]];
+    }
+  }
+  return { prov: prov || '-', kab: kab || '-' };
+}
+
 const SHEET_MAP = {
   objek:      'Data Objek Perumahan - Pengembang',
   verifikasi: 'Verifikasi Data Objek Perumahan',
@@ -1325,7 +1414,7 @@ function renderPerumahan() {
   const provF  = document.getElementById('obj-prov-filter')?.value || '';
   const assocF = document.getElementById('obj-assoc-filter')?.value || '';
   let data = DB.objek;
-  if (provF)  data = data.filter(r => (r.t1_alamat||'').toUpperCase().includes(provF.toUpperCase()));
+  if (provF)  data = data.filter(r => wilayahObjek(r).prov === provF);
   if (assocF) data = data.filter(r => r.t1_asosiasi === assocF);
 
   if (!data.length) {
@@ -1344,7 +1433,7 @@ function renderPerumahan() {
       <div class="p-card-row">Pengembang <span>${v(r.t1_nama_pt)}</span></div>
       <div class="p-card-row">Asosiasi <span>${v(r.t1_asosiasi)}</span></div>
       <div class="p-card-row">Kontraktor <span>${v(r.t1_kontraktor)}</span></div>
-      <div class="p-card-row">Lokasi <span>${(r.t1_alamat||'').split(',').slice(0,3).join(', ')}</span></div>
+      <div class="p-card-row">Lokasi <span>${(() => { const w = wilayahObjek(r); return [w.kab, w.prov].filter(x => x && x !== '-').join(', ') || '-'; })()}</span></div>
       <div class="p-card-row">Luas Perumahan <span>${fmt(r.t1_luas_perumahan)} m²</span></div>
       <div class="p-card-row">Unit Subsidi <span>${fmt(totalSubsidi)}</span></div>
       <div class="p-card-row">Unit Komersil <span>${fmt(totalKomersil)}</span></div>
@@ -1428,8 +1517,8 @@ function initTitikMap() {
 }
 
 function initTitikFilters() {
-  const provList = [...new Set(DB.objek.map(r => (r.t1_alamat||'').split(',')[0].trim()).filter(Boolean))];
-  const kabList  = [...new Set(DB.objek.map(r => (r.t1_alamat||'').split(',')[1]?.trim()).filter(Boolean))];
+  const provList = [...new Set(DB.objek.map(r => wilayahObjek(r).prov).filter(x => x && x !== '-'))];
+  const kabList  = [...new Set(DB.objek.map(r => wilayahObjek(r).kab).filter(x => x && x !== '-'))];
   populateSelect('titik-prov-filter', provList, 'Semua Provinsi');
   populateSelect('titik-kab-filter', kabList, 'Semua Kab/Kota');
   populateSelect('titik-perumahan-filter', DB.objek.map(r => r.t1_nama_perumahan), 'Semua Perumahan');
@@ -1451,15 +1540,15 @@ function renderTitikLokasi() {
   const perF  = document.getElementById('titik-perumahan-filter')?.value || '';
 
   let data = DB.objek;
-  if (provF) data = data.filter(r => (r.t1_alamat||'').split(',')[0]?.trim() === provF);
-  if (kabF)  data = data.filter(r => (r.t1_alamat||'').split(',')[1]?.trim() === kabF);
+  if (provF) data = data.filter(r => wilayahObjek(r).prov === provF);
+  if (kabF)  data = data.filter(r => wilayahObjek(r).kab  === kabF);
   if (perF)  data = data.filter(r => r.t1_nama_perumahan === perF);
   if (titikStage === 'penyaluran') data = data.filter(r => titikStageStatus(r).hasSalur);
   else if (titikStage === 'pasca') data = data.filter(r => titikStageStatus(r).hasPasca);
 
   // ── KPI: jumlah sudah tersurvei ──
-  const provSet = new Set(data.map(r => (r.t1_alamat||'').split(',')[0]?.trim()).filter(Boolean));
-  const kabSet  = new Set(data.map(r => (r.t1_alamat||'').split(',')[1]?.trim()).filter(Boolean));
+  const provSet = new Set(data.map(r => wilayahObjek(r).prov).filter(x => x && x !== '-'));
+  const kabSet  = new Set(data.map(r => wilayahObjek(r).kab).filter(x => x && x !== '-'));
   const totalUnitTersurvei = data.reduce((s, r) => s + getUnitTersurvei(r), 0);
   const kpiEl = document.getElementById('titik-kpi-strip');
   if (kpiEl) {
@@ -1477,8 +1566,7 @@ function renderTitikLokasi() {
     tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="ico">📭</div><p>Tidak ada data perumahan sesuai filter ini.</p></div></td></tr>`;
   } else {
     tbody.innerHTML = data.map((r, i) => {
-      const parts = (r.t1_alamat||'').split(',').map(s => s.trim());
-      const prov = parts[0] || '-', kab = parts[1] || '-';
+      const { prov, kab } = wilayahObjek(r);
       return `<tr>
         <td>${i+1}</td>
         <td>${prov}</td>
@@ -1507,8 +1595,7 @@ function renderTitikLokasi() {
     if (!coord) { unmapped++; return; }
     mapped++;
     bounds.push([coord.lat, coord.lng]);
-    const parts = (r.t1_alamat||'').split(',').map(s => s.trim());
-    const prov = parts[0] || '-', kab = parts[1] || '-';
+    const { prov, kab } = wilayahObjek(r);
     const { hasSalur, hasPasca } = titikStageStatus(r);
     let dotColor = '#9A9280', stageLabel = 'Belum Disurvei';
     if (titikStage === 'penyaluran') { dotColor = '#1A8FA5'; stageLabel = 'Tahap Penyaluran'; }
@@ -2361,7 +2448,7 @@ function handleExcelUpload(event) {
 // ══════════════════════════════════════════════════════
 function initFilters() {
   // Perumahan
-  const provList = [...new Set(DB.objek.map(r => (r.t1_alamat||'').split(',')[0].trim()).filter(Boolean))];
+  const provList = [...new Set(DB.objek.map(r => wilayahObjek(r).prov).filter(x => x && x !== '-'))];
   populateSelect('obj-prov-filter', provList, 'Semua Provinsi');
   populateSelect('obj-assoc-filter', DB.objek.map(r=>r.t1_asosiasi), 'Semua Asosiasi');
 
@@ -2453,9 +2540,9 @@ function baOnPerumahanChange() {
   document.getElementById('ba-nama-perumahan').value = obj.t1_nama_perumahan || '';
   document.getElementById('ba-nama-pt').value = obj.t1_nama_pt || '';
   document.getElementById('ba-alamat').value = obj.t1_alamat || '';
-  const parts = (obj.t1_alamat||'').split(',').map(s=>s.trim());
-  document.getElementById('ba-prov').value = parts[0] || '';
-  document.getElementById('ba-kab').value  = parts[1] || '';
+  const wil = wilayahObjek(obj);
+  document.getElementById('ba-prov').value = wil.prov === '-' ? '' : wil.prov;
+  document.getElementById('ba-kab').value  = wil.kab  === '-' ? '' : wil.kab;
   document.getElementById('ba-koordinat').value = obj.t1_koordinat || '';
 
   // PSU catatan
@@ -3310,7 +3397,7 @@ function setCHVTahap(mode) {
 
 function initCHVFilters() {
   const allNames = DB.objek.map(r => r.t1_nama_perumahan).filter(Boolean);
-  const allProv  = DB.objek.map(r => (r.t1_alamat||'').split(',')[0].trim()).filter(Boolean);
+  const allProv  = DB.objek.map(r => wilayahObjek(r).prov).filter(x => x && x !== '-');
   populateSelect('chv-filter-perumahan', [...new Set(allNames)], 'Semua Perumahan');
   populateSelect('chv-filter-prov', [...new Set(allProv)], 'Semua Provinsi');
   const tahapEl = document.getElementById('chv-filter-tahap');
@@ -3323,7 +3410,7 @@ function renderCHV() {
 
   let objList = DB.objek;
   if (filterP)    objList = objList.filter(r => r.t1_nama_perumahan === filterP);
-  if (filterProv) objList = objList.filter(r => (r.t1_alamat||'').includes(filterProv));
+  if (filterProv) objList = objList.filter(r => wilayahObjek(r).prov === filterProv);
 
   if (!objList.length) {
     document.getElementById('chv-content').innerHTML =
@@ -3347,9 +3434,7 @@ function buildCHVCard(obj) {
 
   // Hitung total unit
   const totalUnit = (Number(obj.t1_subsidi_unit_1)||0)+(Number(obj.t1_subsidi_unit_2)||0)+(Number(obj.t1_subsidi_unit_3)||0);
-  const alamatParts = (obj.t1_alamat||'').split(',').map(s=>s.trim());
-  const prov = alamatParts[0] || '-';
-  const kab  = alamatParts[1] || '-';
+  const { prov, kab } = wilayahObjek(obj);
 
   // Section A: Data Perumahan
   const tipeSubsidi = [
@@ -3829,8 +3914,7 @@ function exportCHVWord() {
       const psuR = DB.psu.find(r => r.p1_id_sikumbang===id || r.p1_nama_perumahan===nama);
       const salur= DB.salur.find(r => r.p2_id_sikumbang===id || r.p2_nama_perumahan===nama);
       const pasca= DB.pasca.filter(r => r.p3_id_sikumbang===id || r.p3_nama_perumahan===nama);
-      const alamatParts = (obj.t1_alamat||'').split(',').map(s=>s.trim());
-      const prov = alamatParts[0]||'-', kab = alamatParts[1]||'-';
+      const { prov, kab } = wilayahObjek(obj);
       const totalUnit = (Number(obj.t1_subsidi_unit_1)||0)+(Number(obj.t1_subsidi_unit_2)||0)+(Number(obj.t1_subsidi_unit_3)||0);
 
       if (oi > 0) pages += `<div style="page-break-before:always;"></div>`;
@@ -4112,8 +4196,7 @@ async function exportCHVExcel() {
       const psuR = DB.psu.find(r => r.p1_id_sikumbang === id || r.p1_nama_perumahan === nama);
       const salur= DB.salur.find(r => r.p2_id_sikumbang === id || r.p2_nama_perumahan === nama);
       const pasca= DB.pasca.filter(r => r.p3_id_sikumbang === id || r.p3_nama_perumahan === nama);
-      const alamatParts = (obj.t1_alamat||'').split(',').map(s=>s.trim());
-      const prov = alamatParts[0]||'-', kab = alamatParts[1]||'-';
+      const { prov, kab } = wilayahObjek(obj);
       const totalUnit = (Number(obj.t1_subsidi_unit_1)||0)+(Number(obj.t1_subsidi_unit_2)||0)+(Number(obj.t1_subsidi_unit_3)||0);
 
       let sheetName = String(nama).replace(/[\\/?*\[\]:]/g, '-').substring(0, 31) || 'Perumahan';
