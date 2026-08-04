@@ -624,8 +624,8 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 
 <nav class="nav-bar">
   <button class="nav-btn active" data-page="titik" onclick="showPage('titik',this)">📍 Dashboard</button>
-  <button class="nav-btn" data-page="beritaacara" onclick="showPage('beritaacara',this)">📝 Berita Acara</button>
   <button class="nav-btn" data-page="chv" onclick="showPage('chv',this)">📋 Laporan</button>
+  <button class="nav-btn" data-page="beritaacara" onclick="showPage('beritaacara',this)">📝 Berita Acara</button>
 </nav>
 
 <main class="main">
@@ -2660,12 +2660,14 @@ function bacaCatatanLaporan(rekId) {
   catch (e) { return ''; }
 }
 
-// Menggabungkan catatan per aspek menjadi satu paragraf, diawali nama aspeknya.
+// Menyusun catatan per aspek menjadi daftar berpoin, satu aspek satu baris:
+//   - Jaringan Jalan: ...
+//   - Saluran Drainase: ...
 function gabungCatatan(daftar) {
   return daftar
     .filter(x => x.teks)
-    .map(x => x.aspek + ': ' + x.teks.replace(/\s*\n\s*/g, ' ').trim().replace(/\.?$/, '.'))
-    .join(' ');
+    .map(x => '- ' + x.aspek + ': ' + x.teks.replace(/\s*\n\s*/g, ' ').trim())
+    .join('\n');
 }
 
 // Catatan aspek PSU (bagian C laporan)
@@ -2938,7 +2940,7 @@ function baRenderPreview() {
   </table>
   <div class="ba-catatan">
     <div style="font-size:11px;margin-bottom:4px">Catatan:</div>
-    ${d.ket_salur ? `<div style="font-size:11px">${d.ket_salur}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
+    ${d.ket_salur ? `<div style="font-size:11px;white-space:pre-line">${d.ket_salur}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
   </div>` : `
   <!-- 3. PASCA -->
   <div class="ba-section-title">3. Kondisi Fisik Bangunan dan Pemanfaatan/Penghunian Rumah (Tahap Pasca Penyaluran)</div>
@@ -2953,7 +2955,7 @@ function baRenderPreview() {
   </table>
   <div class="ba-catatan">
     <div style="font-size:11px;margin-bottom:4px">Catatan:</div>
-    ${d.ket_pasca ? `<div style="font-size:11px">${d.ket_pasca}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
+    ${d.ket_pasca ? `<div style="font-size:11px;white-space:pre-line">${d.ket_pasca}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
   </div>`;
 
   let html = `
@@ -2989,7 +2991,7 @@ function baRenderPreview() {
   </table>
   <div class="ba-catatan">
     <div style="font-size:11px;margin-bottom:4px">Catatan:</div>
-    ${d.ket_dok ? `<div style="font-size:11px">${d.ket_dok}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
+    ${d.ket_dok ? `<div style="font-size:11px;white-space:pre-line">${d.ket_dok}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
   </div>
 
   <!-- 2. PSU -->
@@ -3001,7 +3003,7 @@ function baRenderPreview() {
   </table>
   <div class="ba-catatan">
     <div style="font-size:11px;margin-bottom:4px">Catatan:</div>
-    ${d.ket_psu ? `<div style="font-size:11px">${d.ket_psu}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
+    ${d.ket_psu ? `<div style="font-size:11px;white-space:pre-line">${d.ket_psu}</div>` : '<div class="line"></div><div class="line"></div><div class="line"></div>'}
   </div>
   ${sectionFisik}
 
@@ -3066,6 +3068,18 @@ async function generateBeritaAcara() {
 
     const txt = (t, opts={}) => new TextRun({ text: String(t||''), font:'Calibri', size:20, ...opts });
     const par = (children, opts={}) => new Paragraph({ children: Array.isArray(children)?children:[children], ...opts });
+
+    // Catatan berpoin: tiap baris jadi paragraf tersendiri, garis bawah hanya
+    // pada baris terakhir. Kalau kosong, sisakan satu baris kosong bergaris.
+    const parCatatan = (isi) => {
+      const garis = { bottom:{ style:BorderStyle.SINGLE, size:4, color:'AAAAAA' } };
+      const baris = String(isi||'').split('\n').map(x => x.trim()).filter(Boolean);
+      if (!baris.length) return [par([txt('')],{spacing:{before:40,after:80},border:garis})];
+      return baris.map((b, i) => par([txt(b)], {
+        spacing: { before: i === 0 ? 40 : 20, after: i === baris.length-1 ? 80 : 20 },
+        border: i === baris.length-1 ? garis : undefined
+      }));
+    };
     const hdr = (t, bold=true) => par([txt(t, {bold, size:20})]);
     const emptyLine = () => par([txt('')]);
 
@@ -3211,8 +3225,7 @@ async function generateBeritaAcara() {
           par([txt('Secara umum kondisi dokumen data dukung perumahan adalah sebagai berikut:')],{spacing:{before:60,after:80}}),
           dokTable(),
           par([txt('Catatan:')],{spacing:{before:120,after:40}}),
-          par([txt(d.ket_dok||'')],{spacing:{before:40,after:80},
-            border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+          ...parCatatan(d.ket_dok),
           par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
 
           // ── 2. PSU ──
@@ -3220,8 +3233,7 @@ async function generateBeritaAcara() {
           par([txt('Secara umum kondisi prasarana, sarana, dan utilitas umum adalah sebagai berikut:')],{spacing:{before:60,after:80}}),
           psuTable(),
           par([txt('Catatan:')],{spacing:{before:120,after:40}}),
-          par([txt(d.ket_psu||'')],{spacing:{before:40,after:80},
-            border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+          ...parCatatan(d.ket_psu),
           par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
 
           // ── 3. FISIK (sesuai tahap terpilih) ──
@@ -3235,8 +3247,7 @@ async function generateBeritaAcara() {
             par([txt('Secara umum kondisi fisik bangunan rumah yang dicek pada Tahap Penyaluran adalah sebagai berikut:')],{spacing:{before:40,after:80}}),
             kompTable(SALUR_BA, cond.salKet, cond.salKetNote),
             par([txt('Catatan:')],{spacing:{before:120,after:40}}),
-            par([txt(d.ket_salur||'')],{spacing:{before:40,after:80},
-              border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+            ...parCatatan(d.ket_salur),
             par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
           ] : [
             par([txt('3. Kondisi Fisik Bangunan dan Pemanfaatan/Penghunian Rumah (Tahap Pasca Penyaluran)',{bold:true})],{spacing:spacingSection}),
@@ -3248,8 +3259,7 @@ async function generateBeritaAcara() {
             par([txt('Secara umum kondisi fisik bangunan dan pemanfaatan/penghunian rumah yang dicek pada Tahap Pasca Penyaluran adalah sebagai berikut:')],{spacing:{before:40,after:80}}),
             pascaTable(),
             par([txt('Catatan:')],{spacing:{before:120,after:40}}),
-            par([txt(d.ket_pasca||'')],{spacing:{before:40,after:80},
-              border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
+            ...parCatatan(d.ket_pasca),
             par([txt('')],{spacing:{before:60,after:60},border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'AAAAAA'}}}),
           ]),
 
@@ -3453,25 +3463,63 @@ const CHV_DOK = (() => {
 // si=2: Air Bersih (ssi=0)  si=3: Air Limbah (ssi=0)  si=4: Sampah (ssi=0)
 // si=5: Listrik (ssi=0)     si=6: Penerangan (ssi=0)
 // si=7: Fasilitas Umum (ssi=0..5: Sosial,Pendidikan,Ibadah,Kesehatan,Ekonomi,Olahraga)
+// ══════════════════════════════════════════════════════
+// FOTO DARI FORM
+// Apps Script menyimpan foto ke Google Drive lalu menaruh tautannya pada kolom
+// "Foto: <nama field>", dipisah koma bila lebih dari satu berkas.
+// Tautan Drive tidak bisa langsung dipakai sebagai <img src>, jadi ID berkasnya
+// diambil dan diubah ke alamat thumbnail.
+// ══════════════════════════════════════════════════════
+function idBerkasDrive(url) {
+  const t = String(url || '').trim();
+  if (!t) return '';
+  const m = t.match(/\/d\/([A-Za-z0-9_-]{10,})/)      // .../file/d/<id>/view
+         || t.match(/[?&]id=([A-Za-z0-9_-]{10,})/);    // ...open?id=<id>
+  return m ? m[1] : '';
+}
+
+function daftarFoto(row, namaField) {
+  if (!row || !namaField) return [];
+  const isi = row['Foto: ' + namaField];
+  if (!isi) return [];
+  return String(isi).split(',').map(x => x.trim()).filter(Boolean);
+}
+
+// Sel foto untuk tabel laporan. Menampilkan thumbnail yang bisa diklik.
+function selFoto(row, namaField) {
+  const daftar = [].concat(namaField).flatMap(f => daftarFoto(row, f));
+  if (!daftar.length) return '<span style="color:var(--g200);font-size:10px">—</span>';
+  return '<div style="display:flex;flex-wrap:wrap;gap:4px">' + daftar.map(url => {
+    const id = idBerkasDrive(url);
+    if (!id) return `<a href="${url}" target="_blank" rel="noopener" style="font-size:10px">Lihat</a>`;
+    return `<a href="${url}" target="_blank" rel="noopener" title="Buka foto ukuran penuh">
+      <img src="https://drive.google.com/thumbnail?id=${id}&sz=w160" alt="Foto"
+        loading="lazy"
+        style="width:62px;height:48px;object-fit:cover;border-radius:5px;border:1px solid var(--g200);display:block"
+        onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'Lihat',style:'font-size:10px'}))">
+    </a>`;
+  }).join('') + '</div>';
+}
+
 const CHV_PSU = [
-  { label: 'Jalan Utama Perumahan',          field: 'psu_k_0_0', matField: 'psu_mat_0_0', ketField: 'ket_psu_0_0' },
-  { label: 'Jalan Lingkungan Perumahan',      field: 'psu_k_0_1', matField: 'psu_mat_0_1', ketField: 'ket_psu_0_1' },
-  { label: 'Drainase Jalur Utama',            field: 'psu_k_1_0', matField: 'psu_mat_1_0', ketField: 'ket_psu_1_0' },
-  { label: 'Drainase Jalur Lingkungan',       field: 'psu_k_1_1', matField: 'psu_mat_1_1', ketField: 'ket_psu_1_1' },
-  { label: 'Sistem Jaringan Air Bersih',      field: 'psu_k_2_0', matField: 'psu_mat_2_0', ketField: 'ket_psu_2_0' },
-  { label: 'Sistem Pengelolaan Air Limbah',   field: 'psu_k_3_0', matField: 'psu_mat_3_0', ketField: 'ket_psu_3_0' },
-  { label: 'Sistem Pengelolaan Sampah',       field: 'psu_k_4_0', matField: 'psu_mat_4_0', ketField: 'ket_psu_4_0' },
-  { label: 'Sistem Jaringan Listrik',         field: 'psu_k_5_0', matField: 'psu_mat_5_0', ketField: 'ket_psu_5_0' },
-  { label: 'Penerangan Jalan',               field: 'psu_k_6_0', matField: 'psu_mat_6_0', ketField: 'ket_psu_6_0' },
-  { label: 'Sarana Sosial',                  field: 'psu_k_7_0', matField: 'psu_mat_7_0', ketField: 'ket_psu_7_0' },
-  { label: 'Sarana Pendidikan',              field: 'psu_k_7_1', matField: 'psu_mat_7_1', ketField: 'ket_psu_7_1' },
-  { label: 'Sarana Ibadah',                  field: 'psu_k_7_2', matField: 'psu_mat_7_2', ketField: 'ket_psu_7_2' },
-  { label: 'Sarana Kesehatan',               field: 'psu_k_7_3', matField: 'psu_mat_7_3', ketField: 'ket_psu_7_3' },
-  { label: 'Sarana Ekonomi',                 field: 'psu_k_7_4', matField: 'psu_mat_7_4', ketField: 'ket_psu_7_4' },
-  { label: 'Sarana Olahraga',                field: 'psu_k_7_5', matField: 'psu_mat_7_5', ketField: 'ket_psu_7_5' },
-  { label: 'Ruang Terbuka Hijau (RTH)',       field: 'psu_k_8_0', matField: null, ketField: 'ket_psu_8_0', isRTH: true },
-  { label: 'Ruang Terbuka Non Hijau',         field: 'psu_k_8_1', matField: null, ketField: 'ket_psu_8_1', isRTH: true },
-  { label: 'Ruang Terbuka Biru',              field: 'psu_k_8_2', matField: null, ketField: 'ket_psu_8_2', isRTH: true },
+  { label: 'Jalan Utama Perumahan',          field: 'psu_k_0_0', matField: 'psu_mat_0_0', ketField: 'ket_psu_0_0', fotoField: 'PSU_Jaringan Jalan' },
+  { label: 'Jalan Lingkungan Perumahan',      field: 'psu_k_0_1', matField: 'psu_mat_0_1', ketField: 'ket_psu_0_1', fotoField: 'PSU_Jaringan Jalan' },
+  { label: 'Drainase Jalur Utama',            field: 'psu_k_1_0', matField: 'psu_mat_1_0', ketField: 'ket_psu_1_0', fotoField: 'PSU_Saluran Drainase' },
+  { label: 'Drainase Jalur Lingkungan',       field: 'psu_k_1_1', matField: 'psu_mat_1_1', ketField: 'ket_psu_1_1', fotoField: 'PSU_Saluran Drainase' },
+  { label: 'Sistem Jaringan Air Bersih',      field: 'psu_k_2_0', matField: 'psu_mat_2_0', ketField: 'ket_psu_2_0', fotoField: 'PSU_Sistem Jaringan Air Bersih' },
+  { label: 'Sistem Pengelolaan Air Limbah',   field: 'psu_k_3_0', matField: 'psu_mat_3_0', ketField: 'ket_psu_3_0', fotoField: 'PSU_Sistem Pengelolaan Air Limbah' },
+  { label: 'Sistem Pengelolaan Sampah',       field: 'psu_k_4_0', matField: 'psu_mat_4_0', ketField: 'ket_psu_4_0', fotoField: 'PSU_Sistem Pengelolaan Sampah' },
+  { label: 'Sistem Jaringan Listrik',         field: 'psu_k_5_0', matField: 'psu_mat_5_0', ketField: 'ket_psu_5_0', fotoField: 'PSU_Sistem Jaringan Listrik' },
+  { label: 'Penerangan Jalan',               field: 'psu_k_6_0', matField: 'psu_mat_6_0', ketField: 'ket_psu_6_0', fotoField: 'PSU_Penerangan Jalan' },
+  { label: 'Sarana Sosial',                  field: 'psu_k_7_0', matField: 'psu_mat_7_0', ketField: 'ket_psu_7_0', fotoField: 'PSU_Fas_7_0_Sarana Sosial' },
+  { label: 'Sarana Pendidikan',              field: 'psu_k_7_1', matField: 'psu_mat_7_1', ketField: 'ket_psu_7_1', fotoField: 'PSU_Fas_7_1_Sarana Pendidikan' },
+  { label: 'Sarana Ibadah',                  field: 'psu_k_7_2', matField: 'psu_mat_7_2', ketField: 'ket_psu_7_2', fotoField: 'PSU_Fas_7_2_Sarana Ibadah' },
+  { label: 'Sarana Kesehatan',               field: 'psu_k_7_3', matField: 'psu_mat_7_3', ketField: 'ket_psu_7_3', fotoField: 'PSU_Fas_7_3_Sarana Kesehatan' },
+  { label: 'Sarana Ekonomi',                 field: 'psu_k_7_4', matField: 'psu_mat_7_4', ketField: 'ket_psu_7_4', fotoField: 'PSU_Fas_7_4_Sarana Ekonomi' },
+  { label: 'Sarana Olahraga',                field: 'psu_k_7_5', matField: 'psu_mat_7_5', ketField: 'ket_psu_7_5', fotoField: 'PSU_Fas_7_5_Sarana Olahraga' },
+  { label: 'Ruang Terbuka Hijau (RTH)',       field: 'psu_k_8_0', matField: null, ketField: 'ket_psu_8_0', isRTH: true, fotoField: 'PSU_Fas_8_0_Ruang Terbuka Hijau' },
+  { label: 'Ruang Terbuka Non Hijau',         field: 'psu_k_8_1', matField: null, ketField: 'ket_psu_8_1', isRTH: true, fotoField: 'PSU_Fas_8_1_Ruang Terbuka Non Hijau' },
+  { label: 'Ruang Terbuka Biru',              field: 'psu_k_8_2', matField: null, ketField: 'ket_psu_8_2', isRTH: true, fotoField: 'PSU_Fas_8_2_Ruang Terbuka Biru' },
 ];
 
 // Pengelompokan aspek PSU (No urut mengikuti kelompok, bukan per-baris CHV_PSU)
@@ -3490,14 +3538,14 @@ const PSU_GROUPS = [
 
 // Struktur D: Fisik Bangunan Tahap Penyaluran
 const CHV_FISIK_SALUR = [
-  { aspek: 'Pondasi', tambahan: 'catatan_tambahan_py_1_0', subs: [
+  { aspek: 'Pondasi', fotoField: 'py_komponen_1.0', tambahan: 'catatan_tambahan_py_1_0', subs: [
     { label: 'Jenis Pondasi',         acuan: 'Batu Kali/Batu Bata/Strauss Pile/Tapak/Lainnya',  field: 'py_pondasi_jenis', type: 'text' },
     { label: 'Kualitas Mortar',       acuan: 'Padat (tidak bolong-bolong) dan keras',            field: 'py_pondasi_mortar', type: 'kondisi' },
     { label: 'Kualitas Material',     acuan: 'Keras dan ukuran rata-rata > 30 cm',               field: 'py_pondasi_material', type: 'kondisi' },
     { label: 'Dimensi Pondasi',       acuan: 'Kedalaman sampai tanah keras atau ±60-80 cm',      field: 'py_pondasi_dimensi', type: 'kondisi' },
     { label: 'Koneksi Sloof & Kolom', acuan: 'Terlihat kokoh menyatu (ada angkur)',              field: 'py_pondasi_koneksi', type: 'kondisi' },
   ]},
-  { aspek: 'Sloof', tambahan: 'catatan_tambahan_py_2_0', subs: [
+  { aspek: 'Sloof', fotoField: 'py_komponen_2.0', tambahan: 'catatan_tambahan_py_2_0', subs: [
     { label: 'Kualitas Mortar Beton', acuan: 'Padat dan keras', field: 'py_sloofb_mortar', type: 'kondisi' },
     { label: 'Koneksi Besi Sloof-Kolom', acuan: 'Terkoneksi overlap 40-D', field: 'py_sloofb_koneksi', type: 'kondisi' },
     { label: 'Diameter Tulangan',     acuan: 'Min. 4 batang ∅9,6–10 mm', field: 'py_sloofb_tulangan', type: 'kondisi' },
@@ -3505,7 +3553,7 @@ const CHV_FISIK_SALUR = [
     { label: 'Jarak Antar Sengkang',  acuan: '< 15 cm', field: 'py_sloofb_sengkang_j', type: 'kondisi' },
     { label: 'Dimensi Sloof',         acuan: '> 15×20 cm', field: 'py_sloofb_dimensi', type: 'kondisi' },
   ]},
-  { aspek: 'Kolom', tambahan: 'catatan_tambahan_py_3_0', subs: [
+  { aspek: 'Kolom', fotoField: 'py_komponen_3.0', tambahan: 'catatan_tambahan_py_3_0', subs: [
     { label: 'Kualitas Mortar Beton', acuan: 'Padat dan keras', field: 'py_kolomb_mortar', type: 'kondisi' },
     { label: 'Koneksi Kolom-Sloof-Ring Balok', acuan: 'Terkoneksi overlap 40-D', field: 'py_kolomb_koneksi', type: 'kondisi' },
     { label: 'Diameter Tulangan',     acuan: 'Min. 4 batang ∅9,6–10 mm', field: 'py_kolomb_tulangan', type: 'kondisi' },
@@ -3513,7 +3561,7 @@ const CHV_FISIK_SALUR = [
     { label: 'Jarak Antar Sengkang',  acuan: '< 15 cm', field: 'py_kolomb_sengkang_j', type: 'kondisi' },
     { label: 'Dimensi Kolom',         acuan: '> 15×15 cm', field: 'py_kolomb_dimensi', type: 'kondisi' },
   ]},
-  { aspek: 'Ring Balok', tambahan: 'catatan_tambahan_py_4_0', subs: [
+  { aspek: 'Ring Balok', fotoField: 'py_komponen_4.0', tambahan: 'catatan_tambahan_py_4_0', subs: [
     { label: 'Kualitas Mortar Beton', acuan: 'Padat dan keras', field: 'py_ringbalok_mortar', type: 'kondisi' },
     { label: 'Koneksi Ring Balok-Kolom', acuan: 'Terkoneksi overlap 40-D', field: 'py_ringbalok_koneksi', type: 'kondisi' },
     { label: 'Diameter Tulangan',     acuan: 'Min. 4 batang ∅9,6–10 mm', field: 'py_ringbalok_tulangan', type: 'kondisi' },
@@ -3521,7 +3569,7 @@ const CHV_FISIK_SALUR = [
     { label: 'Jarak Antar Sengkang',  acuan: '< 15 cm', field: 'py_ringbalok_sengkang_j', type: 'kondisi' },
     { label: 'Dimensi Ring Balok',    acuan: '> 12×15 cm', field: 'py_ringbalok_dimensi', type: 'kondisi' },
   ]},
-  { aspek: 'Rangka Atap', tambahan: 'catatan_tambahan_py_5_0', subs: [
+  { aspek: 'Rangka Atap', fotoField: 'py_komponen_5.0', tambahan: 'catatan_tambahan_py_5_0', subs: [
     { label: 'Jenis Rangka Atap',     acuan: 'Kayu/Besi Galvanis/Baja Ringan/Lainnya', field: 'py_rangka_jenis', type: 'text' },
     { label: 'Penopang Dinding Sopi-sopi', acuan: 'Terdapat bingkai sopi-sopi', field: 'py_rab_penopang', type: 'kondisi' },
     { label: 'Koneksi & Kekokohan Kuda-kuda', acuan: 'Sambungan kokoh, min. 3 baut', field: 'py_rab_koneksi', type: 'kondisi' },
@@ -3529,22 +3577,22 @@ const CHV_FISIK_SALUR = [
     { label: 'Angkur Kuda-kuda ke Ring Balok', acuan: 'Diangkur besi/kawat diklem ke ring balok', field: 'py_rab_angkur', type: 'kondisi' },
     { label: 'Ketebalan Baja Ringan', acuan: '< 0,75 mm', field: 'py_rab_tebal', type: 'kondisi' },
   ]},
-  { aspek: 'Penutup Atap & Plafon', tambahan: 'catatan_tambahan_py_6_0', useTambahan: true, subs: [
+  { aspek: 'Penutup Atap & Plafon', fotoField: ['py_atap_penutup_foto','py_atap_plafon_foto'], tambahan: 'catatan_tambahan_py_6_0', useTambahan: true, subs: [
     { label: 'Material Penutup Atap', acuan: 'Genteng/Metal/Spandek/Bitumen/Lainnya', field: 'py_atap_penutup', type: 'text' },
     { label: 'Material Plafon',       acuan: 'Gypsum/GRC/PVC/Triplek/Kayu/Tanpa Plafon', field: 'py_atap_plafon', type: 'text' },
   ]},
-  { aspek: 'Lantai', tambahan: 'catatan_tambahan_py_7_0', useTambahan: true, subs: [
+  { aspek: 'Lantai', fotoField: 'py_7.0', tambahan: 'catatan_tambahan_py_7_0', useTambahan: true, subs: [
     { label: 'Tipe Lantai',           acuan: 'Keramik/Plester Semen/Tegel/Lainnya', field: 'py_lantai_tipe', type: 'text' },
     { label: 'Pemasangan Penutup Lantai', acuan: 'Rata/Bergelombang', field: 'py_lantai_pasang', type: 'kondisi' },
     { label: 'Kemiringan > 1% (Kamar Mandi)', acuan: 'Ya/Tidak', field: 'py_lantai_miring', type: 'kondisi' },
     { label: 'Lebar Nat 2–5 mm',      acuan: 'Ya/Tidak', field: 'py_lantai_nat', type: 'kondisi' },
   ]},
-  { aspek: 'Dinding', tambahan: 'catatan_tambahan_py_8_0', useTambahan: true, subs: [
+  { aspek: 'Dinding', fotoField: 'py_8.0', tambahan: 'catatan_tambahan_py_8_0', useTambahan: true, subs: [
     { label: 'Tipe Dinding',          acuan: 'Bata Merah/Bata Ringan', field: 'py_dinding_tipe', type: 'text' },
     { label: 'Angkur tiap 6 Lapis',   acuan: 'Tersedia/Tidak', field: 'py_dinding_angkur', type: 'kondisi' },
     { label: 'Double Dinding',        acuan: 'Ya/Tidak', field: 'py_dinding_double', type: 'kondisi' },
   ]},
-  { aspek: 'Ketentuan Rumah Layak Huni', tambahan: 'catatan_tambahan_py_9_0', useTambahan: true, subs: [
+  { aspek: 'Ketentuan Rumah Layak Huni', fotoField: 'py_9.0', tambahan: 'catatan_tambahan_py_9_0', useTambahan: true, subs: [
     { label: 'Luas Minimum 7,2–9 m²', acuan: 'Memenuhi/Tidak', field: 'py_rlh_luas', type: 'kondisi' },
     { label: 'Ketersediaan Dapur',    acuan: 'Memenuhi/Tidak', field: 'py_rlh_dapur', type: 'kondisi' },
     { label: 'Carport',               acuan: 'Memenuhi/Tidak', field: 'py_rlh_carport', type: 'kondisi' },
@@ -3552,7 +3600,7 @@ const CHV_FISIK_SALUR = [
     { label: 'Penghawaan 5% Luas Lantai',  acuan: 'Memenuhi/Tidak', field: 'py_rlh_angin', type: 'kondisi' },
     { label: 'Toilet Leher Angsa',    acuan: 'Memenuhi/Tidak', field: 'py_rlh_closet', type: 'kondisi' },
   ]},
-  { aspek: 'Jaringan Utilitas Bangunan', tambahan: 'catatan_tambahan_py_10_0', subs: [
+  { aspek: 'Jaringan Utilitas Bangunan', fotoField: ['py_util_air_foto','py_util_listrik_foto','py_util_sanitasi_foto','py_util_fiber_foto','py_util_kebakaran_foto','py_util_airlimbah_foto'], tambahan: 'catatan_tambahan_py_10_0', subs: [
     { label: 'Jaringan Air Bersih',   acuan: 'Tersedia/Tidak', field: 'py_util_air', type: 'kondisi' },
     { label: 'Jaringan Listrik',      acuan: 'Tersedia/Tidak', field: 'py_util_listrik', type: 'kondisi' },
     { label: 'Perpipaan Sanitasi',    acuan: 'Tersedia/Tidak', field: 'py_util_sanitasi', type: 'kondisi' },
@@ -3560,7 +3608,7 @@ const CHV_FISIK_SALUR = [
     { label: 'Proteksi Kebakaran',    acuan: 'Tersedia/Tidak', field: 'py_util_kebakaran', type: 'kondisi' },
     { label: 'Jaringan Air Limbah',   acuan: 'Tersedia/Tidak', field: 'py_util_airlimbah', type: 'kondisi' },
   ]},
-  { aspek: 'Penghijauan Dalam Kavling', tambahan: 'catatan_tambahan_py_11_0', useTambahan: true, subs: [
+  { aspek: 'Penghijauan Dalam Kavling', fotoField: 'py_11.0', tambahan: 'catatan_tambahan_py_11_0', useTambahan: true, subs: [
     { label: 'Tingkat Penghijauan',   acuan: 'Sangat Baik/Baik/Sedang/Minimal/Tidak terdapat', field: 'py_hijau_kavling', type: 'text' },
   ]},
 ];
@@ -3711,7 +3759,7 @@ function buildCHVCard(obj) {
   let dokNo = 0;
   const hvDetail = hasilVerifikasi(obj);
   CHV_DOK.forEach(grp => {
-    dokRows += `<tr class="chv-grp-hdr"><td colspan="5">${grp.tahap}</td></tr>`;
+    dokRows += `<tr class="chv-grp-hdr"><td colspan="6">${grp.tahap}</td></tr>`;
     grp.items.forEach(item => {
       dokNo++;
       const ada     = dokAda(obj, item.idx) || '-';
@@ -3723,6 +3771,7 @@ function buildCHVCard(obj) {
         <td class="chv-center">${chvPillHTML(ada)}</td>
         <td class="chv-center">${chvPillHTML(sesuai)}</td>
         <td>${catatan}</td>
+        <td style="vertical-align:top;padding-top:6px">${selFoto(obj, item.label)}</td>
       </tr>`;
     });
   });
@@ -3738,6 +3787,7 @@ function buildCHVCard(obj) {
             <th style="width:110px">Status Dokumen<br><small>Ada/Tidak Ada</small></th>
             <th style="width:130px">Status Kesesuaian<br><small>Sesuai/Tidak Sesuai</small></th>
             <th>Keterangan</th>
+            <th style="width:150px">Foto/Dokumen</th>
           </tr>
         </thead>
         <tbody>${dokRows}</tbody>
@@ -3808,10 +3858,13 @@ function buildCHVCard(obj) {
   }
 
   let psuNo = 0;
+  // Sebagian foto PSU disimpan per kelompok (mis. satu foto untuk Jalan Utama
+  // dan Jalan Lingkungan). Dicatat supaya thumbnail yang sama tidak muncul dua kali.
+  const fotoPSUTampil = new Set();
   PSU_GROUPS.forEach((grp, gi) => {
     const isMulti = grp.end > grp.start;
     psuNo++;
-    psuRows += `<tr class="chv-grp-hdr"><td colspan="5"><span style="opacity:.7;margin-right:6px">${psuNo}.</span>${grp.title}</td></tr>`;
+    psuRows += `<tr class="chv-grp-hdr"><td colspan="6"><span style="opacity:.7;margin-right:6px">${psuNo}.</span>${grp.title}</td></tr>`;
 
     for (let idx = grp.start; idx <= grp.end; idx++) {
       const item = CHV_PSU[idx];
@@ -3859,17 +3912,24 @@ function buildCHVCard(obj) {
         kondisiCell  = chvPillHTML(kondisi);
       }
 
+      let fotoCell = '<span style="color:var(--g200);font-size:10px">—</span>';
+      if (item.fotoField && !fotoPSUTampil.has(item.fotoField)) {
+        fotoPSUTampil.add(item.fotoField);
+        fotoCell = selFoto(psuR, item.fotoField);
+      }
+
       psuRows += `<tr>
         <td class="chv-no"></td>
         <td style="padding-left:24px;color:var(--g600)">${item.label}</td>
         <td style="font-size:11px">${materialCell}</td>
         <td style="vertical-align:top;padding-top:6px">${kondisiCell}</td>
         <td style="font-size:11px">${keterangan || '<span style="color:var(--g200)">—</span>'}</td>
+        <td style="vertical-align:top;padding-top:6px">${fotoCell}</td>
       </tr>`;
     }
 
     const rekId = `${chvCardId}_psu_rek_grp_${gi}`;
-    psuRows += `<tr class="chv-rek-row"><td colspan="5">
+    psuRows += `<tr class="chv-rek-row"><td colspan="6">
       <div class="chv-rek-label">Catatan — ${grp.title}</div>
       <textarea id="${rekId}" placeholder="Isi catatan untuk aspek ${grp.title}..." rows="2" oninput="saveCHVRek('${rekId}')">${loadCHVRek(rekId)}</textarea>
     </td></tr>`;
@@ -3886,6 +3946,7 @@ function buildCHVCard(obj) {
             <th style="width:160px">Jenis/Material</th>
             <th style="width:130px">Kondisi</th>
             <th>Keterangan</th>
+            <th style="width:150px">Foto</th>
           </tr>
         </thead>
         <tbody>${psuRows}</tbody>
@@ -3899,7 +3960,10 @@ function buildCHVCard(obj) {
     let fisikRows = '';
     let fisikNo = 0;
     CHV_FISIK_SALUR.forEach((grp, gi) => {
-      fisikRows += `<tr class="chv-grp-hdr"><td colspan="5">${grp.aspek}</td></tr>`;
+      fisikRows += `<tr class="chv-grp-hdr"><td colspan="6">${grp.aspek}</td></tr>`;
+      // Foto pada tahap penyaluran disimpan per kelompok aspek, bukan per sub-aspek,
+      // jadi ditampilkan sekali di baris pertama kelompok.
+      let fotoBelumTampil = true;
       grp.subs.forEach(sub => {
         fisikNo++;
         let hasil = '-', catatan = '';
@@ -3913,17 +3977,21 @@ function buildCHVCard(obj) {
             ? (salur[grp.tambahan] || '')
             : (salur[`catatan_${sub.field}`] || salur[`catatan_ts_py_${sub.field}`] || '');
         }
+        const fotoCell = fotoBelumTampil
+          ? (fotoBelumTampil = false, selFoto(salur, grp.fotoField))
+          : '<span style="color:var(--g200);font-size:10px">—</span>';
         fisikRows += `<tr>
           <td class="chv-no" style="color:var(--g400);font-size:10px">${sub.aspek||''}</td>
           <td>${sub.label}</td>
           <td style="font-size:10px;color:var(--g600)">${sub.acuan}</td>
           <td class="chv-center">${sub.type === 'kondisi' ? chvPillHTML(hasil) : `<span style="font-size:11px">${hasil !== '-' ? hasil : ''}</span>`}</td>
           <td style="font-size:11px">${catatan}</td>
+          <td style="vertical-align:top;padding-top:6px">${fotoCell}</td>
         </tr>`;
       });
       const rekId = `rek_D_${id}_grp_${gi}`;
       const rekSaved = loadCHVRek(rekId);
-      fisikRows += `<tr class="chv-rek-row"><td colspan="5">
+      fisikRows += `<tr class="chv-rek-row"><td colspan="6">
         <div class="chv-rek-label">Catatan — ${grp.aspek}</div>
         <textarea id="${rekId}" placeholder="Isi rekomendasi untuk aspek ${grp.aspek}..." rows="2" oninput="saveCHVRek('${rekId}')">${rekSaved}</textarea>
       </td></tr>`;
@@ -3940,6 +4008,7 @@ function buildCHVCard(obj) {
               <th style="width:180px">Acuan Penilaian</th>
               <th style="width:120px">Hasil</th>
               <th>Keterangan</th>
+              <th style="width:150px">Foto</th>
             </tr>
           </thead>
           <tbody>${fisikRows}</tbody>
@@ -3989,6 +4058,9 @@ function buildCHVCard(obj) {
           ${u.ada && !/tidak/i.test(u.ada||'') ? chvPillHTML(u.kondisi) : ''}
         </div>`
       ).join('');
+      const fotoPasca = ['p3_foto_tampak_depan','pf_4.0','pf_5.0','pf_6.0','pf_7.0','pf_9.0',
+        'pf_util_air_foto','pf_util_listrik_foto','pf_util_sanitasi_foto',
+        'pf_util_fiber_foto','pf_util_kebakaran_foto','pf_util_airlimbah_foto'];
       komponenRows += `<tr>
         <td class="chv-no">${i+1}</td>
         <td>${(r.p3_nomor_rumah||r.p3_unit_nomor_rumah)||'-'}</td>
@@ -3998,9 +4070,10 @@ function buildCHVCard(obj) {
         <td>${r.pf_atap_plafon||'-'}</td>
         <td style="min-width:260px">${utilHTML}</td>
         <td>${chvPillHTML(r.py_hijau_kavling||r.pf_hijau_kavling||r.pf_hijau||'-')}</td>
+        <td style="vertical-align:top;padding-top:6px;min-width:150px">${selFoto(r, fotoPasca)}</td>
       </tr>`;
     });
-    if (!komponenRows) komponenRows = '<tr><td colspan="8" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data komponen fisik</td></tr>';
+    if (!komponenRows) komponenRows = '<tr><td colspan="9" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data komponen fisik</td></tr>';
 
     // E3: Penilaian Penerima Manfaat
     let penilaianRows = '';
@@ -4041,7 +4114,7 @@ function buildCHVCard(obj) {
           <thead>
             <tr class="chv-tbl-head">
               <th>No</th><th>Nomor Rumah</th><th>Lantai</th><th>Dinding</th><th>Atap</th>
-              <th>Plafond</th><th>Jaringan Utilitas</th><th>Penghijauan</th>
+              <th>Plafond</th><th>Jaringan Utilitas</th><th>Penghijauan</th><th style="width:150px">Foto</th>
             </tr>
           </thead>
           <tbody>${komponenRows}</tbody>
