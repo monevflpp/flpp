@@ -2624,6 +2624,11 @@ function showPage(id, btn) {
     initTitikMap();
     setTimeout(() => { if (titikMap) titikMap.invalidateSize(); }, 80);
   }
+  // Catatan pada laporan bisa diisi setelah Berita Acara dibuka, jadi disegarkan
+  // setiap kali halaman ini ditampilkan. Suntingan manual tetap dipertahankan.
+  if (id === 'beritaacara' && typeof baSinkronCatatan === 'function') {
+    if (baSinkronCatatan(false)) baRenderPreview();
+  }
 }
 
 function goHome() {
@@ -2695,22 +2700,44 @@ function baSetStage(stage, btn) {
   baRenderPreview();
 }
 
-// Menyalin ulang catatan dari laporan ke Berita Acara. Berguna bila catatan
-// pada laporan baru diisi setelah halaman Berita Acara dibuka.
-function baMuatCatatanLaporan() {
+// Nilai terakhir yang diisikan otomatis dari laporan. Dipakai untuk mengenali
+// apakah kotak di Berita Acara masih apa adanya atau sudah disunting manual —
+// suntingan manual tidak boleh tertimpa saat sinkronisasi berikutnya.
+let baCatatanOtomatis = { psu: '', salur: '' };
+
+// Menyalin catatan per aspek dari laporan ke Berita Acara.
+// paksa = true  : selalu timpa (dipakai saat ganti perumahan / tombol ditekan)
+// paksa = false : hanya isi bila kotaknya kosong atau belum disunting manual
+function baSinkronCatatan(paksa) {
   const sel = document.getElementById('ba-sel-perumahan');
   const obj = DB.objek[parseInt(sel && sel.value)];
-  if (!obj) { alert('Pilih perumahan terlebih dahulu.'); return; }
+  if (!obj) return false;
 
-  const psu   = catatanLaporanPSU(obj);
-  const salur = catatanLaporanPenyaluran(obj);
-  if (psu)   document.getElementById('ba-ket-psu').value = psu;
-  if (salur) document.getElementById('ba-ket-salur').value = salur;
+  const nilai = {
+    psu:   catatanLaporanPSU(obj),
+    salur: catatanLaporanPenyaluran(obj)
+  };
+  const kotak = { psu: 'ba-ket-psu', salur: 'ba-ket-salur' };
 
+  Object.keys(kotak).forEach(k => {
+    const el = document.getElementById(kotak[k]);
+    if (!el) return;
+    const belumDisunting = !el.value.trim() || el.value === baCatatanOtomatis[k];
+    if (paksa || belumDisunting) {
+      el.value = nilai[k];
+      baCatatanOtomatis[k] = nilai[k];
+    }
+  });
+  return !!(nilai.psu || nilai.salur);
+}
+
+// Dipanggil dari tombol "Ambil Catatan dari Laporan".
+function baMuatCatatanLaporan() {
+  const sel = document.getElementById('ba-sel-perumahan');
+  if (!DB.objek[parseInt(sel && sel.value)]) { alert('Pilih perumahan terlebih dahulu.'); return; }
+  const adaIsi = baSinkronCatatan(true);
   baRenderPreview();
-  if (!psu && !salur) {
-    alert('Belum ada catatan yang diisi pada halaman laporan untuk perumahan ini.');
-  }
+  if (!adaIsi) alert('Belum ada catatan yang diisi pada halaman laporan untuk perumahan ini.');
 }
 
 function baOnPerumahanChange() {
@@ -2729,24 +2756,8 @@ function baOnPerumahanChange() {
   document.getElementById('ba-kab').value  = wil.kab  === '-' ? '' : wil.kab;
   document.getElementById('ba-koordinat').value = obj.t1_koordinat || '';
 
-  // Catatan PSU — utamakan catatan yang sudah diketik pada laporan (bagian C).
-  // Kalau di laporan belum diisi, jatuh ke keterangan bawaan dari data survei.
-  {
-    const dariLaporan = catatanLaporanPSU(obj);
-    const psuRow = DB.psu.find(r=>r.p1_id_sikumbang===obj.t1_id_sikumbang||r.p1_nama_perumahan===obj.t1_nama_perumahan);
-    const dariSurvei = psuRow
-      ? [psuRow.ket_psu_8_0, psuRow.ket_psu_8_1, psuRow.ket_psu_8_2].filter(Boolean).join('; ')
-      : '';
-    document.getElementById('ba-ket-psu').value = dariLaporan || dariSurvei || '';
-  }
-
-  // Catatan Tahap Penyaluran — dari catatan per aspek pada laporan (bagian D).
-  {
-    const dariLaporan = catatanLaporanPenyaluran(obj);
-    const salurRow = DB.salur.find(r=>r.p2_id_sikumbang===obj.t1_id_sikumbang||r.p2_nama_perumahan===obj.t1_nama_perumahan);
-    const dariSurvei = salurRow ? (salurRow.catatan_tambahan_py_1_0 || '') : '';
-    document.getElementById('ba-ket-salur').value = dariLaporan || dariSurvei;
-  }
+  // Catatan PSU & Tahap Penyaluran diambil dari catatan per aspek pada laporan.
+  baSinkronCatatan(true);
 
   // Catatan Pasca Penyaluran — laporan bagian pasca belum menyediakan kotak
   // catatan per aspek, jadi tetap dirangkum dari catatan tambahan surveyor.
