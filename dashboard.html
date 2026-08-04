@@ -413,6 +413,31 @@ body.is-locked > *:not(#lock-screen){display:none !important}
 .chv-rek-row .chv-rek-label{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
 .chv-rek-row textarea{width:100%;font-size:11px;border:1.5px solid var(--g200);border-radius:6px;padding:6px 8px;resize:vertical;background:#fff;color:var(--g900,#222);font-family:inherit;min-height:44px}
 .chv-rek-row textarea:focus{outline:none;border-color:var(--navy2)}
+
+/* ── Galeri foto laporan ──
+   Ukuran dibuat besar (min 240px) supaya tetap terbaca saat dicetak.
+   grid auto-fill menyesuaikan jumlah kolom dengan lebar kertas/layar. */
+.chv-foto-row td{background:#FAFAF7;padding:10px 9px;border:1px solid var(--g100)}
+.chv-foto-blok{background:#FAFAF7;border:1px solid var(--g100);border-radius:8px;padding:12px 14px;margin-top:12px}
+.chv-foto-judul{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.chv-foto-galeri{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.chv-foto-item{margin:0;break-inside:avoid;page-break-inside:avoid}
+.chv-foto-item a{display:block;text-decoration:none}
+.chv-foto-img{width:100%;height:190px;object-fit:cover;border-radius:6px;border:1px solid var(--g200);display:block;background:var(--g50,#f5f5f5)}
+.chv-foto-cap{font-size:10px;color:var(--g600);margin-top:5px;line-height:1.35;word-break:break-word}
+.chv-foto-gagal{width:100%;height:190px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--g200);border-radius:6px;font-size:10px;color:var(--g400);text-align:center;padding:8px}
+
+@media print{
+  /* Saat dicetak, foto dibuat 2 kolom dan lebih tinggi agar detailnya terlihat.
+     break-inside:avoid mencegah gambar terpotong di batas halaman. */
+  .chv-foto-galeri{grid-template-columns:repeat(2,1fr);gap:10px}
+  .chv-foto-img,.chv-foto-gagal{height:230px}
+  .chv-foto-cap{font-size:9pt;color:#333}
+}
+@media(max-width:768px){
+  .chv-foto-galeri{grid-template-columns:1fr 1fr;gap:8px}
+  .chv-foto-img,.chv-foto-gagal{height:130px}
+}
 .chv-no{text-align:center;color:var(--g400);font-size:10px;width:32px}
 .chv-center{text-align:center}
 .chv-lbl{font-weight:700;color:var(--navy);font-size:10px;white-space:nowrap;background:var(--g50)}
@@ -3485,20 +3510,38 @@ function daftarFoto(row, namaField) {
   return String(isi).split(',').map(x => x.trim()).filter(Boolean);
 }
 
-// Sel foto untuk tabel laporan. Menampilkan thumbnail yang bisa diklik.
-function selFoto(row, namaField) {
-  const daftar = [].concat(namaField).flatMap(f => daftarFoto(row, f));
-  if (!daftar.length) return '<span style="color:var(--g200);font-size:10px">—</span>';
-  return '<div style="display:flex;flex-wrap:wrap;gap:4px">' + daftar.map(url => {
-    const id = idBerkasDrive(url);
-    if (!id) return `<a href="${url}" target="_blank" rel="noopener" style="font-size:10px">Lihat</a>`;
-    return `<a href="${url}" target="_blank" rel="noopener" title="Buka foto ukuran penuh">
-      <img src="https://drive.google.com/thumbnail?id=${id}&sz=w160" alt="Foto"
-        loading="lazy"
-        style="width:62px;height:48px;object-fit:cover;border-radius:5px;border:1px solid var(--g200);display:block"
-        onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'Lihat',style:'font-size:10px'}))">
-    </a>`;
-  }).join('') + '</div>';
+// Galeri foto di bawah tabel. daftar = [{ field, caption }, ...]
+// Ukuran sengaja dibuat besar supaya masih terbaca saat laporan dicetak.
+function galeriFoto(row, daftar) {
+  const kartu = [];
+  [].concat(daftar).forEach(d => {
+    const urls = daftarFoto(row, d.field);
+    urls.forEach((url, i) => {
+      const id = idBerkasDrive(url);
+      const kapsi = 'Foto: ' + d.caption + (urls.length > 1 ? ' (' + (i+1) + ')' : '');
+      const isi = id
+        ? `<img src="https://drive.google.com/thumbnail?id=${id}&sz=w800" alt="${kapsi}" loading="lazy"
+             class="chv-foto-img"
+             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'chv-foto-gagal',textContent:'Foto tidak dapat dimuat'}))">`
+        : `<div class="chv-foto-gagal">Tautan foto tidak dikenali</div>`;
+      kartu.push(`<figure class="chv-foto-item">
+        <a href="${url}" target="_blank" rel="noopener" title="Buka ukuran penuh">${isi}</a>
+        <figcaption class="chv-foto-cap">${kapsi}</figcaption>
+      </figure>`);
+    });
+  });
+  if (!kartu.length) return '';
+  return `<div class="chv-foto-galeri">${kartu.join('')}</div>`;
+}
+
+// Baris galeri di dalam tabel (di bawah baris catatan tiap kelompok aspek)
+function barisGaleriFoto(row, daftar, kolom, judul) {
+  const galeri = galeriFoto(row, daftar);
+  if (!galeri) return '';
+  return `<tr class="chv-foto-row"><td colspan="${kolom}">
+    <div class="chv-foto-judul">📷 Dokumentasi — ${judul}</div>
+    ${galeri}
+  </td></tr>`;
 }
 
 const CHV_PSU = [
@@ -3759,7 +3802,7 @@ function buildCHVCard(obj) {
   let dokNo = 0;
   const hvDetail = hasilVerifikasi(obj);
   CHV_DOK.forEach(grp => {
-    dokRows += `<tr class="chv-grp-hdr"><td colspan="6">${grp.tahap}</td></tr>`;
+    dokRows += `<tr class="chv-grp-hdr"><td colspan="5">${grp.tahap}</td></tr>`;
     grp.items.forEach(item => {
       dokNo++;
       const ada     = dokAda(obj, item.idx) || '-';
@@ -3771,7 +3814,6 @@ function buildCHVCard(obj) {
         <td class="chv-center">${chvPillHTML(ada)}</td>
         <td class="chv-center">${chvPillHTML(sesuai)}</td>
         <td>${catatan}</td>
-        <td style="vertical-align:top;padding-top:6px">${selFoto(obj, item.label)}</td>
       </tr>`;
     });
   });
@@ -3787,12 +3829,15 @@ function buildCHVCard(obj) {
             <th style="width:110px">Status Dokumen<br><small>Ada/Tidak Ada</small></th>
             <th style="width:130px">Status Kesesuaian<br><small>Sesuai/Tidak Sesuai</small></th>
             <th>Keterangan</th>
-            <th style="width:150px">Foto/Dokumen</th>
           </tr>
         </thead>
         <tbody>${dokRows}</tbody>
       </table>
     </div>
+    ${(() => {
+      const g = galeriFoto(obj, DOK_MASTER.map(d => ({ field: d.label, caption: d.singkat })));
+      return g ? `<div class="chv-foto-blok"><div class="chv-foto-judul">📷 Dokumentasi Data Dukung</div>${g}</div>` : '';
+    })()}
   </div>`;
 
   // Section C: Kondisi PSU
@@ -3858,13 +3903,10 @@ function buildCHVCard(obj) {
   }
 
   let psuNo = 0;
-  // Sebagian foto PSU disimpan per kelompok (mis. satu foto untuk Jalan Utama
-  // dan Jalan Lingkungan). Dicatat supaya thumbnail yang sama tidak muncul dua kali.
-  const fotoPSUTampil = new Set();
   PSU_GROUPS.forEach((grp, gi) => {
     const isMulti = grp.end > grp.start;
     psuNo++;
-    psuRows += `<tr class="chv-grp-hdr"><td colspan="6"><span style="opacity:.7;margin-right:6px">${psuNo}.</span>${grp.title}</td></tr>`;
+    psuRows += `<tr class="chv-grp-hdr"><td colspan="5"><span style="opacity:.7;margin-right:6px">${psuNo}.</span>${grp.title}</td></tr>`;
 
     for (let idx = grp.start; idx <= grp.end; idx++) {
       const item = CHV_PSU[idx];
@@ -3912,27 +3954,32 @@ function buildCHVCard(obj) {
         kondisiCell  = chvPillHTML(kondisi);
       }
 
-      let fotoCell = '<span style="color:var(--g200);font-size:10px">—</span>';
-      if (item.fotoField && !fotoPSUTampil.has(item.fotoField)) {
-        fotoPSUTampil.add(item.fotoField);
-        fotoCell = selFoto(psuR, item.fotoField);
-      }
-
       psuRows += `<tr>
         <td class="chv-no"></td>
         <td style="padding-left:24px;color:var(--g600)">${item.label}</td>
         <td style="font-size:11px">${materialCell}</td>
         <td style="vertical-align:top;padding-top:6px">${kondisiCell}</td>
         <td style="font-size:11px">${keterangan || '<span style="color:var(--g200)">—</span>'}</td>
-        <td style="vertical-align:top;padding-top:6px">${fotoCell}</td>
       </tr>`;
     }
 
     const rekId = `${chvCardId}_psu_rek_grp_${gi}`;
-    psuRows += `<tr class="chv-rek-row"><td colspan="6">
+    psuRows += `<tr class="chv-rek-row"><td colspan="5">
       <div class="chv-rek-label">Catatan — ${grp.title}</div>
       <textarea id="${rekId}" placeholder="Isi catatan untuk aspek ${grp.title}..." rows="2" oninput="saveCHVRek('${rekId}')">${loadCHVRek(rekId)}</textarea>
     </td></tr>`;
+
+    // Dokumentasi foto kelompok ini, di bawah kotak catatan.
+    // Beberapa butir berbagi satu kolom foto (mis. Jalan Utama & Jalan Lingkungan),
+    // jadi didaftar unik dulu agar tidak tampil dua kali.
+    const fotoGrp = [];
+    for (let idx = grp.start; idx <= grp.end; idx++) {
+      const it = CHV_PSU[idx];
+      if (it && it.fotoField && !fotoGrp.some(x => x.field === it.fotoField)) {
+        fotoGrp.push({ field: it.fotoField, caption: grp.title });
+      }
+    }
+    psuRows += barisGaleriFoto(psuR, fotoGrp, 5, grp.title);
   });
   const secC = `
   <div class="chv-section">
@@ -3946,7 +3993,6 @@ function buildCHVCard(obj) {
             <th style="width:160px">Jenis/Material</th>
             <th style="width:130px">Kondisi</th>
             <th>Keterangan</th>
-            <th style="width:150px">Foto</th>
           </tr>
         </thead>
         <tbody>${psuRows}</tbody>
@@ -3960,10 +4006,7 @@ function buildCHVCard(obj) {
     let fisikRows = '';
     let fisikNo = 0;
     CHV_FISIK_SALUR.forEach((grp, gi) => {
-      fisikRows += `<tr class="chv-grp-hdr"><td colspan="6">${grp.aspek}</td></tr>`;
-      // Foto pada tahap penyaluran disimpan per kelompok aspek, bukan per sub-aspek,
-      // jadi ditampilkan sekali di baris pertama kelompok.
-      let fotoBelumTampil = true;
+      fisikRows += `<tr class="chv-grp-hdr"><td colspan="5">${grp.aspek}</td></tr>`;
       grp.subs.forEach(sub => {
         fisikNo++;
         let hasil = '-', catatan = '';
@@ -3977,24 +4020,30 @@ function buildCHVCard(obj) {
             ? (salur[grp.tambahan] || '')
             : (salur[`catatan_${sub.field}`] || salur[`catatan_ts_py_${sub.field}`] || '');
         }
-        const fotoCell = fotoBelumTampil
-          ? (fotoBelumTampil = false, selFoto(salur, grp.fotoField))
-          : '<span style="color:var(--g200);font-size:10px">—</span>';
         fisikRows += `<tr>
           <td class="chv-no" style="color:var(--g400);font-size:10px">${sub.aspek||''}</td>
           <td>${sub.label}</td>
           <td style="font-size:10px;color:var(--g600)">${sub.acuan}</td>
           <td class="chv-center">${sub.type === 'kondisi' ? chvPillHTML(hasil) : `<span style="font-size:11px">${hasil !== '-' ? hasil : ''}</span>`}</td>
           <td style="font-size:11px">${catatan}</td>
-          <td style="vertical-align:top;padding-top:6px">${fotoCell}</td>
         </tr>`;
       });
       const rekId = `rek_D_${id}_grp_${gi}`;
       const rekSaved = loadCHVRek(rekId);
-      fisikRows += `<tr class="chv-rek-row"><td colspan="6">
+      fisikRows += `<tr class="chv-rek-row"><td colspan="5">
         <div class="chv-rek-label">Catatan — ${grp.aspek}</div>
-        <textarea id="${rekId}" placeholder="Isi rekomendasi untuk aspek ${grp.aspek}..." rows="2" oninput="saveCHVRek('${rekId}')">${rekSaved}</textarea>
+        <textarea id="${rekId}" placeholder="Isi catatan untuk aspek ${grp.aspek}..." rows="2" oninput="saveCHVRek('${rekId}')">${rekSaved}</textarea>
       </td></tr>`;
+
+      const fotoGrpD = [].concat(grp.fotoField || []).map(f => ({
+        field: f,
+        caption: f.startsWith('py_util_')
+          ? grp.aspek + ' — ' + ({air:'Air Bersih',listrik:'Listrik',sanitasi:'Sanitasi',
+              fiber:'Fiber Optik',kebakaran:'Proteksi Kebakaran',airlimbah:'Air Limbah'}[f.split('_')[2]] || '')
+          : (f === 'py_atap_penutup_foto' ? 'Penutup Atap'
+            : f === 'py_atap_plafon_foto' ? 'Plafon' : grp.aspek)
+      }));
+      fisikRows += barisGaleriFoto(salur, fotoGrpD, 5, grp.aspek);
     });
     secD = `
     <div class="chv-section">
@@ -4008,7 +4057,6 @@ function buildCHVCard(obj) {
               <th style="width:180px">Acuan Penilaian</th>
               <th style="width:120px">Hasil</th>
               <th>Keterangan</th>
-              <th style="width:150px">Foto</th>
             </tr>
           </thead>
           <tbody>${fisikRows}</tbody>
@@ -4070,10 +4118,9 @@ function buildCHVCard(obj) {
         <td>${r.pf_atap_plafon||'-'}</td>
         <td style="min-width:260px">${utilHTML}</td>
         <td>${chvPillHTML(r.py_hijau_kavling||r.pf_hijau_kavling||r.pf_hijau||'-')}</td>
-        <td style="vertical-align:top;padding-top:6px;min-width:150px">${selFoto(r, fotoPasca)}</td>
       </tr>`;
     });
-    if (!komponenRows) komponenRows = '<tr><td colspan="9" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data komponen fisik</td></tr>';
+    if (!komponenRows) komponenRows = '<tr><td colspan="8" style="text-align:center;color:var(--g400);padding:12px;font-style:italic">Belum ada data komponen fisik</td></tr>';
 
     // E3: Penilaian Penerima Manfaat
     let penilaianRows = '';
@@ -4114,12 +4161,33 @@ function buildCHVCard(obj) {
           <thead>
             <tr class="chv-tbl-head">
               <th>No</th><th>Nomor Rumah</th><th>Lantai</th><th>Dinding</th><th>Atap</th>
-              <th>Plafond</th><th>Jaringan Utilitas</th><th>Penghijauan</th><th style="width:150px">Foto</th>
+              <th>Plafond</th><th>Jaringan Utilitas</th><th>Penghijauan</th>
             </tr>
           </thead>
           <tbody>${komponenRows}</tbody>
         </table>
       </div>
+      ${(() => {
+        const kolomFotoPasca = [
+          { field: 'p3_foto_tampak_depan', caption: 'Tampak Depan' },
+          { field: 'pf_4.0',  caption: 'Lantai' },
+          { field: 'pf_5.0',  caption: 'Dinding' },
+          { field: 'pf_6.0',  caption: 'Atap' },
+          { field: 'pf_7.0',  caption: 'Ketentuan Rumah Layak Huni' },
+          { field: 'pf_9.0',  caption: 'Penghijauan Dalam Kavling' },
+          { field: 'pf_util_air_foto',       caption: 'Utilitas — Air Bersih' },
+          { field: 'pf_util_listrik_foto',   caption: 'Utilitas — Listrik' },
+          { field: 'pf_util_sanitasi_foto',  caption: 'Utilitas — Sanitasi' },
+          { field: 'pf_util_fiber_foto',     caption: 'Utilitas — Fiber Optik' },
+          { field: 'pf_util_kebakaran_foto', caption: 'Utilitas — Proteksi Kebakaran' },
+          { field: 'pf_util_airlimbah_foto', caption: 'Utilitas — Air Limbah' },
+        ];
+        return pasca.map(r => {
+          const nomor = (r.p3_nomor_rumah || r.p3_unit_nomor_rumah) || '-';
+          const g = galeriFoto(r, kolomFotoPasca.map(k => ({ ...k, caption: k.caption + ' · Rumah ' + nomor })));
+          return g ? `<div class="chv-foto-blok"><div class="chv-foto-judul">📷 Dokumentasi — Rumah ${nomor}</div>${g}</div>` : '';
+        }).join('');
+      })()}
 
       <div class="chv-subsec-title" style="margin-top:18px">D.3 Penilaian Penerima Manfaat</div>
       <div class="tbl-wrap">
