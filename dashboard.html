@@ -1060,6 +1060,7 @@ body.is-locked > *:not(#lock-screen){display:none !important}
       <div class="ba-preview-toolbar">
         <span>👁️ Pratinjau Berita Acara</span>
         <button class="report-btn print" onclick="printBA()" style="font-size:10px;padding:5px 12px">🖨️ Cetak Pratinjau</button>
+        <button class="report-btn" onclick="kirimBAKeDrive(this)" style="font-size:10px;padding:5px 12px;background:var(--green);color:#fff">📤 Kirim PDF ke Drive</button>
       </div>
       <div class="ba-preview-content" id="ba-preview-content">
         <div class="ba-no-data">
@@ -1092,6 +1093,8 @@ body.is-locked > *:not(#lock-screen){display:none !important}
       onclick="exportCHVExcel()" id="btn-chv-export-xlsx">📊 Export Excel (.xlsx)</button>
     <button class="btn-header btn-sync" style="padding:8px 16px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;background:var(--teal);color:#fff;border:none"
       onclick="printCHV()">🖨️ Cetak CHV</button>
+    <button class="btn-header" style="padding:8px 16px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;background:var(--navy2,#14566f);color:#fff;border:none"
+      onclick="kirimCHVKeDrive(this)" id="btn-chv-kirim">📤 Kirim PDF ke Drive</button>
   </div>
 
 
@@ -2254,7 +2257,7 @@ function renderPascaUnits() {
         <div class="unit-field">Harga Rumah: <b>${v(r.p3_harga_rumah)}</b> · Tenor: <b>${v(r.p3_tenor_kredit)}</b> th</div>
         <div class="unit-field">DP Awal: <b>${v(r.p3_dp_awal)}</b> · Cicilan/bln: <b>${v(r.p3_cicilan_bulan)}</b></div>
         <div class="unit-field">Program: <b>${v(r.program_manfaat)}</b></div>
-        <div class="unit-field">Renovasi: <b>${v(r.renovasi_pernah)}</b> ${r.klasifikasi_renovasi?`<small style="color:var(--g400)">(${r.klasifikasi_renovasi})</small>`:''}</div>
+        <div class="unit-field">Renovasi: <b>${v(r.renovasi_bangunan||r.renovasi_pernah)}</b> ${r.klasifikasi_renovasi?`<small style="color:var(--g400)">(${r.klasifikasi_renovasi})</small>`:''}</div>
         <div class="unit-field">Double Dinding: <b>${v(r.pf_dinding_double)}</b></div>
         <div class="unit-field">Alih Fungsi: <b>${v(r.fungsi)}</b> ${r.fungsi_sebagai?`<small style="color:var(--g400)">(${r.fungsi_sebagai})</small>`:''}</div>
         <div class="unit-field">Lantai: ${pill(r.pf_lantai_kondisi)} <small style="color:var(--g400)">${v(r.pf_lantai_jenis)}</small></div>
@@ -3329,6 +3332,144 @@ async function generateBeritaAcara() {
   }
 }
 
+// ══════════════════════════════════════════════════════
+// KIRIM LAPORAN / BERITA ACARA SEBAGAI PDF KE GOOGLE DRIVE
+// HTML dikirim ke Apps Script, di sana diubah jadi PDF lalu disimpan di Drive
+// dan dicatat pada tab "Arsip Dokumen".
+//
+// Pengubah HTML→PDF milik Google hanya mengerti CSS dasar — grid dan flexbox
+// diabaikan. Jadi HTML untuk PDF disusun ulang di sini memakai tabel, bukan
+// memakai gaya layar apa adanya.
+// ══════════════════════════════════════════════════════
+const GAYA_PDF = `
+  @page { size: A4; margin: 15mm 12mm; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #222; margin: 0; }
+  h1,h2,h3,h4 { font-family: Arial, Helvetica, sans-serif; margin: 0 0 6pt; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8pt; }
+  th, td { border: 1px solid #999; padding: 4pt 6pt; font-size: 9pt; vertical-align: top; }
+  th { background: #0B3D52; color: #fff; text-align: left; font-size: 8.5pt; }
+  .chv-grp-hdr td, .hdr-row td { background: #E8EEF1; font-weight: bold; }
+  .chv-rek-row td { background: #FFF7E0; }
+  .chv-sec-title, .ba-section-title { background: #0B3D52; color: #fff; padding: 5pt 8pt; font-weight: bold; font-size: 10pt; margin: 10pt 0 6pt; }
+  .pdf-foto-tabel td { border: none; padding: 3pt; text-align: center; width: 50%; }
+  .pdf-foto-tabel img { max-width: 100%; max-height: 190pt; border: 1px solid #bbb; }
+  .pdf-foto-cap { font-size: 8pt; color: #444; margin-top: 2pt; }
+  .pdf-foto-judul { font-weight: bold; font-size: 9pt; margin: 6pt 0 3pt; }
+  .pill { padding: 1pt 4pt; border: 1px solid #bbb; font-size: 8.5pt; }
+  textarea, input, button, .chv-toggle-btn, .report-btn, .btn-header { display: none; }
+  .ba-catatan { margin: 6pt 0 10pt; }
+  .line { border-bottom: 1px solid #999; height: 12pt; }
+`;
+
+// Ubah elemen yang mengandalkan CSS modern menjadi bentuk yang dimengerti
+// pengubah HTML→PDF: galeri foto (CSS grid) menjadi tabel 2 kolom,
+// dan isi <textarea> menjadi teks biasa agar ikut tercetak.
+function siapkanIsiPdf(elemenSumber) {
+  const salinan = elemenSumber.cloneNode(true);
+
+  salinan.querySelectorAll('textarea').forEach(ta => {
+    const teks = document.createElement('div');
+    teks.style.cssText = 'font-size:9pt;white-space:pre-line;padding:3pt 0';
+    teks.textContent = ta.value || ta.textContent || '';
+    ta.replaceWith(teks);
+  });
+
+  salinan.querySelectorAll('.chv-foto-galeri').forEach(galeri => {
+    const kartu = [...galeri.querySelectorAll('.chv-foto-item')];
+    const tabel = document.createElement('table');
+    tabel.className = 'pdf-foto-tabel';
+    for (let i = 0; i < kartu.length; i += 2) {
+      const tr = document.createElement('tr');
+      for (let k = 0; k < 2; k++) {
+        const td = document.createElement('td');
+        const item = kartu[i + k];
+        if (item) {
+          const img = item.querySelector('img');
+          const cap = item.querySelector('.chv-foto-cap');
+          if (img) { const g = document.createElement('img'); g.src = img.src; td.appendChild(g); }
+          if (cap) { const c = document.createElement('div'); c.className = 'pdf-foto-cap'; c.textContent = cap.textContent; td.appendChild(c); }
+        }
+        tr.appendChild(td);
+      }
+      tabel.appendChild(tr);
+    }
+    galeri.replaceWith(tabel);
+  });
+
+  salinan.querySelectorAll('.chv-foto-judul').forEach(j => j.className = 'pdf-foto-judul');
+  salinan.querySelectorAll('button, .chv-toggle-btn, .report-btn').forEach(b => b.remove());
+  salinan.querySelectorAll('.chv-card-body').forEach(b => b.classList.remove('collapsed'));
+
+  return salinan.innerHTML;
+}
+
+function bungkusHtmlPdf(judul, isi) {
+  return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>${judul}</title>
+    <style>${GAYA_PDF}</style></head><body>${isi}</body></html>`;
+}
+
+// Kirim ke Apps Script. jenis: 'Laporan' atau 'Berita Acara'.
+function kirimPdfKeDrive(jenis, judul, elemenSumber, namaPerumahan, tombol) {
+  if (!elemenSumber) { alert('Isi dokumen belum tersedia.'); return; }
+
+  const pengirim = (prompt('Nama pengirim (untuk pencatatan arsip):', '') || '').trim();
+  if (!pengirim) return;
+
+  const labelAsli = tombol ? tombol.textContent : '';
+  if (tombol) { tombol.disabled = true; tombol.textContent = '⏳ Membuat PDF...'; }
+
+  const stempel = new Date().toISOString().slice(0, 16).replace('T', ' ').replace(':', '.');
+  const namaFile = `${jenis} - ${namaPerumahan || 'Tanpa Nama'} - ${stempel}`;
+
+  fetch(VFY_GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      action: 'savePdf',
+      jenis: jenis,
+      perumahan: namaPerumahan || '',
+      pengirim: pengirim,
+      namaFile: namaFile,
+      html: bungkusHtmlPdf(judul, siapkanIsiPdf(elemenSumber))
+    })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (tombol) { tombol.disabled = false; tombol.textContent = labelAsli; }
+      if (!res.ok) throw new Error(res.message || 'Gagal menyimpan');
+      if (confirm('✅ PDF tersimpan di Google Drive:\n' + res.nama + '\n\nBuka file sekarang?')) {
+        window.open(res.url, '_blank');
+      }
+    })
+    .catch(err => {
+      if (tombol) { tombol.disabled = false; tombol.textContent = labelAsli; }
+      alert('❌ Gagal mengirim PDF: ' + err.message);
+    });
+}
+
+function kirimBAKeDrive(tombol) {
+  const isi = document.getElementById('ba-preview-content');
+  if (!isi || isi.querySelector('.ba-no-data')) {
+    alert('Pilih perumahan dan tekan "Generate" terlebih dahulu.');
+    return;
+  }
+  const sel = document.getElementById('ba-sel-perumahan');
+  const obj = DB.objek[parseInt(sel && sel.value)];
+  kirimPdfKeDrive('Berita Acara', 'Berita Acara Tinjauan Lapangan FLPP', isi,
+    obj ? obj.t1_nama_perumahan : '', tombol);
+}
+
+function kirimCHVKeDrive(tombol) {
+  const isi = document.getElementById('chv-content');
+  if (!isi || !isi.querySelector('.chv-card')) {
+    alert('Pilih perumahan terlebih dahulu agar laporannya tampil.');
+    return;
+  }
+  const judulEl = isi.querySelector('.chv-card-title, .chv-card-head h3');
+  kirimPdfKeDrive('Laporan', 'Catatan Hasil Review — Tinjauan Lapangan FLPP', isi,
+    judulEl ? judulEl.textContent.trim() : '', tombol);
+}
+
 function printBA() {
   const previewEl = document.getElementById('ba-preview-content');
 
@@ -4082,7 +4223,7 @@ function buildCHVCard(obj) {
         <td>${chvPillHTML(r.sertif)}</td>
         <td>${r.penghuni||'-'}</td>
         <td>${r.tahun_huni||'-'}</td>
-        <td>${r.renovasi_pernah||r.renovasi||'-'}</td>
+        <td>${r.renovasi_bangunan||r.renovasi_pernah||r.renovasi||'-'}${r.klasifikasi_renovasi?` <small style="color:var(--g400)">(${r.klasifikasi_renovasi})</small>`:''}</td>
         <td>${r.fungsi==='Ya'?'<span class="pill pill-amber">Ya</span>':'Tidak'}</td>
       </tr>`;
     });
@@ -4170,6 +4311,10 @@ function buildCHVCard(obj) {
       ${(() => {
         const kolomFotoPasca = [
           { field: 'p3_foto_tampak_depan', caption: 'Tampak Depan' },
+          { field: 'p3_foto_responden',    caption: 'Responden' },
+          { field: 'p3_foto_status_huni',  caption: 'Status Keterhunian' },
+          { field: 'pf_foto_fungsi',       caption: 'Perubahan Fungsi Bangunan' },
+          { field: 'pf_foto_renovasi',     caption: 'Renovasi Bangunan' },
           { field: 'pf_4.0',  caption: 'Lantai' },
           { field: 'pf_5.0',  caption: 'Dinding' },
           { field: 'pf_6.0',  caption: 'Atap' },
