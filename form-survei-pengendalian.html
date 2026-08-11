@@ -1738,16 +1738,17 @@ window.addEventListener('load', function() {
       {dokumen:'Angkur kuda-kuda ke ring balok/kolom',parameter:'Kuda-kuda diangkur besi/kawat yg dijepit paku atau dibaut tanam ke ring balok',name:'py_rab_angkur'},
       {dokumen:'Ketebalan baja ringan',parameter:'< 0,75 mm',name:'py_rab_tebal'}
     ]},
-    {num:'6.0',label:'Penutup Atap dan Plafon',fields:[{label:'Material Penutup Atap',name:'py_atap_penutup',type:'check_foto',opts:['Genteng Tanah Liat','Genteng Beton','Metal/Spandek','Bitumen','Lainnya']},{label:'Material Plafon',name:'py_atap_plafon',type:'check_foto',opts:['Gypsum','GRC','PVC','Triplek/Kayu','Tanpa Plafon']}]},
-    {num:'7.0',label:'Lantai',fields:[{label:'Tipe',name:'py_lantai_tipe',type:'check',opts:['Keramik','Tegel','Plester Semen','Lainnya']},{label:'Pemasangan Penutup Lantai',name:'py_lantai_pasang',type:'radio',opts:['Rata','Bergelombang']},{label:'Kemiringan > 1% (Kamar Mandi)',name:'py_lantai_miring',type:'radio',opts:['Ya','Tidak']},{label:'Lebar Nat 2–5 mm',name:'py_lantai_nat',type:'radio',opts:['Ya','Tidak']}]},
-    {num:'8.0',label:'Dinding',fields:[{label:'Tipe Dinding',name:'py_dinding_tipe',type:'check',opts:['Bata Merah','Bata Ringan']},{label:'Pemakaian Angkur tiap 6 Lapis Pasangan Bata',name:'py_dinding_angkur',type:'radio',opts:['Tersedia','Tidak Tersedia']},{label:'Double Dinding',name:'py_dinding_double',type:'radio',opts:['Ya','Tidak']}]},
+    {num:'6.0',label:'Penutup Atap dan Plafon',fields:[{label:'Material Penutup Atap',name:'py_atap_penutup',type:'check_foto',opts:['Genteng Tanah Liat','Genteng Beton','Metal/Spandek','Bitumen','Lainnya']},{label:'Material Plafon',name:'py_atap_plafon',type:'check_foto',opts:['Gypsum','GRC','PVC','Triplek/Kayu','Tanpa Plafon']},{label:'Kondisi',name:'py_atap_kondisi',type:'kondisi3'}]},
+    {num:'7.0',label:'Lantai',fields:[{label:'Tipe',name:'py_lantai_tipe',type:'check',opts:['Keramik','Tegel','Plester Semen','Lainnya']},{label:'Pemasangan Penutup Lantai',name:'py_lantai_pasang',type:'radio',opts:['Rata','Bergelombang']},{label:'Kemiringan > 1% (Kamar Mandi)',name:'py_lantai_miring',type:'radio',opts:['Ya','Tidak']},{label:'Lebar Nat 2–5 mm',name:'py_lantai_nat',type:'radio',opts:['Ya','Tidak']},{label:'Kondisi',name:'py_lantai_kondisi',type:'kondisi3'}]},
+    {num:'8.0',label:'Dinding',fields:[{label:'Tipe Dinding',name:'py_dinding_tipe',type:'check',opts:['Bata Merah','Bata Ringan']},{label:'Pemakaian Angkur tiap 6 Lapis Pasangan Bata',name:'py_dinding_angkur',type:'radio',opts:['Tersedia','Tidak Tersedia']},{label:'Double Dinding',name:'py_dinding_double',type:'radio',opts:['Ya','Tidak']},{label:'Kondisi',name:'py_dinding_kondisi',type:'kondisi3'}]},
     {num:'9.0',label:'Rumah Layak Huni',fields:[
       {label:'Luas Minimum 7.2–9 m²',name:'py_rlh_luas',type:'radio',opts:['Memenuhi','Tidak']},
       {label:'Pencahayaan 10% dari Luas Lantai',name:'py_rlh_cahaya',type:'radio',opts:['Memenuhi','Tidak']},
       {label:'Penghawaan 5% dari Luas Lantai',name:'py_rlh_angin',type:'radio',opts:['Memenuhi','Tidak']},
       {label:'Penggunaan Toilet Leher Angsa',name:'py_rlh_closet',type:'radio',opts:['Memenuhi','Tidak']},
       {label:'Ketersediaan Dapur',name:'py_rlh_dapur',type:'radio',opts:['Ada','Tidak Ada']},
-      {label:'Carport',name:'py_rlh_carport',type:'radio',opts:['Ada','Tidak Ada']}
+      {label:'Carport',name:'py_rlh_carport',type:'radio',opts:['Ada','Tidak Ada']},
+      {label:'Kondisi',name:'py_rlh_kondisi',type:'kondisi3'}
     ]},
     {num:'10.0',label:'Jaringan Utilitas Bangunan',type:'util'},
     {num:'11.0',label:'Penghijauan Dalam Kavling',fields:[{label:'Kategori',name:'py_hijau_kavling',type:'radio_desc',items:[
@@ -1756,7 +1757,7 @@ window.addEventListener('load', function() {
       {value:'Penghijauan sedang',desc:'Terdapat kombinasi rumput, tanaman hias, atau tanaman produktif yang menutupi sebagian area kavling.'},
       {value:'Penghijauan baik',desc:'Terdapat vegetasi yang cukup beragam, termasuk pohon peneduh dan tanaman lainnya yang menutupi sebagian besar area terbuka.'},
       {value:'Penghijauan sangat baik',desc:'Vegetasi tumbuh optimal dengan kombinasi pohon, tanaman hias, dan/atau tanaman produktif yang menciptakan lingkungan teduh dan asri.'}
-    ]}]}
+    ]},{label:'Kondisi',name:'py_hijau_kondisi',type:'kondisi3'}]}
   ];
   var pyContainer=document.getElementById('penyaluran-sections');
   penyaluranItems.forEach(function(item){
@@ -1765,7 +1766,7 @@ window.addEventListener('load', function() {
     var body=el('div',{cls:'section-body'});
     var hasUtilOrCheckFoto=(item.type==='util')||( item.fields && item.fields.some(function(f){return f.type==='check_foto';}));
     if(item.type==='util'){
-      renderUtilElements(body, 'py_util', false);
+      renderUtilElements(body, 'py_util', true);
 
     } else if(item.type==='rth'){
       var rthK2=[{val:'Baik / Berfungsi',color:'#10B981'},{val:'Sedang / Ada Gangguan',color:'#F59E0B'},{val:'Buruk / Tidak Berfungsi',color:'#EF4444'}];
@@ -1864,7 +1865,10 @@ window.addEventListener('load', function() {
       var foK=makeFotoUpload('py_komponen_'+item.num); var ffK=el('div',{cls:'field',style:'margin-top:14px'}); ffK.appendChild(el('label',{text:'Upload Foto Dokumentasi'})); ffK.appendChild(foK.wrap[0]); ffK.appendChild(foK.wrap[1]); body.appendChild(ffK);
     } else {
       item.fields.forEach(function(f){
-        if(f.type==='check'){
+        if(f.type==='kondisi3'){
+          body.appendChild(makeField(f.label||'Kondisi', makeKondisi3(f.name)));
+        }
+        else if(f.type==='check'){
           var hasLainnya2 = f.opts && f.opts.indexOf('Lainnya') !== -1;
           var checkWidget2 = hasLainnya2
             ? makeCheckGroupWithOther(f.name, f.opts, 'Sebutkan ' + f.label.toLowerCase() + ' lainnya...')
