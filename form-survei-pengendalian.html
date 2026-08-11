@@ -1,4 +1,8 @@
 
+
+
+
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -171,6 +175,14 @@
 
   /* ===== CATATAN TAMBAHAN BOX per section penyaluran ===== */
   .catatan-tambahan-wrap{background:var(--gray-50);border:1.5px solid var(--gold);border-radius:18px;padding:14px 16px;margin-top:14px}
+  /* Petunjuk pengisian (hidden text) pada isian Keterangan */
+  .panduan-hint{margin:2px 0 6px}
+  .panduan-toggle{background:none;border:none;padding:0;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--navy);cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-align:left;line-height:1.4}
+  .panduan-toggle:hover{opacity:.75}
+  .panduan-teks{display:none;margin-top:6px;padding:10px 12px;background:#F1F7F9;border-left:3px solid var(--navy);border-radius:0 10px 10px 0;font-size:12px;line-height:1.6;color:var(--gray-600)}
+  .panduan-hint.open .panduan-teks{display:block}
+  .catatan-tambahan-wrap .panduan-teks{background:#FFFBF0;border-left-color:var(--gold)}
+  .field textarea[data-panduan]{border-radius:16px}
   .catatan-tambahan-wrap .ct-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:6px}
   .catatan-tambahan-wrap textarea{padding:9px 16px;border:1.5px solid var(--gold);border-radius:16px;font-size:13px;font-family:'Inter',sans-serif;color:var(--gray-800);background:var(--white);outline:none;width:100%;resize:vertical;min-height:70px;transition:border-color .15s}
   .catatan-tambahan-wrap textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
@@ -528,11 +540,30 @@
       <div class="section">
         <div class="section-header"><span class="section-num">UNIT</span><h3>Identitas Unit</h3></div>
         <div class="section-body">
-          <div class="field-row">
-            <div class="field"><label>Nomor Rumah</label><input type="text" id="p2_nomor_rumah" name="p2_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
-            <div class="field"><label>Lebar Muka Kavling (m)</label><input type="text" inputmode="decimal" class="num-ribuan" id="p2_lebar_muka_kavling" name="p2_lebar_muka_kavling" placeholder="Contoh: 6 atau 7,5"></div>
+          <div class="field"><label>Nomor Rumah</label><input type="text" id="p2_nomor_rumah" name="p2_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
+          <div class="field">
+            <label>Koordinat Titik Rumah</label>
+            <div class="geo-field-row">
+              <input type="text" id="t2_koordinat" placeholder="-6.200000, 106.816666">
+              <button type="button" class="geo-btn" id="geoBtn_t2_koordinat">📍 Ambil Lokasi</button>
+            </div>
+            <div class="geo-status" id="geoStatus_t2_koordinat"></div>
           </div>
           <div class="field"><label>Upload Foto Tampak Depan</label><div id="p2_foto_tampak_depan_wrap"></div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><span class="section-num">TIPE</span><h3>Tipe Unit Rumah</h3></div>
+        <div class="section-body">
+          <div class="field-row three">
+            <div class="field"><label>Luas Tanah (m²)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p2_luas_tanah" name="p2_luas_tanah"></div>
+            <div class="field"><label>Luas Bangunan (m²)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p2_luas_bangunan" name="p2_luas_bangunan"></div>
+            <div class="field"><label>Jumlah Kamar</label><input type="text" inputmode="numeric" class="num-ribuan" id="p2_jumlah_kamar" name="p2_jumlah_kamar"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Lebar Muka Kaveling (m)</label><input type="text" inputmode="decimal" class="num-ribuan" id="p2_lebar_muka_kavling" name="p2_lebar_muka_kavling" placeholder="Contoh: 6 atau 7,5"></div>
+            <div class="field"><label>Harga Rumah (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p2_harga_rumah" name="p2_harga_rumah"></div>
+          </div>
         </div>
       </div>
       <div id="penyaluran-sections"></div>
@@ -586,9 +617,14 @@
       <div class="section">
         <div class="section-header"><span class="section-num">UNIT</span><h3>Identitas Unit</h3></div>
         <div class="section-body">
-          <div class="field-row">
-            <div class="field"><label>Nomor Rumah</label><input type="text" id="p3_nomor_rumah" name="p3_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
-            <div class="field"><label>Lebar Muka Kavling (m)</label><input type="text" inputmode="decimal" class="num-ribuan" id="p3_lebar_muka_kavling" name="p3_lebar_muka_kavling" placeholder="Contoh: 6 atau 7,5"></div>
+          <div class="field"><label>Nomor Rumah</label><input type="text" id="p3_nomor_rumah" name="p3_nomor_rumah" placeholder="Contoh: A-12, Blok B3 No. 5, dll"></div>
+          <div class="field">
+            <label>Koordinat Titik Rumah</label>
+            <div class="geo-field-row">
+              <input type="text" id="t3_koordinat" placeholder="-6.200000, 106.816666">
+              <button type="button" class="geo-btn" id="geoBtn_t3_koordinat">📍 Ambil Lokasi</button>
+            </div>
+            <div class="geo-status" id="geoStatus_t3_koordinat"></div>
           </div>
           <div class="field"><label>Upload Foto Tampak Depan</label><div id="p3_foto_tampak_depan_wrap"></div></div>
         </div>
@@ -611,6 +647,8 @@
               <label><input type="radio" name="hub_debitur" value="Saudara"> Saudara</label>
               <label><input type="radio" name="hub_debitur" value="Lainnya"> Lainnya</label>
             </div></div>
+            <div class="field"><label>Upload Foto Responden</label><div id="p3_foto_responden_wrap"></div></div>
+            <div class="field"><label>Keterangan Data Responden</label><textarea id="ket_data_responden" name="ket_data_responden" placeholder="Catatan atas data responden: hasil klarifikasi, ketidaksesuaian identitas/dokumen, atau kondisi lain yang perlu diperhatikan..."></textarea></div>
           </div>
           <div class="subsection"><div class="subsection-title">Data Debitur</div>
             <div class="field"><label>Apakah Debitur Sama dengan Responden?</label><div class="radio-group">
@@ -649,6 +687,7 @@
               <label><input type="radio" name="gaji_debitur" value="7-8 Juta"> 7–8 Juta</label>
               <label><input type="radio" name="gaji_debitur" value="> 8 Juta"> &gt; 8 Juta</label>
             </div></div>
+            <div class="field"><label>Keterangan Data Debitur</label><textarea id="ket_data_debitur" name="ket_data_debitur" placeholder="Catatan atas data debitur: hasil klarifikasi, ketidaksesuaian identitas/dokumen, atau kondisi lain yang perlu diperhatikan..."></textarea></div>
           </div>
         </div>
       </div>
@@ -660,21 +699,16 @@
             <div class="field"><label>Luas Bangunan (m²)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_luas_bangunan" name="p3_luas_bangunan"></div>
             <div class="field"><label>Jumlah Kamar</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_jumlah_kamar" name="p3_jumlah_kamar"></div>
           </div>
-          <div class="field">
-            <label>Koordinat Titik Rumah</label>
-            <div class="geo-field-row">
-              <input type="text" id="t3_koordinat" placeholder="-6.200000, 106.816666">
-              <button type="button" class="geo-btn" id="geoBtn_t3_koordinat">📍 Ambil Lokasi</button>
-            </div>
-            <div class="geo-status" id="geoStatus_t3_koordinat"></div>
-          </div>
           <div class="field-row">
+            <div class="field"><label>Lebar Muka Kaveling (m)</label><input type="text" inputmode="decimal" class="num-ribuan" id="p3_lebar_muka_kavling" name="p3_lebar_muka_kavling" placeholder="Contoh: 6 atau 7,5"></div>
             <div class="field"><label>Harga Rumah (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_harga_rumah" name="p3_harga_rumah"></div>
-            <div class="field"><label>Tenor Kredit (tahun)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_tenor_kredit" name="p3_tenor_kredit"></div>
           </div>
-          <div class="field-row">
-            <div class="field"><label>DP Awal (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_dp_awal" name="p3_dp_awal"></div>
-            <div class="field"><label>Cicilan per Bulan (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_cicilan_bulan" name="p3_cicilan_bulan"></div>
+          <div class="subsection"><div class="subsection-title">Skema Pembiayaan</div>
+            <div class="field-row three">
+              <div class="field"><label>Tenor Kredit (tahun)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_tenor_kredit" name="p3_tenor_kredit"></div>
+              <div class="field"><label>DP Awal (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_dp_awal" name="p3_dp_awal"></div>
+              <div class="field"><label>Cicilan per Bulan (Rp)</label><input type="text" inputmode="numeric" class="num-ribuan" id="p3_cicilan_bulan" name="p3_cicilan_bulan"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -697,7 +731,9 @@
             <label><input type="radio" name="status_huni" value="Bebas Sewa"> Bebas Sewa</label>
             <label><input type="radio" name="status_huni" value="Disewakan"> Disewakan</label>
             <label><input type="radio" name="status_huni" value="Dijual"> Dijual</label>
-          </div></div>
+          </div>
+          <div class="field" style="margin-top:10px"><label>Upload Foto Status Keterhunian</label><div id="p3_foto_status_huni_wrap"></div></div>
+          </div>
           <div class="field"><label>Mulai Menghuni Sejak Tahun</label><div class="radio-group">
             <label><input type="radio" name="tahun_huni" value="2020"> 2020</label>
             <label><input type="radio" name="tahun_huni" value="2021"> 2021</label>
@@ -706,14 +742,12 @@
             <label><input type="radio" name="tahun_huni" value="2024"> 2024</label>
             <label><input type="radio" name="tahun_huni" value="2025"> 2025</label>
           </div></div>
-          <div class="field"><label>Renovasi yang Pernah Dilakukan</label><div class="check-group">
-            <label><input type="checkbox" name="renovasi_pernah" value="Tidak Pernah"> Tidak Pernah</label>
-            <label><input type="checkbox" name="renovasi_pernah" value="Perbaikan Sarana"> Perbaikan Sarana</label>
-            <label><input type="checkbox" name="renovasi_pernah" value="Perluasan Horizontal"> Perluasan Horizontal</label>
-            <label><input type="checkbox" name="renovasi_pernah" value="Perluasan Vertikal"> Perluasan Vertikal</label>
-            <label><input type="checkbox" name="renovasi_pernah" value="Keamanan"> Keamanan</label>
-            <label><input type="checkbox" name="renovasi_pernah" value="Estetika"> Estetika</label>
-          </div></div>
+          <div class="field"><label>Keterangan</label><textarea id="ket_keterhunian" name="ket_keterhunian" placeholder="Tuliskan keterangan tambahan untuk Keterhunian Perumahan FLPP..."></textarea></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><span class="section-num">4.0</span><h3>Pemanfaatan Rumah FLPP</h3></div>
+        <div class="section-body">
           <div class="field"><label>Perubahan Fungsi Bangunan</label><div class="radio-group">
             <label><input type="radio" name="fungsi" value="Ya"> Ya</label>
             <label><input type="radio" name="fungsi" value="Tidak"> Tidak</label>
@@ -721,7 +755,9 @@
           <div class="catatan-box-info" id="box_fungsi_ya">
             <div class="catatan-label">✏️ Jika Ya, Sebagai</div>
             <input type="text" id="fungsi_sebagai" name="fungsi_sebagai" placeholder="Contoh: Ruko, Tempat Usaha/Warung, Kos-kosan, dll">
-          </div></div>
+          </div>
+          <div class="field" style="margin-top:10px"><label>Upload Foto Perubahan Fungsi Bangunan</label><div id="p3_foto_fungsi_wrap"></div></div>
+          </div>
           <div class="field"><label>Renovasi Bangunan</label><div class="radio-group">
             <label><input type="radio" name="renovasi_bangunan" value="Ya"> Ya</label>
             <label><input type="radio" name="renovasi_bangunan" value="Tidak"> Tidak</label>
@@ -735,8 +771,10 @@
               <label><input type="radio" name="klasifikasi_renovasi" value="4. Rekonstruksi / Bangun Ulang"> 4. Rekonstruksi / Bangun Ulang</label>
             </div>
             <div id="klasifikasi_renovasi_desc" style="display:none;font-size:12px;line-height:1.5;color:var(--gray-600);margin-top:8px;padding:10px 14px;background:var(--white);border:1px solid var(--gray-200);border-radius:12px"></div>
-          </div></div>
-          <div class="field"><label>Keterangan</label><textarea id="ket_keterhunian" name="ket_keterhunian" placeholder="Tuliskan keterangan tambahan untuk Keterhunian Perumahan FLPP..."></textarea></div>
+          </div>
+          <div class="field" style="margin-top:10px"><label>Upload Foto Renovasi Bangunan</label><div id="p3_foto_renovasi_wrap"></div></div>
+          </div>
+          <div class="field"><label>Keterangan</label><textarea id="ket_pemanfaatan" name="ket_pemanfaatan" placeholder="Tuliskan keterangan tambahan untuk pemanfaatan rumah FLPP..."></textarea></div>
         </div>
       </div>
       <div id="pasca-fisik-sections"></div>
@@ -973,6 +1011,23 @@ function makeRadioGroupWithOther(name, opts, otherPlaceholder) {
   wrap.appendChild(otherInput);
   return wrap;
 }
+/* Radio group dengan input teks bebas yang muncul saat opsi tertentu dipilih.
+   otherValue = nilai opsi pemicu (mis. 'Sistem lainnya', 'Sumber air lainnya') */
+function makeRadioGroupOtherValue(name, opts, otherValue, otherPlaceholder) {
+  var wrap = el('div', {style:'display:flex;flex-direction:column;gap:8px'});
+  var grp = el('div', {cls:'radio-group'});
+  var otherInput = el('input', {type:'text', id:name+'_lainnya_text', placeholder:(otherPlaceholder||'Sebutkan...'), style:'display:none;padding:9px 16px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:14px;font-family:\'Inter\',sans-serif;color:var(--gray-800);background:var(--white);outline:none;width:100%;max-width:340px'});
+  opts.forEach(function(o) {
+    var inp = el('input'); inp.type='radio'; inp.name=name; inp.value=o;
+    inp.addEventListener('change', function(){
+      if(inp.checked){ otherInput.style.display = (o===otherValue) ? 'block' : 'none'; if(o!==otherValue) otherInput.value=''; }
+    });
+    grp.appendChild(el('label', {}, [inp, document.createTextNode(' '+o)]));
+  });
+  wrap.appendChild(grp);
+  wrap.appendChild(otherInput);
+  return wrap;
+}
 function makeField(labelText, child) {
   var f = el('div', {cls:'field'});
   f.appendChild(el('label', {text: labelText}));
@@ -1031,6 +1086,212 @@ function makeDocUploadBtn(previewEl, fieldName) {
   btn.addEventListener('click', function() { inp.click(); });
   inp.addEventListener('change', function() { previewDoc(inp, previewEl, fieldName); inp.value=''; });
   return btn;
+}
+
+/* ===================================================================== */
+/* ===== PARAMETER JARINGAN UTILITAS BANGUNAN (dipakai Tahap Penyaluran  */
+/* ===== dan Pasca Penyaluran — sumber: Jaringan_Utilitas_Bangunan.xlsx) */
+/* ===================================================================== */
+var UTIL_ELEMENTS = [
+  { key:'air', label:'Jaringan Air Bersih', items:[
+    { key:'sumber',    label:'Sumber air bersih',        opts:['PDAM/Perumda Air Minum','Sumur','Mata Air','Lainnya'], other:'Sebutkan sumber air bersih lainnya...' },
+    { key:'distribusi',label:'Jaringan distribusi air',  opts:['Jaringan perpipaan','Tidak ada jaringan perpipaan'], negatif:'Tidak ada jaringan perpipaan' },
+    { key:'tandon',    label:'Tandon/Reservoir air',     opts:['Tersedia','Tidak Tersedia'] }
+  ]},
+  { key:'listrik', label:'Jaringan Listrik', items:[
+    { key:'sumber',   label:'Sumber listrik',                 opts:['PLN','Non-PLN','Tidak Tersedia'] },
+    { key:'ke_unit',  label:'Jaringan listrik ke unit rumah', opts:['Tersedia','Tidak Tersedia'] },
+    { key:'pju',      label:'Penerangan jalan lingkungan',    opts:['Tersedia','Tidak Tersedia'] }
+  ]},
+  { key:'airlimbah', label:'Sistem Air Limbah Domestik', items:[
+    { key:'ipal',        label:'IPAL domestik/komunal',            opts:['Tersedia','Tidak Tersedia'] },
+    { key:'septik_indiv',label:'Septic tank individual',           opts:['Tersedia','Tidak Tersedia'] },
+    { key:'septik_kom',  label:'Septic tank komunal',              opts:['Tersedia','Tidak Tersedia'] },
+    { key:'perpipaan',   label:'Jaringan perpipaan air limbah',    opts:['Tersedia','Tidak Tersedia'] },
+    { key:'saluran',     label:'Saluran pembuangan air limbah',    opts:['Tersedia','Tidak Tersedia'] }
+  ]},
+  { key:'fiber', label:'Jaringan Fiber Optik', items:[
+    { key:'tersedia', label:'Jaringan fiber optik tersedia',  opts:['Tersedia','Tidak Tersedia'] },
+    { key:'ke_unit',  label:'Jaringan masuk ke unit rumah',   opts:['Tersedia','Tidak Tersedia'] }
+  ]},
+  { key:'kebakaran', label:'Proteksi Kebakaran', items:[
+    { key:'hidran',   label:'Hidran lingkungan',                    opts:['Tersedia','Tidak Tersedia'] },
+    { key:'apar',     label:'APAR pada bangunan/fasilitas umum',    opts:['Tersedia','Tidak Tersedia'] },
+    { key:'akses',    label:'Akses kendaraan pemadam kebakaran',    opts:['Memadai','Tidak Memadai'], negatif:'Tidak Memadai' },
+    { key:'sumberair',label:'Sumber air untuk pemadaman',           opts:['Tersedia','Tidak Tersedia'] }
+  ]},
+  { key:'drainase', label:'Drainase', items:[
+    { key:'saluran',  label:'Saluran drainase lingkungan',   opts:['Tersedia','Tidak Tersedia'] },
+    { key:'jenis',    label:'Jenis saluran',                 opts:['Terbuka','Tertutup'] },
+    { key:'fungsi',   label:'Saluran berfungsi dengan baik', opts:['Ya','Tidak'], negatif:'Tidak' }
+  ]},
+  { key:'sampah', label:'Persampahan', items:[
+    { key:'wadah',    label:'Tempat pewadahan sampah',        opts:['Tersedia','Tidak Tersedia'] },
+    { key:'tps',      label:'TPS/Tempat pengumpulan sampah',  opts:['Tersedia','Tidak Tersedia'] },
+    { key:'angkut',   label:'Sistem pengangkutan sampah',     opts:['Tersedia','Tidak Tersedia'] }
+  ]}
+];
+
+/* Render kartu per elemen utilitas.
+   prefix      : 'py_util' (Tahap Penyaluran) atau 'pf_util' (Pasca Penyaluran)
+   showKondisi : true -> tampilkan penilaian Kondisi 3 tingkat per elemen  */
+function renderUtilElements(body, prefix, showKondisi) {
+  var grid = el('div', {style:'display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px'});
+  UTIL_ELEMENTS.forEach(function(elemen, ei) {
+    var base = prefix + '_' + elemen.key;
+    var card = el('div', {style:'border:1.5px solid var(--gray-200);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--white)'});
+    card.appendChild(el('div', {
+      text: String(ei+1) + '. ' + elemen.label,
+      style:"font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--gray-100);padding-bottom:8px"
+    }));
+
+    elemen.items.forEach(function(it) {
+      var rname = base + '_' + it.key;
+      var wrap  = el('div', {style:'display:flex;flex-direction:column;gap:6px'});
+      wrap.appendChild(el('span', {text: it.label, style:'font-size:12px;font-weight:600;color:var(--gray-800)'}));
+      var hasLainnya = it.opts.indexOf('Lainnya') !== -1;
+      wrap.appendChild(hasLainnya
+        ? makeRadioGroupWithOther(rname, it.opts, it.other || 'Sebutkan...')
+        : makeRadioGroup(rname, it.opts));
+
+      /* Catatan wajib saat jawaban negatif dipilih */
+      var negatif = it.negatif || 'Tidak Tersedia';
+      if (it.opts.indexOf(negatif) !== -1) {
+        var box = el('div', {cls:'catatan-box'});
+        box.id = 'catatan_box_' + rname;
+        var lbl = el('div', {cls:'catatan-label'});
+        lbl.innerHTML = '✏️ Keterangan (deskripsi kondisi dilapangan)';
+        var ta = el('textarea');
+        ta.id = 'catatan_' + rname; ta.name = 'catatan_' + rname;
+        ta.placeholder = 'Jelaskan kondisi di lapangan...';
+        box.appendChild(lbl); box.appendChild(ta);
+        wrap.appendChild(box);
+        (function(nm, bx, neg) {
+          setTimeout(function() {
+            document.querySelectorAll('input[type=radio][name="' + nm + '"]').forEach(function(r) {
+              r.addEventListener('change', function() {
+                if (r.checked && r.value === neg) bx.classList.add('visible');
+                else if (r.checked) { bx.classList.remove('visible'); var t = bx.querySelector('textarea'); if (t) t.value = ''; }
+              });
+            });
+          }, 150);
+        })(rname, box, negatif);
+      }
+      card.appendChild(wrap);
+    });
+
+    /* Penilaian kondisi keseluruhan elemen (khusus Pasca Penyaluran) */
+    if (showKondisi) {
+      var secC = el('div', {style:'display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--gray-100);padding-top:10px'});
+      secC.appendChild(el('span', {text:'Kondisi Keseluruhan', style:'font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em'}));
+      var k3 = makeKondisi3(base + '_kondisi');
+      k3.style.cssText = 'display:flex;flex-direction:column;gap:6px;width:100%';
+      secC.appendChild(k3);
+      card.appendChild(secC);
+    }
+
+    /* Keterangan umum per elemen */
+    var ketWrap = el('div', {style:'display:flex;flex-direction:column;gap:4px'});
+    var ketTa = el('textarea', {placeholder:'Keterangan tambahan untuk ' + elemen.label + '...'});
+    ketTa.id = 'ket_' + base; ketTa.name = 'ket_' + base;
+    ketWrap.appendChild(el('span', {text:'Keterangan', style:'font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em'}));
+    ketWrap.appendChild(ketTa);
+    card.appendChild(ketWrap);
+
+    /* Upload foto per elemen */
+    var prev = el('div', {cls:'foto-preview-inline'});
+    var uObj = makeUploadBtn(base + '_foto', prev);
+    var secF = el('div', {style:'display:flex;flex-direction:column;gap:4px'});
+    secF.appendChild(uObj.btn); secF.appendChild(prev);
+    card.appendChild(secF);
+
+    grid.appendChild(card);
+  });
+  body.appendChild(grid);
+}
+
+/* ===================================================================== */
+/* ===== PETUNJUK PENGISIAN ISIAN "KETERANGAN" (hidden text)            === */
+/* ===== Sumber: Deskripsi_Keterangan_Isian_Form_Monev.xlsx             === */
+/* ===================================================================== */
+var PANDUAN_ISIAN = {
+  'ket_psu_0_0': 'Uraikan kondisi fisik jalan utama dalam kawasan perumahan, termasuk kondisi permukaan jalan, kerusakan/gangguan yang ditemukan, dan kemudahan akses bagi penghuni. Jelaskan lokasi atau bagian jalan yang mengalami kerusakan serta kondisi khusus lainnya bila ada.',
+  'ket_psu_0_1': 'Uraikan kondisi fisik jalan lingkungan perumahan, termasuk kondisi permukaan jalan, kerusakan/gangguan yang ditemukan, dan kemudahan akses bagi penghuni. Jelaskan lokasi atau bagian jalan yang mengalami kerusakan bila ada.',
+  'ket_psu_1_0': 'Uraikan kondisi fisik saluran drainase utama, termasuk kondisi saluran, kelancaran aliran, kerusakan/gangguan, serta ada atau tidaknya genangan. Jelaskan lokasi atau bagian saluran yang bermasalah bila ada.',
+  'ket_psu_1_1': 'Uraikan kondisi fisik saluran drainase lingkungan, termasuk kondisi saluran, kelancaran aliran, kerusakan/gangguan, serta ada atau tidaknya genangan. Jelaskan lokasi atau bagian saluran yang bermasalah bila ada.',
+  'ket_psu_2_0': 'Uraikan kondisi sistem penyediaan air bersih, termasuk sumber air, kondisi jaringan, kontinuitas dan kelancaran pelayanan, serta kualitas air secara visual. Jelaskan gangguan atau bagian jaringan yang bermasalah bila ada.',
+  'ket_psu_3_0': 'Uraikan kondisi sistem pengelolaan air limbah, termasuk jenis sistem, kondisi sarana/prasarana, fungsi dan kelancaran pengelolaan. Jelaskan kerusakan, gangguan, atau masalah lingkungan yang ditemukan bila ada.',
+  'ket_psu_4_0': 'Uraikan kondisi sistem pengelolaan sampah, termasuk ketersediaan sarana, kondisi tempat pewadahan/pengumpulan, serta keteraturan pengangkutan dan pengelolaan sampah. Jelaskan kendala atau masalah yang ditemukan bila ada.',
+  'ket_psu_5_0': 'Uraikan kondisi jaringan listrik perumahan, termasuk ketersediaan jaringan, kondisi tiang/kabel dan sambungan, serta kelancaran pelayanan listrik. Jelaskan kerusakan atau gangguan yang ditemukan bila ada.',
+  'ket_psu_6_0': 'Uraikan kondisi penerangan jalan, termasuk ketersediaan dan sebaran lampu, kondisi tiang/lampu, serta fungsi dan penerangan pada malam hari. Jelaskan bagian jalan yang kurang terang atau mengalami gangguan bila ada.',
+  'ket_psu_7_0': 'Uraikan kondisi sarana sosial, termasuk ketersediaan, kondisi fisik, fungsi, dan pemanfaatannya oleh penghuni. Jelaskan kerusakan atau kendala yang ditemukan bila ada.',
+  'ket_psu_7_1': 'Uraikan kondisi sarana pendidikan, termasuk ketersediaan, kondisi fisik, fungsi, dan pemanfaatannya. Jelaskan kerusakan atau kendala yang ditemukan bila ada.',
+  'ket_psu_7_2': 'Uraikan kondisi sarana ibadah, termasuk ketersediaan, kondisi fisik, fungsi, dan pemanfaatannya oleh penghuni. Jelaskan kerusakan atau kendala yang ditemukan bila ada.',
+  'ket_psu_7_3': 'Uraikan kondisi sarana kesehatan, termasuk ketersediaan, kondisi fisik, fungsi, dan pemanfaatannya. Jelaskan kerusakan atau kendala yang ditemukan bila ada.',
+  'ket_psu_7_4': 'Uraikan kondisi sarana ekonomi, termasuk ketersediaan, kondisi fisik, fungsi, dan pemanfaatannya oleh penghuni. Jelaskan kerusakan atau kendala yang ditemukan bila ada.',
+  'ket_psu_7_5': 'Uraikan kondisi sarana olahraga, termasuk ketersediaan, kondisi fisik, fungsi, dan pemanfaatannya oleh penghuni. Jelaskan kerusakan atau kendala yang ditemukan bila ada.',
+  'ket_psu_7_6': 'Uraikan kondisi sarana transportasi, termasuk ketersediaan, kondisi fisik, fungsi, dan kemudahan akses bagi penghuni. Jelaskan kerusakan atau kendala yang ditemukan bila ada.',
+  'ket_psu_8_0': 'Uraikan kondisi RTH, termasuk luas/ketersediaan, kondisi vegetasi, kebersihan, fungsi, dan pemanfaatannya oleh penghuni. Jelaskan bagian yang rusak atau tidak terawat bila ada.',
+  'ket_psu_8_1': 'Uraikan kondisi RTNH, termasuk kondisi fisik, fungsi, kebersihan, dan pemanfaatannya oleh penghuni. Jelaskan kerusakan atau kendala yang ditemukan bila ada.',
+  'ket_psu_8_2': 'Uraikan kondisi ruang terbuka biru, termasuk kondisi fisik badan air, kebersihan, fungsi, dan pemanfaatannya. Jelaskan pencemaran, sedimentasi, kerusakan, atau kendala lainnya bila ada.',
+  'catatan_tambahan_py_1_0': 'Uraikan kondisi dan tahap pekerjaan pondasi yang dapat diamati pada saat survei, termasuk jenis pondasi, material yang digunakan, kesesuaian pelaksanaan dengan gambar/rencana, serta kondisi pekerjaan secara umum. Apabila pondasi belum dikerjakan, sedang dalam proses, atau sudah selesai dan tertutup sehingga tidak dapat diamati, jelaskan status tersebut.',
+  'catatan_tambahan_py_2_0': 'Uraikan kondisi dan tahap pekerjaan sloof yang dapat diamati pada saat survei, termasuk dimensi/ukuran yang dapat diamati, material, kondisi tulangan dan pengecoran bila terlihat, serta kondisi pekerjaan secara umum. Apabila sloof belum dikerjakan, sedang dalam proses, atau sudah selesai dan tertutup sehingga tidak dapat diamati, jelaskan status tersebut.',
+  'catatan_tambahan_py_3_0': 'Uraikan kondisi dan tahap pekerjaan kolom yang dapat diamati pada saat survei, termasuk posisi, ukuran yang dapat diamati, material, kondisi tulangan dan pengecoran bila terlihat, serta kondisi pekerjaan secara umum. Apabila kolom belum dikerjakan, sedang dalam proses, atau sudah selesai dan tertutup sehingga tidak dapat diamati, jelaskan status tersebut.',
+  'catatan_tambahan_py_4_0': 'Uraikan kondisi dan tahap pekerjaan ring balok yang dapat diamati pada saat survei, termasuk posisi, ukuran yang dapat diamati, material, kondisi tulangan dan pengecoran bila terlihat, serta kondisi pekerjaan secara umum. Apabila ring balok belum dikerjakan, sedang dalam proses, atau sudah selesai dan tertutup sehingga tidak dapat diamati, jelaskan status tersebut.',
+  'catatan_tambahan_py_5_0': 'Uraikan kondisi dan tahap pekerjaan rangka atap yang dapat diamati pada saat survei, termasuk jenis dan material rangka, kondisi pemasangan, sambungan, kestabilan, serta kondisi pekerjaan secara umum. Apabila rangka atap belum dikerjakan atau sedang dalam proses pemasangan, jelaskan tahap pekerjaannya.',
+  'catatan_tambahan_py_6_0': 'Uraikan kondisi dan tahap pekerjaan penutup atap dan plafon yang dapat diamati pada saat survei, termasuk jenis/material yang digunakan, kondisi pemasangan, kerapian, serta adanya kerusakan atau kebocoran bila dapat diamati. Apabila penutup atap atau plafon belum dikerjakan atau sedang dalam proses pemasangan, jelaskan tahap pekerjaannya.',
+  'catatan_tambahan_py_7_0': 'Uraikan kondisi dan tahap pekerjaan lantai yang dapat diamati pada saat survei, termasuk jenis/material lantai, kondisi permukaan, kerataan, pemasangan, serta adanya kerusakan atau bagian yang belum selesai. Apabila lantai belum dikerjakan atau sedang dalam proses pemasangan, jelaskan tahap pekerjaannya.',
+  'catatan_tambahan_py_8_0': 'Uraikan kondisi dan tahap pekerjaan dinding yang dapat diamati pada saat survei, termasuk jenis/material dinding, kondisi pasangan dinding, kelurusan, plesteran/acian bila sudah dikerjakan, serta adanya retak atau kerusakan. Apabila dinding belum dikerjakan atau sedang dalam proses pembangunan, jelaskan tahap pekerjaannya.',
+  'catatan_tambahan_py_9_0': 'Uraikan kondisi dan tahap pemenuhan aspek rumah layak huni yang dapat diamati pada saat survei, meliputi luas ruang, pencahayaan, penghawaan, toilet dengan kloset leher angsa, ketersediaan dapur, dan carport. Jelaskan aspek yang sudah tersedia, sedang dikerjakan, belum tersedia, atau belum dapat dinilai karena tahap pembangunan.',
+  'catatan_tambahan_py_11_0': 'Uraikan kondisi dan tahap penyediaan penghijauan dalam kavling, termasuk ketersediaan area untuk penghijauan, jenis/kondisi tanaman yang sudah tersedia, serta kondisi pemeliharaannya. Apabila penghijauan belum dilaksanakan atau masih dalam proses penataan, jelaskan status tersebut.',
+  'ket_py_util_air': 'Uraikan kondisi dan tahap pemasangan jaringan air bersih yang dapat diamati pada saat survei, termasuk sumber air, jenis jaringan, sambungan, serta kondisi instalasi yang terlihat. Apabila jaringan belum terpasang, sedang dalam proses pemasangan, atau sudah terpasang tetapi tidak dapat diamati karena tertutup, jelaskan status tersebut.',
+  'ket_py_util_listrik': 'Uraikan kondisi dan tahap pemasangan jaringan listrik yang dapat diamati pada saat survei, termasuk ketersediaan sambungan, meter listrik, kabel, titik instalasi, dan komponen lain yang terlihat. Apabila jaringan belum terpasang, sedang dalam proses pemasangan, atau sudah terpasang tetapi tidak dapat diamati karena tertutup, jelaskan status tersebut.',
+  'ket_py_util_airlimbah': 'Uraikan kondisi dan tahap pekerjaan sistem air limbah domestik yang dapat diamati pada saat survei, termasuk jenis sistem, sarana pengolahan, jaringan perpipaan, dan kondisi pemasangannya. Apabila sistem belum dikerjakan, sedang dalam proses, atau sudah selesai dan sebagian komponennya tidak dapat diamati karena tertutup, jelaskan status tersebut.',
+  'ket_py_util_fiber': 'Uraikan kondisi dan tahap penyediaan jaringan fiber optik yang dapat diamati pada saat survei, termasuk ketersediaan jaringan, jalur kabel, titik sambungan, dan kondisi instalasi yang terlihat. Apabila jaringan belum tersedia, sedang dalam proses pemasangan, atau sudah terpasang tetapi tidak dapat diamati, jelaskan status tersebut.',
+  'ket_py_util_kebakaran': 'Uraikan kondisi dan tahap penyediaan sarana proteksi kebakaran yang dapat diamati pada saat survei, termasuk jenis dan ketersediaan sarana, lokasi pemasangan, kondisi fisik, serta kemudahan akses terhadap sarana tersebut. Apabila sarana belum tersedia atau masih dalam proses penyediaan, jelaskan status tersebut.',
+  'ket_py_util_drainase': 'Uraikan kondisi dan tahap pekerjaan drainase yang dapat diamati pada saat survei, termasuk jenis saluran, material, kondisi saluran, kelancaran aliran bila sudah berfungsi, serta keterhubungannya dengan jaringan drainase kawasan. Apabila drainase belum dikerjakan, sedang dalam proses, atau sudah selesai dan sebagian saluran tidak dapat diamati karena tertutup, jelaskan status tersebut.',
+  'ket_py_util_sampah': 'Uraikan kondisi dan tahap penyediaan sarana persampahan yang dapat diamati pada saat survei, termasuk ketersediaan tempat pewadahan, kondisi sarana, lokasi penempatan, serta sistem pengumpulan dan pengangkutan apabila sudah berjalan. Apabila sarana belum tersedia atau masih dalam proses penyediaan, jelaskan status tersebut.',
+  'ket_keterhunian': 'Uraikan informasi tambahan atau hasil klarifikasi yang diperlukan untuk menjelaskan jawaban responden. Cantumkan temuan khusus, ketidaksesuaian data/dokumen, atau kondisi lain yang perlu diperhatikan.',
+  'catatan_tambahan_pf_lantai': 'Uraikan kondisi lantai rumah saat ini, termasuk kondisi permukaan, kerataan, kebersihan, dan adanya kerusakan seperti retak, pecah, berlubang, atau bagian yang terlepas. Jelaskan lokasi dan tingkat kerusakan bila ada.',
+  'catatan_tambahan_pf_dinding': 'Uraikan kondisi dinding rumah saat ini, termasuk kondisi permukaan, keretakan, kelembapan, perubahan warna, kerusakan, atau bagian yang terkelupas/terlepas. Jelaskan lokasi dan tingkat kerusakan bila ada.',
+  'catatan_tambahan_pf_atap': 'Uraikan kondisi atap dan plafon rumah saat ini, termasuk kondisi penutup atap, plafon, kebocoran, rembesan, kerusakan, atau bagian yang terlepas. Jelaskan lokasi dan kondisi kerusakan bila ada.',
+  'catatan_tambahan_pf_rlh': 'Uraikan kondisi kelayakan dan kenyamanan rumah sebagai tempat tinggal, termasuk kecukupan ruang, pencahayaan, penghawaan, kondisi toilet, dapur, serta fasilitas pendukung lainnya. Jelaskan apabila terdapat bagian yang tidak berfungsi, mengalami kerusakan, atau tidak memenuhi kebutuhan penghuni.',
+  'catatan_tambahan_pf_hijau': 'Uraikan kondisi penghijauan dalam kavling saat ini, termasuk ketersediaan tanaman/vegetasi, kondisi dan pemeliharaan tanaman, serta pemanfaatan area terbuka dalam kavling. Jelaskan apabila area penghijauan tidak tersedia, tidak terawat, atau telah berubah fungsi.',
+  'ket_pf_util_air': 'Uraikan kondisi dan pemanfaatan jaringan air bersih saat ini, termasuk sumber air, ketersediaan dan kelancaran air, kondisi jaringan, serta kecukupan air untuk kebutuhan penghuni. Jelaskan gangguan, kerusakan, atau kendala yang ditemukan bila ada.',
+  'ket_pf_util_listrik': 'Uraikan kondisi dan pemanfaatan jaringan listrik saat ini, termasuk ketersediaan sambungan, kondisi instalasi yang terlihat, serta kelancaran pelayanan listrik untuk kebutuhan penghuni. Jelaskan gangguan, kerusakan, atau kendala yang ditemukan bila ada.',
+  'ket_pf_util_airlimbah': 'Uraikan kondisi dan pemanfaatan sistem air limbah domestik saat ini, termasuk jenis sistem, kondisi sarana pengolahan, kelancaran pembuangan, serta potensi pencemaran atau gangguan lingkungan. Jelaskan kerusakan, penyumbatan, bau, atau kendala lainnya bila ada.',
+  'ket_pf_util_fiber': 'Uraikan kondisi dan pemanfaatan jaringan fiber optik saat ini, termasuk ketersediaan jaringan/sambungan, kondisi instalasi yang terlihat, dan pemanfaatannya oleh penghuni. Jelaskan gangguan atau kendala yang ditemukan bila ada.',
+  'ket_pf_util_kebakaran': 'Uraikan kondisi dan ketersediaan sarana proteksi kebakaran saat ini, termasuk jenis sarana, kondisi fisik, lokasi, kemudahan akses, dan kesiapan penggunaannya. Jelaskan apabila sarana tidak tersedia, rusak, tidak berfungsi, atau sulit diakses.',
+  'ket_pf_util_drainase': 'Uraikan kondisi dan fungsi drainase di sekitar rumah saat ini, termasuk kondisi saluran, kebersihan, kelancaran aliran, serta ada atau tidaknya genangan. Jelaskan kerusakan, penyumbatan, atau bagian saluran yang bermasalah bila ada.',
+  'ket_pf_util_sampah': 'Uraikan kondisi dan pemanfaatan sistem persampahan saat ini, termasuk ketersediaan tempat sampah, kondisi dan kebersihan sarana, pemilahan/pewadahan, serta keteraturan pengangkutan sampah. Jelaskan apabila terdapat penumpukan sampah atau kendala pengelolaan lainnya.',
+};
+
+/* Sisipkan blok petunjuk yang dapat dibuka/tutup di atas setiap textarea
+   Keterangan, plus placeholder ringkas dan tooltip berisi teks penuh. */
+function applyPanduanIsian() {
+  Object.keys(PANDUAN_ISIAN).forEach(function(id) {
+    var ta = document.getElementById(id);
+    if (!ta || ta.getAttribute('data-panduan')) return;
+    var teks = PANDUAN_ISIAN[id];
+    ta.setAttribute('data-panduan', '1');
+    ta.title = teks;
+    var titik = teks.indexOf('. ');
+    ta.placeholder = (titik > 20 ? teks.slice(0, titik + 1) + ' (lihat petunjuk)' : teks);
+
+    var hint = el('div', {cls:'panduan-hint'});
+    var btn  = el('button', {cls:'panduan-toggle', type:'button'});
+    btn.textContent = '💡 Lihat petunjuk pengisian';
+    var isi  = el('div', {cls:'panduan-teks', text: teks});
+    btn.addEventListener('click', function() {
+      var buka = hint.classList.toggle('open');
+      btn.textContent = buka ? '💡 Sembunyikan petunjuk' : '💡 Lihat petunjuk pengisian';
+      if (typeof syncWrapperHeight === 'function' && typeof currentTabIdx !== 'undefined') {
+        setTimeout(function(){ syncWrapperHeight(currentTabIdx); }, 10);
+      }
+    });
+    hint.appendChild(btn); hint.appendChild(isi);
+    if (ta.parentElement) ta.parentElement.insertBefore(hint, ta);
+  });
 }
 
 function setupGeoButton(inputId) {
@@ -1206,6 +1467,7 @@ window.addEventListener('load', function() {
     btn.addEventListener('click', function(){ saveDraft(btn.getAttribute('data-panel'), btn); });
   });
   setupGeoButton('t1_koordinat');
+  setupGeoButton('t2_koordinat');
   setupGeoButton('t3_koordinat');
   setupGeoButton('p2_koordinat');
   setupGeoButton('p3_koordinat');
@@ -1359,9 +1621,17 @@ window.addEventListener('load', function() {
   var psuItems = [
     {num:'1.0',label:'Jaringan Jalan',subs:[{label:'Jalan Utama Perumahan',types:['Aspal','Paving Block','Tanah','Beton','Makadam','Lainnya']},{label:'Jalan Lingkungan Perumahan',types:['Aspal','Paving Block','Tanah','Beton','Makadam','Lainnya']}]},
     {num:'2.0',label:'Saluran Drainase',subs:[{label:'Jalur Utama',types:['Terbuka','Box Culvert','Talang Air','Tertutup','U-Ditch','Lainnya']},{label:'Jalur Lingkungan',types:['Terbuka','Box Culvert','Talang Air','Tertutup','U-Ditch','Lainnya']}]},
-    {num:'3.0',label:'Sistem Jaringan Air Bersih',subs:[{label:'Sumber Air Bersih',types:['PDAM','Sumur Artesis','Tangki Mandiri','Tangki Komunal','Sumur Mandiri','Lainnya']}]},
-    {num:'4.0',label:'Sistem Pengelolaan Air Limbah',subs:[{label:'Jaringan Air Kotor',types:['Tangki Septic Komunal','Tangki Septic Mandiri','Lainnya']}]},
-    {num:'5.0',label:'Sistem Pengelolaan Sampah',subs:[{label:'Sarana Sampah',types:['Tong Sampah','Bak Sampah','Gerobak Sampah','Mobil Sampah','Tempat Daur Ulang','Lainnya']}]},
+    {num:'3.0',label:'Sistem Jaringan Air Bersih',subs:[{key:'airbersih',label:'Sistem Jaringan Air Bersih',
+      jenisSistem:{label:'Jenis Sistem',opts:['PDAM/Perumda Air Minum','Sistem air bersih kawasan','Sumur dalam + jaringan distribusi','Sumber air lainnya'],other:'Sumber air lainnya',placeholder:'Sebutkan sumber air lainnya...'},
+      komponen:{label:'Komponen PSU',opts:['Reservoir/tandon kawasan','Jaringan perpipaan distribusi','Sambungan pelayanan ke rumah','Hidran/kran umum']}
+    }]},
+    {num:'4.0',label:'Sistem Pengelolaan Air Limbah',subs:[{key:'airlimbah',label:'Sistem Pengelolaan Air Limbah',
+      jenisSistem:{label:'Jenis Sistem',opts:['IPAL komunal/kawasan','Tangki septik komunal','Sistem lainnya'],other:'Sistem lainnya',placeholder:'Sebutkan sistem lainnya...'},
+      komponen:{label:'Komponen yang Tersedia',opts:['Jaringan perpipaan air limbah','IPAL','Tangki septik komunal','Bak kontrol/manhole','Sarana pembuangan akhir']}
+    }]},
+    {num:'5.0',label:'Sistem Pengelolaan Sampah',subs:[{key:'sampah',label:'Sistem Pengelolaan Sampah',
+      komponen:{label:'Prasarana/Sarana yang Tersedia',opts:['Tempat pewadahan sampah komunal','TPS','TPS 3R','Sarana pengumpulan/pengangkutan sampah','Fasilitas pemilahan/pengolahan sampah','Akses ke fasilitas pengelolaan akhir']}
+    }]},
     {num:'6.0',label:'Sistem Jaringan Listrik',subs:[{label:'Sumber Listrik',types:['PLN','Solar Panel','Lainnya']}]},
     {num:'7.0',label:'Penerangan Jalan',subs:[{label:'Jenis Penerangan',types:['Lampu Surya','Listrik Konvensional','Lainnya']}]},
     {num:'8.0',label:'Fasilitas Umum',subs:[
@@ -1393,11 +1663,21 @@ window.addEventListener('load', function() {
     {
       item.subs.forEach(function(sub,ssi){
         var sub_el=el('div',{cls:'subsection'});
-        sub_el.appendChild(el('div',{cls:'subsection-title',text:sub.label}));
-        var psuMatWidget = sub.types.indexOf('Lainnya') !== -1
-          ? makeCheckGroupWithOther('psu_mat_'+si+'_'+ssi, sub.types, 'Sebutkan jenis/material lainnya...')
-          : makeCheckGroup('psu_mat_'+si+'_'+ssi, sub.types);
-        sub_el.appendChild(makeField(sub.jenisLabel||'Jenis/Material', psuMatWidget));
+        if(sub.label!==item.label) sub_el.appendChild(el('div',{cls:'subsection-title',text:sub.label}));
+        if(sub.jenisSistem){
+          sub_el.appendChild(makeField(sub.jenisSistem.label||'Jenis Sistem',
+            makeRadioGroupOtherValue('psu_'+sub.key+'_sistem', sub.jenisSistem.opts, sub.jenisSistem.other, sub.jenisSistem.placeholder)));
+        }
+        if(sub.komponen){
+          sub_el.appendChild(makeField(sub.komponen.label||'Komponen yang Tersedia',
+            makeCheckGroup('psu_'+sub.key+'_komponen', sub.komponen.opts)));
+        }
+        if(sub.types){
+          var psuMatWidget = sub.types.indexOf('Lainnya') !== -1
+            ? makeCheckGroupWithOther('psu_mat_'+si+'_'+ssi, sub.types, 'Sebutkan jenis/material lainnya...')
+            : makeCheckGroup('psu_mat_'+si+'_'+ssi, sub.types);
+          sub_el.appendChild(makeField(sub.jenisLabel||'Jenis/Material', psuMatWidget));
+        }
         if(sub.jarakOpts){
           var jGrpEl=el('div',{cls:'kondisi-group'});
           sub.jarakOpts.forEach(function(j,ji){ var rid='psu_jarak_'+si+'_'+ssi+'_'+ji; var inp=el('input'); inp.type='radio'; inp.name='psu_jarak_'+si+'_'+ssi; inp.id=rid; inp.value=j; var dot=el('span',{cls:'dot',style:'background:var(--gray-400)'}); var lbl=el('label'); lbl.setAttribute('for',rid); lbl.appendChild(dot); lbl.appendChild(document.createTextNode(j)); var opt=el('div',{cls:'kondisi-opt'},[inp,lbl]); jGrpEl.appendChild(opt); });
@@ -1469,14 +1749,7 @@ window.addEventListener('load', function() {
       {label:'Ketersediaan Dapur',name:'py_rlh_dapur',type:'radio',opts:['Ada','Tidak Ada']},
       {label:'Carport',name:'py_rlh_carport',type:'radio',opts:['Ada','Tidak Ada']}
     ]},
-    {num:'10.0',label:'Jaringan Utilitas Bangunan',type:'util',fields:[
-      {label:'Jaringan Air Bersih',name:'py_util_air',opts:['Tersedia','Tidak Tersedia']},
-      {label:'Jaringan Listrik',name:'py_util_listrik',opts:['Tersedia','Tidak Tersedia']},
-      {label:'Perpipaan Sanitasi',name:'py_util_sanitasi',opts:['Tersedia','Tidak Tersedia']},
-      {label:'Jaringan Fiber Optik',name:'py_util_fiber',opts:['Tersedia','Tidak Tersedia']},
-      {label:'Proteksi Kebakaran',name:'py_util_kebakaran',opts:['Tersedia','Tidak Tersedia']},
-      {label:'Jaringan Air Limbah',name:'py_util_airlimbah',opts:['Tersedia','Tidak Tersedia']}
-    ]},
+    {num:'10.0',label:'Jaringan Utilitas Bangunan',type:'util'},
     {num:'11.0',label:'Penghijauan Dalam Kavling',fields:[{label:'Kategori',name:'py_hijau_kavling',type:'radio_desc',items:[
       {value:'Tidak terdapat penghijauan',desc:'Halaman berupa tanah terbuka, perkerasan, atau lahan kosong tanpa vegetasi.'},
       {value:'Penghijauan minimal',desc:'Terdapat rumput, semak, atau vegetasi rendah dalam jumlah terbatas.'},
@@ -1492,33 +1765,7 @@ window.addEventListener('load', function() {
     var body=el('div',{cls:'section-body'});
     var hasUtilOrCheckFoto=(item.type==='util')||( item.fields && item.fields.some(function(f){return f.type==='check_foto';}));
     if(item.type==='util'){
-      body.className='section-body util-section-body';
-      item.fields.forEach(function(f){
-        var row=el('div',{cls:'util-row'});
-        row.appendChild(el('span',{text:f.label,style:'font-size:13px;font-weight:500'}));
-        row.appendChild(makeRadioGroup(f.name,f.opts));
-        var prev=el('div',{cls:'foto-preview-inline'}); var uObj=makeUploadBtn(f.name+'_foto',prev);
-        row.appendChild(uObj.btn); body.appendChild(row); body.appendChild(prev);
-        // Catatan box muncul saat Tidak Tersedia dipilih
-        var tsBox=el('div',{cls:'catatan-box'});
-        tsBox.id='catatan_box_ts_py_'+f.name;
-        var tsLbl=el('div',{cls:'catatan-label'});
-        tsLbl.innerHTML='✏️ Keterangan (deskripsi kondisi dilapangan)';
-        var tsTa=el('textarea');
-        tsTa.id='catatan_ts_py_'+f.name;
-        tsTa.name='catatan_ts_py_'+f.name;
-        tsTa.placeholder='Jelaskan alasan tidak tersedia...';
-        tsBox.appendChild(tsLbl); tsBox.appendChild(tsTa);
-        body.appendChild(tsBox);
-        (function(radioName, box){
-          body.querySelectorAll('input[type=radio][name="'+radioName+'"]').forEach(function(r){
-            r.addEventListener('change',function(){
-              if(r.checked && r.value==='Tidak Tersedia') box.classList.add('visible');
-              else if(r.checked){ box.classList.remove('visible'); var ta2=box.querySelector('textarea'); if(ta2) ta2.value=''; }
-            });
-          });
-        })(f.name, tsBox);
-      });
+      renderUtilElements(body, 'py_util', false);
 
     } else if(item.type==='rth'){
       var rthK2=[{val:'Baik / Berfungsi',color:'#10B981'},{val:'Sedang / Ada Gangguan',color:'#F59E0B'},{val:'Buruk / Tidak Berfungsi',color:'#EF4444'}];
@@ -1689,18 +1936,18 @@ window.addEventListener('load', function() {
   // PASCA FISIK SECTIONS — Keberfungsian DIHAPUS, digantikan Kondisi
   // ================================================================
   var pascaFisikItems = [
-    { num:'4.0', label:'Komponen Fisik Bangunan — Lantai', fields:[
+    { num:'5.0', key:'lantai', label:'Komponen Fisik Bangunan — Lantai', fields:[
       { label:'Jenis Lantai',       name:'pf_lantai_jenis',   type:'radio_other', opts:['Keramik','Tegel','Plester Semen','Lainnya'] },
       { label:'Komponen Visual',    name:'pf_lantai_visual',  type:'check', opts:['Tidak Ada Cacat','Retak/Pecah','Keramik Terangkat','Nat Rusak','Lantai Lembab/Rembes','Ada Genangan'] },
       { label:'Kondisi',            name:'pf_lantai_kondisi', type:'kondisi3' }
     ]},
-    { num:'5.0', label:'Komponen Fisik Bangunan — Dinding', fields:[
+    { num:'6.0', key:'dinding', label:'Komponen Fisik Bangunan — Dinding', fields:[
       { label:'Jenis Dinding',      name:'pf_dinding_jenis',  type:'radio_other', opts:['Bata Merah','Bata Ringan','Lainnya'] },
       { label:'Double Dinding',     name:'pf_dinding_double', type:'radio', opts:['Ya','Tidak'] },
       { label:'Komponen Visual',    name:'pf_dinding_visual', type:'check', opts:['Tidak Ada Cacat','Retak Rambut','Retak Struktur','Rembes Air','Berjamur/Berlumut','Cat Mengelupas','Plesteran Rontok'] },
       { label:'Kondisi',            name:'pf_dinding_kondisi',type:'kondisi3' }
     ]},
-    { num:'6.0', label:'Komponen Fisik Bangunan — Atap dan Plafon', fields:[
+    { num:'7.0', key:'atap', label:'Komponen Fisik Bangunan — Atap dan Plafon', fields:[
       { label:'Material Penutup Atap',      name:'pf_atap_penutup',  type:'check', opts:['Genteng Tanah Liat','Genteng Beton','Metal/Spandek','Bitumen','Lainnya'] },
       { label:'Material Kuda-Kuda',         name:'pf_atap_kudakuda', type:'check', opts:['Kayu','Baja Ringan','Besi','Beton'] },
       { label:'Penopang Dinding Sopi-sopi', name:'pf_atap_penopang', type:'radio', opts:['Tersedia','Tidak Tersedia'] },
@@ -1708,7 +1955,7 @@ window.addEventListener('load', function() {
       { label:'Material Plafon',            name:'pf_atap_plafon',   type:'check', opts:['Gypsum','GRC','PVC','Triplek/Kayu','Tanpa Plafon'] },
       { label:'Kondisi',                    name:'pf_atap_kondisi',  type:'kondisi3' }
     ]},
-    { num:'7.0', label:'Komponen Fisik Bangunan — Rumah Layak Huni', fields:[
+    { num:'8.0', key:'rlh', label:'Komponen Fisik Bangunan — Rumah Layak Huni', fields:[
       { label:'Luas Minimum 7.2–9 m²',          name:'pf_rlh_luas',    type:'radio', opts:['Memenuhi','Tidak'] },
       { label:'Pencahayaan 10% dari Luas Lantai',name:'pf_rlh_cahaya',  type:'radio', opts:['Memenuhi','Tidak'] },
       { label:'Penghawaan 5% dari Luas Lantai',  name:'pf_rlh_angin',   type:'radio', opts:['Memenuhi','Tidak'] },
@@ -1716,15 +1963,8 @@ window.addEventListener('load', function() {
       { label:'Ketersediaan Dapur',              name:'pf_rlh_dapur',   type:'radio', opts:['Ada','Tidak Ada'] },
       { label:'Carport',                         name:'pf_rlh_carport', type:'radio', opts:['Ada','Tidak Ada'] }
     ]},
-    { num:'8.0', label:'Ketersediaan Jaringan Utilitas Bangunan', type:'util2', fields:[
-      { label:'Jaringan Air Bersih',  name:'pf_util_air',       opts:['Tersedia','Tidak Tersedia'] },
-      { label:'Jaringan Listrik',     name:'pf_util_listrik',   opts:['Tersedia','Tidak Tersedia'] },
-      { label:'Perpipaan Sanitasi',   name:'pf_util_sanitasi',  opts:['Tersedia','Tidak Tersedia'] },
-      { label:'Jaringan Fiber Optik', name:'pf_util_fiber',     opts:['Tersedia','Tidak Tersedia'] },
-      { label:'Proteksi Kebakaran',   name:'pf_util_kebakaran', opts:['Tersedia','Tidak Tersedia'] },
-      { label:'Jaringan Air Limbah',   name:'pf_util_airlimbah', opts:['Tersedia','Tidak Tersedia'] }
-    ]},
-    { num:'9.0', label:'Penghijauan Dalam Kavling', fields:[
+    { num:'9.0', key:'utilitas', label:'Jaringan Utilitas Bangunan', type:'util2' },
+    { num:'10.0', key:'hijau', label:'Penghijauan Dalam Kavling', fields:[
       { label:'Kategori', name:'pf_hijau_kavling', type:'radio_desc', items:[
         {value:'Tidak terdapat penghijauan',desc:'Halaman berupa tanah terbuka, perkerasan, atau lahan kosong tanpa vegetasi.'},
         {value:'Penghijauan minimal',desc:'Terdapat rumput, semak, atau vegetasi rendah dalam jumlah terbatas.'},
@@ -1751,64 +1991,7 @@ window.addEventListener('load', function() {
     var body = el('div', {cls:'section-body'});
 
     if (item.type === 'util2') {
-      // Susunan vertikal per item — setiap utilitas jadi kartu tersendiri
-      var grid = el('div', {style:'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px'});
-
-      item.fields.forEach(function(f) {
-        var card = el('div', {style:'border:1.5px solid var(--gray-200);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--white)'});
-
-        // Nama item
-        card.appendChild(el('div', {text:f.label, style:"font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--gray-100);padding-bottom:8px"}));
-
-        // Ketersediaan
-        var secK = el('div', {style:'display:flex;flex-direction:column;gap:6px'});
-        secK.appendChild(el('span', {text:'Ketersediaan', style:'font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em'}));
-        var ketersediaanRadioGroup = makeRadioGroup(f.name, f.opts);
-        secK.appendChild(ketersediaanRadioGroup);
-        // Catatan uraian jika Tidak Tersedia dipilih
-        var tsBox = el('div', {cls:'catatan-box'});
-        tsBox.id = 'catatan_box_pf_ts_' + f.name;
-        var tsLbl = el('div', {cls:'catatan-label'});
-        tsLbl.innerHTML = '✏️ Keterangan (deskripsi kondisi dilapangan)';
-        var tsTa = el('textarea');
-        tsTa.id = 'catatan_pf_ts_' + f.name;
-        tsTa.name = 'catatan_pf_ts_' + f.name;
-        tsTa.placeholder = 'Jelaskan alasan tidak tersedia...';
-        tsBox.appendChild(tsLbl); tsBox.appendChild(tsTa);
-        secK.appendChild(tsBox);
-        card.appendChild(secK);
-        // Pasang listener setelah card masuk DOM (defer)
-        (function(radioName, box) {
-          setTimeout(function() {
-            var radios = document.querySelectorAll('input[type=radio][name="' + radioName + '"]');
-            radios.forEach(function(r) {
-              r.addEventListener('change', function() {
-                if (r.checked && r.value === 'Tidak Tersedia') box.classList.add('visible');
-                else if (r.checked) { box.classList.remove('visible'); var ta2=box.querySelector('textarea'); if(ta2) ta2.value=''; }
-              });
-            });
-          }, 150);
-        })(f.name, tsBox);
-
-        // Kondisi 3 dot — vertikal agar teks tidak terpotong
-        var secC = el('div', {style:'display:flex;flex-direction:column;gap:6px'});
-        secC.appendChild(el('span', {text:'Kondisi', style:'font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em'}));
-        var k3 = makeKondisi3(f.name+'_kondisi');
-        k3.style.cssText = 'display:flex;flex-direction:column;gap:6px;width:100%';
-        secC.appendChild(k3);
-        card.appendChild(secC);
-
-        // Upload foto
-        var prev = el('div', {cls:'foto-preview-inline'});
-        var uObj = makeUploadBtn(f.name+'_foto', prev);
-        var secF = el('div', {style:'display:flex;flex-direction:column;gap:4px'});
-        secF.appendChild(uObj.btn);
-        secF.appendChild(prev);
-        card.appendChild(secF);
-
-        grid.appendChild(card);
-      });
-      body.appendChild(grid);
+      renderUtilElements(body, 'pf_util', true);
 
     } else {
       item.fields.forEach(function(f) {
@@ -1843,7 +2026,7 @@ window.addEventListener('load', function() {
           body.appendChild(makeField(f.label, makeRadioGroup(f.name, f.opts)));
         }
       });
-      var fObj   = makeFotoUpload('pf_'+item.num);
+      var fObj   = makeFotoUpload('pf_foto_'+(item.key || item.num.replace('.','_')));
       var fField = el('div', {cls:'field'});
       fField.appendChild(el('label', {text:'Upload Foto'}));
       fField.appendChild(fObj.wrap[0]);
@@ -1857,7 +2040,7 @@ window.addEventListener('load', function() {
     var pfCatatanTitle = el('div', {cls:'ct-title'});
     pfCatatanTitle.innerHTML = '📝 Keterangan';
     var pfCatatanTa = el('textarea');
-    pfCatatanTa.id = 'catatan_tambahan_pf_' + item.num.replace('.','_');
+    pfCatatanTa.id = 'catatan_tambahan_pf_' + (item.key || item.num.replace('.','_'));
     pfCatatanTa.name = pfCatatanTa.id;
     pfCatatanTa.placeholder = 'Keterangan untuk ' + item.label + ' (deskripsi kondisi dilapangan)...';
     pfCatatanWrap.appendChild(pfCatatanTitle);
@@ -1867,6 +2050,11 @@ window.addEventListener('load', function() {
   });
 
   checkDraftForPanel(0);
+
+  // Terapkan petunjuk pengisian pada semua isian Keterangan setelah
+  // seluruh section dinamis (PSU, Penyaluran, Pasca) selesai dirender
+  applyPanduanIsian();
+  setTimeout(applyPanduanIsian, 400);
 
   // Sync tinggi wrapper ke panel aktif setelah semua konten dinamis selesai di-render
   setTimeout(function() { syncWrapperHeight(0); }, 50);
@@ -1999,11 +2187,15 @@ window.addEventListener('load', function() {
     });
   })();
 
-  // ---- Identitas Unit: Upload Foto Tampak Depan (Penyaluran & Pasca Penyaluran) ----
+  // ---- Upload Foto pada wrapper statis (Identitas Unit, Responden, Keterhunian, Pemanfaatan) ----
   (function() {
     var targets = [
       {wrapId:'p2_foto_tampak_depan_wrap', fieldName:'p2_foto_tampak_depan'},
-      {wrapId:'p3_foto_tampak_depan_wrap', fieldName:'p3_foto_tampak_depan'}
+      {wrapId:'p3_foto_tampak_depan_wrap', fieldName:'p3_foto_tampak_depan'},
+      {wrapId:'p3_foto_responden_wrap',    fieldName:'p3_foto_responden'},
+      {wrapId:'p3_foto_status_huni_wrap',  fieldName:'p3_foto_status_huni'},
+      {wrapId:'p3_foto_fungsi_wrap',       fieldName:'p3_foto_perubahan_fungsi'},
+      {wrapId:'p3_foto_renovasi_wrap',     fieldName:'p3_foto_renovasi_bangunan'}
     ];
     targets.forEach(function(t) {
       var wrap = document.getElementById(t.wrapId);
@@ -2171,6 +2363,9 @@ window.addEventListener('load', function() {
       body.appendChild(makeCatatanTambahan(info.num, info.label));
     }
   });
+
+  // Petunjuk pengisian untuk blok Catatan Tambahan yang baru dibuat di atas
+  if (typeof applyPanduanIsian === 'function') applyPanduanIsian();
 
   // Pasang listener juga untuk radio "Tidak Sesuai" di dokumen panel-0 yang mungkin belum terpasang
   // (dinamis dari dokumenGroups, dirender setelah load)
