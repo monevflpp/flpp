@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -95,8 +94,8 @@
     padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
     display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
   }
-  .btn-home-bar{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;padding:11px 10px;border:1.5px solid var(--gray-200);border-radius:999px;background:var(--white);color:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;transition:all .2s}
-  .btn-home-bar:hover{background:var(--gray-50)}
+  .btn-home-bar{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;padding:11px 10px;border:1.5px solid var(--gray-200);border-radius:999px;background:var(--white);color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;transition:all .2s}
+  .btn-home-bar:hover{background:#FEF2F2;border-color:var(--red)}
 
   .foto-status{font-size:12px;color:var(--gray-600);margin-right:auto}
   .btn-send{padding:11px 28px;background:var(--navy);color:var(--white);border:none;border-radius:999px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;white-space:nowrap}
@@ -171,122 +170,182 @@
   }
   .jenis-lainnya-input input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
 
+  /* Status Rumah di Perumahan — warna per baris */
+  .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:600px){.status-grid{grid-template-columns:1fr}}
+  .status-card{border-radius:12px;padding:12px;display:grid;gap:8px;border:1px solid var(--gray-200)}
+  .status-card.komersil{background-color:#ddd}
+  .status-card.subsidi{background-color:rgba(255,255,0,0.22)}
+  .status-card-title{text-align:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;color:var(--gray-800);letter-spacing:.03em;padding:2px 0 4px}
+  .status-row{display:flex;align-items:center;gap:10px;padding:6px 6px 6px 16px;border-radius:8px;color:#fff}
+  .status-row label{flex:1;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:inherit}
+  .status-row input{width:110px;padding:6px 12px;border:none;border-radius:999px;font-size:14px;font-weight:600;text-align:center;background:rgba(255,255,255,.92);color:var(--gray-800);outline:none}
+  .status-row input:focus{box-shadow:0 0 0 3px rgba(255,255,255,.6)}
+  .status-row.k-kavling{background-color:#718096}
+  .status-row.k-pembangunan{background-color:#855831}
+  .status-row.k-readystock{background-color:#362825}
+  .status-row.k-dipesan{background-color:#4C1D95}
+  .status-row.k-terjual{background-color:#343a40}
+  .status-row.s-kavling{background-color:#f7ca18;color:#2C2A22}
+  .status-row.s-pembangunan{background-color:#e67e22}
+  .status-row.s-readystock{background-color:#28a745}
+  .status-row.s-prosesbank{background-color:#007bff}
+  .status-row.s-terjual{background-color:#dc3545}
+
+  /* Pilihan Ada/Tidak Ada wajib */
+  .doc-wrapper.wajib-kosong .doc-row .radio-group label{border-color:var(--red);background:#FFF5F5}
+  .wajib-hint{display:none;font-size:11px;color:var(--red);margin-top:6px}
+  .doc-wrapper.wajib-kosong .wajib-hint{display:block}
+  /* Kondisi Rumah Saat Ini */
+  .kr-box{margin-top:16px}
+  .kr-jumlah{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .kr-jumlah label{font-size:12px;font-weight:600;color:var(--gray-600)}
+  .kr-jumlah input{max-width:160px}
+  .kr-hint{display:none;font-size:11px;color:var(--red);margin-top:6px}
+  .kr-field.wajib-kosong .radio-group label{border-color:var(--red);background:#FFF5F5}
+  .kr-field.wajib-kosong .kr-hint{display:block}
+  .kr-field.jumlah-kosong .kr-jumlah input{border-color:var(--red);background:#FFF5F5}
 </style>
 </head>
 <body>
 
 
 <header class="site-header">
-  <div class="header-inner">
-    <div class="header-text">
-      <h1>Form Isian Pengembang Perumahan FLPP</h1>
-      <p>Identitas dan Data Fisik Perumahan Beserta Dokumen Pendukung</p>
-    </div>
-  </div>
+ <div class="header-inner">
+ <div class="header-text">
+ <h1>Form Isian Pengembang Perumahan FLPP</h1>
+ <p>Identitas dan Data Fisik Perumahan Beserta Dokumen Pendukung</p>
+ </div>
+ </div>
 </header>
 
 <div class="main">
-  <div class="form-panel active" id="panel-0">
-    <div class="panel-body">
-      <div class="section">
-        <div class="section-header"><span class="section-num">PENGISI</span><h3>Identitas Pengisi Data</h3></div>
+ <div class="form-panel active" id="panel-0">
+ <div class="panel-body">
+ <div class="section">
+ <div class="section-header"><span class="section-num">PENGISI</span><h3>Identitas Pengisi Data</h3></div>
+ <div class="section-body">
+ <div class="field-row three">
+ <div class="field"><label>Nama Pengisi <span class="req">*</span></label><input type="text" id="pengisi_nama" placeholder="Nama lengkap"></div>
+ <div class="field"><label>Jabatan</label><input type="text" id="pengisi_jabatan" placeholder="Mis = Marketing, Site Manager"></div>
+ <div class="field"><label>Nomor Telepon</label><input type="tel" id="pengisi_telepon" placeholder="08xxxxxxxxxx"></div>
+ </div>
+ </div>
+ </div>
+ <div class="section">
+ <div class="section-header"><span class="section-num">INFO</span><h3>Identitas Perumahan</h3></div>
+ <div class="section-body">
+ <div class="field"><label>ID Lokasi SIKUMBANG <span class="req">*</span></label><input type="text" id="t1_id_sikumbang"></div>
+ <div class="field-row">
+ <div class="field"><label>Nama Perumahan <span class="req">*</span></label><input type="text" id="t1_nama_perumahan"></div>
+ <div class="field"><label>Nama PT</label><input type="text" id="t1_nama_pt"></div>
+ </div>
+ <div class="field-row">
+ <div class="field"><label>Nama Asosiasi</label><input type="text" id="t1_asosiasi"></div>
+ <div class="field"><label>Nama Kontraktor</label><input type="text" id="t1_kontraktor"></div>
+ </div>
+ <div class="field-row">
+ <div class="field"><label>Provinsi</label><select id="t1_provinsi" onchange="onProvChange('t1_provinsi','t1_kabupaten')"><option value="">-- Pilih Provinsi --</option></select></div>
+ <div class="field"><label>Kabupaten/Kota</label><select id="t1_kabupaten"><option value="">-- Pilih Provinsi dahulu --</option></select></div>
+ </div>
+ <div class="field"><label>Alamat Perumahan</label><input type="text" id="t1_alamat" placeholder="Nama jalan, kecamatan, kelurahan"></div>
+ <div class="field-row">
+ <div class="field">
+ <label>Koordinat (lat, lng)</label>
+ <div class="geo-field-row">
+ <input type="text" id="t1_koordinat" placeholder="-6.200000, 106.816666">
+ <button type="button" class="geo-btn" id="geoBtn_t1_koordinat">📍 Ambil Lokasi</button>
+ </div>
+ <div class="geo-status" id="geoStatus_t1_koordinat"></div>
+ </div>
+ <div class="field"><label>Luas Perumahan (m²)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_luas_perumahan"></div>
+ </div>
+ </div>
+ </div>
+ <div class="section">
+ <div class="section-header"><span class="section-num">I</span><h3>Tipe Rumah</h3></div>
+ <div class="section-body">
+ <div class="subsection"><div class="subsection-title">1. Rumah Subsidi</div>
+ <div class="field-row three"><div class="field"><label>1. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_1" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_1"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_1"></div></div>
+ <div class="field-row three"><div class="field"><label>2. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_2" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_2"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_2"></div></div>
+ <div class="field-row three"><div class="field"><label>3. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_3" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_3"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_3"></div></div>
+ </div>
+ <div class="subsection"><div class="subsection-title">2. Rumah Komersil</div>
+ <div class="field-row three"><div class="field"><label>1. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_1" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_1"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_1"></div></div>
+ <div class="field-row three"><div class="field"><label>2. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_2" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_2"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_2"></div></div>
+ <div class="field-row three"><div class="field"><label>3. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_3" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_3"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_3"></div></div>
+ </div>
+ </div>
+ </div>
+ <div class="section">
+ <div class="section-header"><span class="section-num">II</span><h3>Status Rumah di Perumahan</h3></div>
         <div class="section-body">
-          <div class="field-row three">
-            <div class="field"><label>Nama Pengisi <span class="req">*</span></label><input type="text" id="pengisi_nama" placeholder="Nama lengkap"></div>
-            <div class="field"><label>Jabatan</label><input type="text" id="pengisi_jabatan" placeholder="Mis = Marketing, Site Manager"></div>
-            <div class="field"><label>Nomor Telepon</label><input type="tel" id="pengisi_telepon" placeholder="08xxxxxxxxxx"></div>
-          </div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-header"><span class="section-num">INFO</span><h3>Identitas Perumahan</h3></div>
-        <div class="section-body">
-          <div class="field"><label>ID Lokasi SIKUMBANG</label><input type="text" id="t1_id_sikumbang"></div>
-          <div class="field-row">
-            <div class="field"><label>Nama Perumahan <span class="req">*</span></label><input type="text" id="t1_nama_perumahan"></div>
-            <div class="field"><label>Nama PT</label><input type="text" id="t1_nama_pt"></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>Nama Asosiasi</label><input type="text" id="t1_asosiasi"></div>
-            <div class="field"><label>Nama Kontraktor</label><input type="text" id="t1_kontraktor"></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>Provinsi</label><select id="t1_provinsi" onchange="onProvChange('t1_provinsi','t1_kabupaten')"><option value="">-- Pilih Provinsi --</option></select></div>
-            <div class="field"><label>Kabupaten/Kota</label><select id="t1_kabupaten"><option value="">-- Pilih Provinsi dahulu --</option></select></div>
-          </div>
-          <div class="field"><label>Alamat Perumahan</label><input type="text" id="t1_alamat" placeholder="Nama jalan, kecamatan, kelurahan"></div>
-          <div class="field-row">
-            <div class="field">
-              <label>Koordinat (lat, lng)</label>
-              <div class="geo-field-row">
-                <input type="text" id="t1_koordinat" placeholder="-6.200000, 106.816666">
-                <button type="button" class="geo-btn" id="geoBtn_t1_koordinat">📍 Ambil Lokasi</button>
-              </div>
-              <div class="geo-status" id="geoStatus_t1_koordinat"></div>
+          <div class="status-grid">
+            <div class="status-card komersil"><div class="status-card-title">KOMERSIL</div>
+            <div class="status-row k-kavling"><label for="status_komersil_kavling">Kavling</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_kavling" placeholder="0"></div>
+            <div class="status-row k-pembangunan"><label for="status_komersil_pembangunan">Pembangunan</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_pembangunan" placeholder="0"></div>
+            <div class="status-row k-readystock"><label for="status_komersil_readystock">Ready Stock</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_readystock" placeholder="0"></div>
+            <div class="status-row k-dipesan"><label for="status_komersil_dipesan">Dipesan</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_dipesan" placeholder="0"></div>
+            <div class="status-row k-terjual"><label for="status_komersil_terjual">Terjual</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_terjual" placeholder="0"></div>
             </div>
-            <div class="field"><label>Luas Perumahan (m²)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_luas_perumahan"></div>
-          </div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-header"><span class="section-num">I</span><h3>Tipe Rumah</h3></div>
-        <div class="section-body">
-          <div class="subsection"><div class="subsection-title">1. Rumah Subsidi</div>
-            <div class="field-row three"><div class="field"><label>1. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_1" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_1"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_1"></div></div>
-            <div class="field-row three"><div class="field"><label>2. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_2" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_2"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_2"></div></div>
-            <div class="field-row three"><div class="field"><label>3. Tipe Rumah</label><input type="text" id="t1_subsidi_tipe_3" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_unit_3"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_subsidi_harga_3"></div></div>
-          </div>
-          <div class="subsection"><div class="subsection-title">2. Rumah Komersil</div>
-            <div class="field-row three"><div class="field"><label>1. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_1" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_1"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_1"></div></div>
-            <div class="field-row three"><div class="field"><label>2. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_2" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_2"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_2"></div></div>
-            <div class="field-row three"><div class="field"><label>3. Tipe Rumah</label><input type="text" id="t1_komersil_tipe_3" placeholder="Mis = Tipe 36/70"></div><div class="field"><label>Jumlah Unit</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_unit_3"></div><div class="field"><label>Harga (Rp)</label><input type="text" inputmode="numeric" class="numfmt" id="t1_komersil_harga_3"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-header"><span class="section-num">II</span><h3>Status Rumah di Perumahan</h3></div>
-        <div class="section-body">
-          <div class="subsection"><div class="subsection-title">1. Rumah Komersil</div>
-            <div class="field-row five">
-              <div class="field"><label>Kavling</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_kavling"></div>
-              <div class="field"><label>Pembangunan</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_pembangunan"></div>
-              <div class="field"><label>Ready Stock</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_readystock"></div>
-              <div class="field"><label>Dipesan</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_dipesan"></div>
-              <div class="field"><label>Terjual</label><input type="text" inputmode="numeric" class="numfmt" id="status_komersil_terjual"></div>
-            </div>
-          </div>
-          <div class="subsection"><div class="subsection-title">2. Rumah Subsidi</div>
-            <div class="field-row five">
-              <div class="field"><label>Kavling</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_kavling"></div>
-              <div class="field"><label>Pembangunan</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_pembangunan"></div>
-              <div class="field"><label>Ready Stock</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_readystock"></div>
-              <div class="field"><label>Proses Bank</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_prosesbank"></div>
-              <div class="field"><label>Terjual</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_terjual"></div>
+            <div class="status-card subsidi"><div class="status-card-title">SUBSIDI</div>
+            <div class="status-row s-kavling"><label for="status_subsidi_kavling">Kavling</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_kavling" placeholder="0"></div>
+            <div class="status-row s-pembangunan"><label for="status_subsidi_pembangunan">Pembangunan</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_pembangunan" placeholder="0"></div>
+            <div class="status-row s-readystock"><label for="status_subsidi_readystock">Ready Stock</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_readystock" placeholder="0"></div>
+            <div class="status-row s-prosesbank"><label for="status_subsidi_prosesbank">Proses Bank</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_prosesbank" placeholder="0"></div>
+            <div class="status-row s-terjual"><label for="status_subsidi_terjual">Terjual</label><input type="text" inputmode="numeric" class="numfmt" id="status_subsidi_terjual" placeholder="0"></div>
             </div>
           </div>
+          <div class="subsection kr-box">
+ <div class="subsection-title">Kondisi Rumah Saat Ini</div>
+ <div class="field kr-field" id="kr_pembangunan">
+ <label>Apakah ada rumah yang sedang dalam tahap pembangunan? <span class="req">*</span></label>
+ <div class="radio-group">
+ <label><input type="radio" name="kondisi_pembangunan" value="Ya"> Ya</label>
+ <label><input type="radio" name="kondisi_pembangunan" value="Tidak"> Tidak</label>
+ </div>
+ <div class="kr-jumlah" style="display:none">
+ <label for="jumlah_unit_pembangunan">Jumlah unit <span class="req">*</span></label>
+ <input type="text" inputmode="numeric" class="numfmt" id="jumlah_unit_pembangunan" placeholder="0">
+ </div>
+ <div class="kr-hint">⚠️ Wajib dipilih</div>
+ </div>
+ <div class="field kr-field" id="kr_dihuni">
+ <label>Apakah ada rumah yang telah dihuni? <span class="req">*</span></label>
+ <div class="radio-group">
+ <label><input type="radio" name="kondisi_dihuni" value="Ya"> Ya</label>
+ <label><input type="radio" name="kondisi_dihuni" value="Tidak"> Tidak</label>
+ </div>
+ <div class="kr-jumlah" style="display:none">
+ <label for="jumlah_unit_dihuni">Jumlah unit <span class="req">*</span></label>
+ <input type="text" inputmode="numeric" class="numfmt" id="jumlah_unit_dihuni" placeholder="0">
+ </div>
+ <div class="kr-hint">⚠️ Wajib dipilih</div>
+ </div>
+          </div>
         </div>
-      </div>
-      <div class="section">
-        <div class="section-header"><span class="section-num">III</span><h3>Data Dukung / Dokumen</h3></div>
-        <div class="section-body">
-          <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Pilih ketersediaan dan kesesuaian setiap dokumen</p>
-          <div id="dokumen-list"></div>
-        </div>
-      </div>
-      <div class="send-inline">
-        <div class="draft-info" id="draft-info-panel-0">
-          <span id="draft-label-panel-0" style="display:none">Draft tersimpan</span>
-          <span class="draft-ts" id="draft-ts-panel-0"></span>
-        </div>
-        <div class="foto-status" id="foto-status-panel-0"></div>
-        <button class="btn-draft" id="btnDraft" data-panel="panel-0">Simpan Draft</button>
-        <button class="btn-send" id="btnKirim" data-panel="panel-0" data-form="Data Objek Perumahan - Pengembang">Kirim Data</button>
-      </div>
-      <div class="send-area">
-        <a class="btn-home-bar" href="index.html"><span class="label">Home</span></a>
-      </div>
-    </div>
-  </div>
+ </div>
+ <div class="section">
+ <div class="section-header"><span class="section-num">III</span><h3>Data Dukung / Dokumen</h3></div>
+ <div class="section-body">
+ <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Pilih ketersediaan setiap dokumen — <b>Ada/Tidak Ada wajib dipilih</b> <span class="req">*</span></p>
+ <div id="dokumen-list"></div>
+ </div>
+ </div>
+ <div class="send-inline">
+ <div class="draft-info" id="draft-info-panel-0">
+ <span id="draft-label-panel-0" style="display:none">Draft tersimpan</span>
+ <span class="draft-ts" id="draft-ts-panel-0"></span>
+ </div>
+ <div class="foto-status" id="foto-status-panel-0"></div>
+ <button class="btn-draft" id="btnDraft" data-panel="panel-0">Simpan Draft</button>
+ <button class="btn-send" id="btnKirim" data-panel="panel-0" data-form="Data Objek Perumahan - Pengembang">Kirim Data</button>
+ </div>
+ <div class="send-area">
+ <a class="btn-home-bar" href="index.html"><span class="label">Home</span></a>
+ </div>
+ </div>
+ </div>
 </div>
 
 <div id="toast"></div>
@@ -616,6 +675,7 @@ window.addEventListener('load', function() {
     // Logika toggle saat radio Ada/Tidak Ada berubah
     grp.addEventListener('change', function(ev){
       var val=ev.target.value;
+      wrapper.classList.remove('wajib-kosong');
       if(val==='Tidak Ada'){
         alasanWrap.classList.add('show');
         jenisWrap.classList.remove('show');
@@ -636,6 +696,8 @@ window.addEventListener('load', function() {
     });
 
     wrapper.appendChild(row);
+
+    wrapper.appendChild(el('div',{cls:'wajib-hint',text:'⚠️ Pilih Ada atau Tidak Ada'}));
     wrapper.appendChild(jenisWrap);
     wrapper.appendChild(alasanWrap);
     wrapper.appendChild(prev);
@@ -696,6 +758,7 @@ window.addEventListener('load', function() {
       // Logika toggle saat radio berubah
       grp.addEventListener('change', function(ev){
         var val = ev.target.value;
+        wrapper.classList.remove('wajib-kosong');
         if(val==='Tidak Ada'){
           alasanWrap.classList.add('show');
           uploadBtn.style.display='none';
@@ -711,6 +774,8 @@ window.addEventListener('load', function() {
       });
 
       wrapper.appendChild(row);
+
+      wrapper.appendChild(el('div',{cls:'wajib-hint',text:'⚠️ Pilih Ada atau Tidak Ada'}));
       wrapper.appendChild(alasanWrap);
       wrapper.appendChild(prev);
       dokContainer.appendChild(wrapper);
@@ -771,6 +836,7 @@ function formatRibuan_onInput(el) {
   el.setSelectionRange(pos, pos);
 }
 document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 't1_id_sikumbang' && e.target.value.trim()) e.target.style.borderColor = '';
   if (e.target && e.target.classList && e.target.classList.contains('numfmt')) {
     formatRibuan_onInput(e.target);
   }
@@ -806,11 +872,40 @@ function resetFotoState(panelId) {
   refreshFotoStatus(panelId);
 }
 
+/* ===== Kondisi Rumah Saat Ini: tampilkan isian jumlah unit jika "Ya" ===== */
+function syncKondisiRumah() {
+  document.querySelectorAll('.kr-field').forEach(function(f) {
+    var c = f.querySelector('input[type=radio]:checked');
+    var box = f.querySelector('.kr-jumlah');
+    var ya = !!(c && c.value === 'Ya');
+    box.style.display = ya ? 'flex' : 'none';
+    if (!ya) box.querySelector('input').value = '';
+  });
+}
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.name && e.target.name.indexOf('kondisi_') === 0) {
+    var f = e.target.closest('.kr-field'); if (f) f.classList.remove('wajib-kosong', 'jumlah-kosong');
+    syncKondisiRumah();
+  }
+});
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.closest && e.target.closest('.kr-jumlah') && e.target.value.trim()) {
+    var f = e.target.closest('.kr-field'); if (f) f.classList.remove('jumlah-kosong');
+  }
+});
+
 async function submitForm(panelId, formName, btn) {
   var pengisiNama = document.getElementById('pengisi_nama');
   if (!pengisiNama || !pengisiNama.value.trim()) {
     showToast('⚠️ Harap isi Nama Pengisi Data terlebih dahulu!', true);
     if(pengisiNama) pengisiNama.focus();
+    return;
+  }
+
+  var idSikumbang = document.getElementById('t1_id_sikumbang');
+  if (!idSikumbang || !idSikumbang.value.trim()) {
+    showToast('⚠️ Harap isi ID Lokasi SIKUMBANG terlebih dahulu!', true);
+    if (idSikumbang) { idSikumbang.style.borderColor = 'var(--red)'; idSikumbang.scrollIntoView({behavior:'smooth', block:'center'}); idSikumbang.focus(); }
     return;
   }
 
@@ -821,8 +916,37 @@ async function submitForm(panelId, formName, btn) {
     return;
   }
 
-  // Validasi: semua dokumen "Tidak Ada" harus ada alasannya
   var panel = document.getElementById(panelId);
+
+  // Validasi: Kondisi Rumah Saat Ini wajib dipilih (+ jumlah unit jika "Ya")
+  var krKosong = null;
+  panel.querySelectorAll('.kr-field').forEach(function(f) {
+    var c = f.querySelector('input[type=radio]:checked');
+    f.classList.remove('wajib-kosong', 'jumlah-kosong');
+    if (!c) { f.classList.add('wajib-kosong'); krKosong = krKosong || f; }
+    else if (c.value === 'Ya' && !f.querySelector('.kr-jumlah input').value.trim()) { f.classList.add('jumlah-kosong'); krKosong = krKosong || f; }
+  });
+  if (krKosong) {
+    showToast('⚠️ Harap lengkapi Kondisi Rumah Saat Ini (pilih Ya/Tidak dan isi jumlah unit jika Ya)!', true);
+    krKosong.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  // Validasi: setiap dokumen wajib dipilih Ada / Tidak Ada
+  var belumPilih = [];
+  panel.querySelectorAll('#dokumen-list .doc-wrapper').forEach(function(w) {
+    var grp = w.querySelector('.doc-row .radio-group');
+    if (!grp) return;
+    if (!grp.querySelector('input[type=radio]:checked')) { w.classList.add('wajib-kosong'); belumPilih.push(w); }
+    else w.classList.remove('wajib-kosong');
+  });
+  if (belumPilih.length > 0) {
+    showToast('⚠️ Harap pilih Ada/Tidak Ada untuk setiap dokumen (' + belumPilih.length + ' belum dipilih)!', true);
+    belumPilih[0].scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  // Validasi: semua dokumen "Tidak Ada" harus ada alasannya
   var alasanKosong = [];
   panel.querySelectorAll('.alasan-wrap.show textarea').forEach(function(ta) {
     if (!ta.value.trim()) {
@@ -956,6 +1080,7 @@ function restoreDraft(panelId, data) {
       });
     }
   });
+  syncKondisiRumah();
 }
 
 function updateDraftInfo(panelId, savedAt) {
@@ -984,6 +1109,8 @@ function resetFormFields(panelId) {
   // Kosongkan kembali daftar kab/kota supaya tidak menyisakan pilihan provinsi lama
   var kabSel = document.getElementById('t1_kabupaten');
   if (kabSel) kabSel.innerHTML = '<option value="">-- Pilih Provinsi dahulu --</option>';
+  panel.querySelectorAll('.wajib-kosong').forEach(function(w){ w.classList.remove('wajib-kosong'); });
+  syncKondisiRumah();
   resetFotoState(panelId);
   clearDraft(panelId); // Hapus draft setelah data berhasil terkirim
 }
