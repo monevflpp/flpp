@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verifikasi Data Dukung FLPP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500&display=swap');
+  :root {
+    --navy:#0E5B73; --navy-light:#084C61; --gold:#D5C58A; --gold-light:#e8d9a8;
+    --cream:#F2EEDF; --white:#FFFFFF; --gray-50:#F7F5EE; --gray-100:#EDE9DA;
+    --gray-200:#DDD8C6; --gray-400:#A09880; --gray-600:#5C5440; --gray-800:#2C2A22;
+    --red:#DC2626; --green:#059669;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--gray-800);min-height:100vh}
+  .site-header{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+  .header-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px}
+  .header-logo{width:48px;height:48px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;color:var(--navy);flex-shrink:0}
+  .header-text h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--white);line-height:1.2}
+  .header-text p{font-size:12px;color:var(--gold-light);margin-top:2px}
+  .header-back:hover{background:rgba(255,255,255,.18)}
+  .tabs-wrapper{background:var(--navy-light);overflow-x:auto;scrollbar-width:none}
+  .tabs-wrapper::-webkit-scrollbar{display:none}
+  .tabs-nav{max-width:1100px;margin:0 auto;display:flex;padding:0 24px}
+  .tab-btn{padding:10px 16px;border:none;background:none;color:rgba(255,255,255,.65);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;letter-spacing:.02em;text-transform:uppercase}
+  .tab-btn:hover{color:var(--white)}
+  .tab-btn.active{color:var(--gold-light);border-bottom-color:var(--gold)}
+  .main{max-width:1100px;margin:0 auto;padding:32px 24px 100px}
+  .panels-track-wrapper{overflow:hidden;width:100%;transition:height .35s cubic-bezier(.4,0,.2,1)}
+  .panels-track{display:flex;transition:transform .35s cubic-bezier(.4,0,.2,1);will-change:transform;align-items:flex-start}
+  .form-panel{flex:0 0 100%;width:100%;min-width:100%;pointer-events:none;opacity:0;transition:opacity .35s ease}
+  .form-panel.active{pointer-events:auto;opacity:1}
+  .panel-header{background:var(--navy);border-radius:24px 24px 0 0;padding:24px 28px;display:flex;align-items:flex-start;gap:16px}
+  .panel-number{background:var(--gold);color:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;padding:4px 10px;border-radius:999px;white-space:nowrap;margin-top:3px}
+  .panel-header h2{font-family:'Plus Jakarta Sans',sans-serif;color:var(--white);font-size:18px;font-weight:700;line-height:1.3}
+  .panel-header p{color:rgba(255,255,255,.6);font-size:13px;margin-top:4px}
+  .panel-body{background:var(--white);border-radius:0 0 24px 24px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+  .surveyor-bar{background:linear-gradient(135deg,#F0EAD0,#E8D9A8);border:1.5px solid var(--gold);border-radius:20px;padding:16px 20px;margin-bottom:28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .surveyor-bar label{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;color:var(--navy);white-space:nowrap}
+  .surveyor-bar input{flex:1;min-width:200px;padding:8px 16px;border:1.5px solid var(--gold);border-radius:999px;font-size:14px;background:var(--white);outline:none}
+  .surveyor-bar input:focus{border-color:var(--navy)}
+  .section{margin-bottom:28px;border:1.5px solid var(--gray-200);border-radius:20px;overflow:hidden}
+  .section-header{background:var(--gray-50);padding:16px 18px;border-bottom:1.5px solid var(--gray-200);display:flex;align-items:center;gap:10px}
+  .section-num{background:var(--navy);color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:11px;padding:3px 10px;border-radius:999px}
+  .section-header h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--navy)}
+  .section-body{padding:20px;display:grid;gap:16px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field>label{font-size:13px;font-weight:500;color:var(--gray-600)}
+  .field input[type=text],.field input[type=date],.field input[type=time],.field input[type=number],.field input[type=tel],.field select,.field textarea{padding:9px 16px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:14px;font-family:'Inter',sans-serif;color:var(--gray-800);background:var(--white);outline:none;width:100%;transition:border-color .15s}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
+  .field textarea{resize:vertical;min-height:80px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field-row.three{grid-template-columns:1fr 1fr 1fr}
+  .field-row.five{grid-template-columns:repeat(5,1fr)}
+  @media(max-width:760px){.field-row.five{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.field-row,.field-row.three,.field-row.five{grid-template-columns:1fr}}
+  .radio-group{display:flex;flex-wrap:wrap;gap:8px}
+  .check-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .radio-group{width:100%}
+  .radio-group label{flex:1;display:flex;align-items:center;justify-content:flex-start;gap:7px;padding:7px 16px;border:1.5px solid var(--gray-200);border-radius:999px;cursor:pointer;font-size:13px;color:var(--gray-800);background:var(--white);transition:all .15s;user-select:none;text-align:left}
+  .check-group label{display:flex;align-items:center;justify-content:flex-start;gap:7px;padding:7px 16px;border:1.5px solid var(--gray-200);border-radius:999px;cursor:pointer;font-size:13px;color:var(--gray-800);background:var(--white);transition:all .15s;user-select:none;text-align:left}
+  @media(max-width:480px){.check-group{grid-template-columns:1fr}}
+  .util-row .radio-group{width:auto;flex:1;flex-wrap:wrap}
+  .radio-group label:hover,.check-group label:hover{border-color:var(--navy);background:var(--gray-50)}
+  .radio-group input[type=radio],.check-group input[type=checkbox]{accent-color:var(--navy);width:14px;height:14px}
+  .radio-group label:has(input:checked),.check-group label:has(input:checked){border-color:var(--navy);background:#E0F0F5;color:var(--navy);font-weight:500}
+  .kondisi-group{display:flex;flex-direction:column;gap:6px}
+  .kondisi-opt{width:100%}
+  .kondisi-opt input{display:none}
+  .kondisi-opt label{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid var(--gray-200);border-radius:999px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;background:var(--white)}
+  .kondisi-opt label .dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0;margin:0}
+  .kondisi-opt input:checked+label{background:var(--gray-100);border-color:var(--navy)}
+  .kondisi-opt.baik label{color:#065F46}.kondisi-opt.baik .dot{background:#10B981}.kondisi-opt.baik input:checked+label{background:#ECFDF5;border-color:#10B981}
+  .kondisi-opt.sedang label{color:#92400E}.kondisi-opt.sedang .dot{background:#F59E0B}.kondisi-opt.sedang input:checked+label{background:#FFFBEB;border-color:#F59E0B}
+  .kondisi-opt.buruk label{color:#7F1D1D}.kondisi-opt.buruk .dot{background:#EF4444}.kondisi-opt.buruk input:checked+label{background:#FEF2F2;border-color:#EF4444}
+  .kondisi3-group{display:flex;flex-direction:column;gap:8px;width:100%}
+  .kondisi3-group input[type=radio]{display:none}
+  .kondisi3-group .k3-label{flex:1;min-width:0;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:999px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;text-align:left;background:var(--white);gap:8px}
+  .kondisi3-group .k3-dot{display:block;width:10px;height:10px;border-radius:50%;flex-shrink:0;margin:0}
+  .kondisi3-group .k3-label:hover{border-color:var(--navy)}
+  .kondisi3-group input[type=radio]:checked + .k3-label.k3-baik{background:#ECFDF5;border-color:#10B981;color:#065F46;font-weight:700}
+  .kondisi3-group input[type=radio]:checked + .k3-label.k3-sedang{background:#FFFBEB;border-color:#F59E0B;color:#92400E;font-weight:700}
+  .kondisi3-group input[type=radio]:checked + .k3-label.k3-buruk{background:#FEF2F2;border-color:#EF4444;color:#7F1D1D;font-weight:700}
+  .subsection{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:18px;padding:14px 16px;display:grid;gap:12px}
+  .subsection-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--navy-light);border-bottom:1px solid var(--gray-200);padding-bottom:8px;margin-bottom:4px}
+  .foto-upload{background:var(--gray-50);border:2px dashed var(--gray-200);border-radius:18px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+  .foto-upload:hover{border-color:var(--navy);background:var(--gray-100)}
+  .foto-upload p{font-size:12px;color:var(--gray-400);margin-top:4px}
+  .foto-upload .ico{font-size:22px}
+  .foto-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .foto-preview img,.foto-preview-inline img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1.5px solid var(--gray-200)}
+  .foto-preview-inline{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 8px}
+  .foto-thumb{position:relative;display:inline-block;line-height:0}
+  .foto-badge{position:absolute;bottom:-4px;right:-4px;background:var(--white);border-radius:50%;font-size:12px;padding:1px 4px;box-shadow:0 1px 4px rgba(0,0,0,.3);line-height:1.3}
+  .upload-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border:1.5px dashed var(--gray-200);border-radius:999px;cursor:pointer;font-size:12px;color:var(--gray-400);white-space:nowrap;background:var(--gray-50);transition:all .2s;flex-shrink:0;font-family:'Inter',sans-serif}
+  .upload-btn:hover{border-color:var(--navy);color:var(--navy)}
+  .send-area{margin-top:28px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:20px;padding:20px;display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:wrap}
+  .foto-status{font-size:12px;color:var(--gray-600);margin-right:auto}
+  .btn-send{padding:11px 28px;background:var(--navy);color:var(--white);border:none;border-radius:999px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;white-space:nowrap}
+  .btn-draft{padding:11px 24px;background:var(--white);color:var(--navy);border:1.5px solid var(--navy);border-radius:999px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;white-space:nowrap}
+  .btn-draft:hover{background:var(--gray-50)}
+  .draft-info{font-size:11px;color:var(--gray-400);margin-right:auto;display:flex;flex-direction:column;gap:2px}
+  .draft-info .draft-ts{color:var(--green);font-weight:600}
+  .btn-send:hover{background:var(--navy-light);transform:translateY(-1px);box-shadow:0 4px 12px rgba(11,35,66,.25)}
+  .btn-send:active{transform:translateY(0)}
+  .btn-send:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  #toast{position:fixed;bottom:28px;right:28px;background:var(--green);color:var(--white);padding:14px 20px;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:999;display:none;align-items:center;gap:10px}
+  #toast.show{display:flex}
+  #toast.error{background:var(--red)}
+  .progress-bar-wrap{height:4px;background:var(--gray-200);border-radius:2px;margin-bottom:24px;overflow:hidden}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--navy),var(--gold));border-radius:2px;transition:width .4s ease}
+  .req{color:var(--red);margin-left:2px}
+  .field input.num-ribuan{text-align:left;letter-spacing:.01em}
+  .separator{border:none;border-top:1.5px solid var(--gray-100);margin:8px 0}
+  .chip-label{display:inline-block;background:#E0F0F5;color:var(--navy);font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+  .divider-banner{background:var(--navy);border-radius:20px;padding:16px 20px;margin:16px 0 4px;display:flex;align-items:center;gap:12px}
+  .divider-badge{background:var(--gold);color:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px}
+  .divider-banner h3{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;font-size:16px;font-weight:700}
+  .divider-banner p{color:rgba(255,255,255,.6);font-size:12px;margin-top:3px}
+  .util-row{display:grid;grid-template-columns:1fr 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-100)}
+  @media(max-width:600px){.util-row{grid-template-columns:1fr;gap:6px}}
+  /* util-row2 PASCA PENYALURAN: label | tersedia | kondisi | foto (keberfungsian dihapus) */
+  .util-row2{display:grid;grid-template-columns:180px auto auto auto;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--gray-100)}
+  @media(max-width:768px){.util-row2{grid-template-columns:1fr;gap:8px}}
+  .util-col-hdr{display:grid;grid-template-columns:180px auto auto auto;gap:10px;padding:8px 0;border-bottom:2px solid var(--navy);margin-bottom:4px}
+  .util-col-hdr span{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em}
+  @media(max-width:768px){.util-col-hdr{display:none}}
+  .check-foto-wrap{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .doc-wrapper{border-bottom:1px solid var(--gray-100);padding:10px 0 8px}
+  .doc-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .doc-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .doc-item{display:flex;align-items:center;gap:6px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:999px;padding:5px 12px;font-size:11px;max-width:220px}
+  .doc-item img{width:36px;height:36px;object-fit:cover;border-radius:4px;flex-shrink:0}
+  .doc-del{cursor:pointer;color:var(--gray-400);margin-left:auto;flex-shrink:0;font-size:12px}
+  .geo-field-row{display:flex;gap:8px;align-items:flex-start}
+  .geo-field-row input[type=text]{flex:1}
+  .geo-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:var(--white);border:none;border-radius:999px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
+  .geo-btn:hover{background:var(--navy-light)}
+  .geo-btn:disabled{opacity:.6;cursor:not-allowed}
+  .geo-status{font-size:11px;margin-top:2px;min-height:14px}
+  .geo-status.ok{color:var(--green)}
+  .geo-status.err{color:var(--red)}
+  .geo-status.busy{color:var(--gray-600)}
+
+  /* ===== CATATAN BOX (muncul saat Tidak Sesuai dipilih) ===== */
+  .catatan-box{display:none;margin-top:8px;animation:fadeSlide .2s ease}
+  .catatan-box.visible{display:block}
+  .catatan-box textarea{padding:9px 16px;border:1.5px solid var(--red);border-radius:16px;font-size:13px;font-family:'Inter',sans-serif;color:var(--gray-800);background:#FFF5F5;outline:none;width:100%;resize:vertical;min-height:70px;transition:border-color .15s}
+  .catatan-box textarea:focus{border-color:#B91C1C;box-shadow:0 0 0 3px rgba(220,38,38,.12)}
+  .catatan-box .catatan-label{font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+  @keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ===== CATATAN BOX INFO (varian emas, untuk jawaban positif/informasional) ===== */
+  .catatan-box-info{display:none;margin-top:8px;animation:fadeSlide .2s ease}
+  .catatan-box-info.visible{display:block}
+  .catatan-box-info input,.catatan-box-info textarea{padding:9px 16px;border:1.5px solid var(--gold);border-radius:16px;font-size:13px;font-family:'Inter',sans-serif;color:var(--gray-800);background:var(--white);outline:none;width:100%;resize:vertical;transition:border-color .15s}
+  .catatan-box-info textarea{min-height:70px}
+  .catatan-box-info input:focus,.catatan-box-info textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
+  .catatan-box-info .catatan-label{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+
+  /* ===== RADIO GROUP DENGAN DESKRIPSI (mis. kategori penghijauan) ===== */
+  .radio-desc-group{display:flex;flex-direction:column;gap:8px}
+  .radio-desc-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:16px;background:var(--white);cursor:pointer;transition:all .15s}
+  .radio-desc-opt input{margin-top:3px;flex-shrink:0}
+  .radio-desc-opt .rdo-title{font-size:13px;font-weight:600;color:var(--gray-800)}
+  .radio-desc-opt .rdo-desc{font-size:12px;color:var(--gray-500);margin-top:2px;line-height:1.4}
+  .radio-desc-opt:has(input:checked){border-color:var(--navy);background:var(--gray-50)}
+  .radio-desc-opt:has(input:checked) .rdo-title{color:var(--navy)}
+
+  /* ===== CATATAN TAMBAHAN BOX per section penyaluran ===== */
+  .catatan-tambahan-wrap{background:var(--gray-50);border:1.5px solid var(--gold);border-radius:18px;padding:14px 16px;margin-top:14px}
+  /* Petunjuk pengisian (hidden text) pada isian Keterangan */
+  .panduan-hint{margin:2px 0 6px}
+  .panduan-toggle{background:none;border:none;padding:0;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--navy);cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-align:left;line-height:1.4}
+  .panduan-toggle:hover{opacity:.75}
+  .panduan-teks{display:none;margin-top:6px;padding:10px 12px;background:#F1F7F9;border-left:3px solid var(--navy);border-radius:0 10px 10px 0;font-size:12px;line-height:1.6;color:var(--gray-600)}
+  .panduan-hint.open .panduan-teks{display:block}
+  .catatan-tambahan-wrap .panduan-teks{background:#FFFBF0;border-left-color:var(--gold)}
+  .field textarea[data-panduan]{border-radius:16px}
+  .catatan-tambahan-wrap .ct-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .catatan-tambahan-wrap textarea{padding:9px 16px;border:1.5px solid var(--gold);border-radius:16px;font-size:13px;font-family:'Inter',sans-serif;color:var(--gray-800);background:var(--white);outline:none;width:100%;resize:vertical;min-height:70px;transition:border-color .15s}
+  .catatan-tambahan-wrap textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
+
+  .footer-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:150;
+    background:var(--white);border-top:1.5px solid var(--gray-200);
+    box-shadow:0 -6px 20px rgba(0,0,0,.08);
+    padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    display:flex;align-items:center;justify-content:center;
+  }
+  .btn-home-bar{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;max-width:1100px;padding:11px 10px;border:1.5px solid var(--red);border-radius:999px;background:var(--red);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;transition:all .2s}
+  .btn-home-bar:hover{background:#B91C1C;border-color:#B91C1C}
+
+  #confirmSendModal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:300}
+  #confirmSendModal.open{opacity:1;pointer-events:auto}
+  #confirmSendModal .modal-box{background:var(--white);border-radius:24px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);transform:translateY(16px) scale(.97);transition:transform .2s;text-align:center}
+  #confirmSendModal.open .modal-box{transform:translateY(0) scale(1)}
+  #confirmSendModal .modal-icon{font-size:40px;margin-bottom:8px;line-height:1}
+  #confirmSendModal h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;color:var(--gray-800);margin-bottom:8px}
+  #confirmSendModal p{font-size:13px;color:var(--gray-600);margin-bottom:20px;line-height:1.5}
+  #confirmSendModal .modal-actions{display:flex;gap:10px}
+  #confirmSendModal .btn-cancel{flex:1;padding:11px;border:1.5px solid var(--gray-200);border-radius:999px;background:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--gray-600);cursor:pointer;transition:all .15s}
+  #confirmSendModal .btn-cancel:hover{background:var(--gray-50)}
+  #confirmSendModal .btn-confirm{flex:1;padding:11px;border:none;border-radius:999px;background:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--white);cursor:pointer;transition:all .15s}
+  #confirmSendModal .btn-confirm:hover{background:var(--navy-light)}
+  #stageChoiceModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:500}
+  #stageChoiceModal.open{opacity:1;pointer-events:auto}
+  #stageChoiceModal .modal-box{background:var(--white);border-radius:24px;padding:30px 24px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);transform:translateY(16px) scale(.97);transition:transform .2s;text-align:center}
+  #stageChoiceModal.open .modal-box{transform:translateY(0) scale(1)}
+  #stageChoiceModal .modal-icon{font-size:42px;margin-bottom:10px;line-height:1}
+  #stageChoiceModal h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;color:var(--gray-800);margin-bottom:8px}
+  #stageChoiceModal p{font-size:13px;color:var(--gray-600);margin-bottom:22px;line-height:1.5}
+  #stageChoiceModal .stage-options{display:flex;flex-direction:column;gap:12px}
+  #stageChoiceModal .stage-opt-btn{display:flex;align-items:center;gap:12px;padding:16px 18px;border:1.5px solid var(--gray-200);border-radius:16px;background:var(--white);cursor:pointer;transition:all .15s;text-align:left;width:100%;font-family:'Inter',sans-serif}
+  #stageChoiceModal .stage-opt-btn:hover{border-color:var(--navy);background:var(--gray-50)}
+  #stageChoiceModal .stage-opt-icon{font-size:26px;flex-shrink:0}
+  #stageChoiceModal .stage-opt-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--gray-800)}
+  #stageChoiceModal .stage-opt-sub{font-size:11.5px;color:var(--gray-600);margin-top:2px}
+
+  /* ===== VERIFIKASI DATA DUKUNG (tab Verifikasi Data Dukung) ===== */
+  :root{ --amber:#B45309; }
+  .btn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:999px;padding:11px 22px;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--navy);color:var(--white)}
+  .btn-primary:hover{background:var(--navy-light)}
+  .btn-primary:disabled{opacity:.55;cursor:default}
+  .btn-ghost{background:var(--gray-100);color:var(--gray-800)}
+  .btn-ghost:hover{background:var(--gray-200)}
+  .vd-status-line{font-size:12px;color:var(--gray-400);margin-top:8px}
+  .vd-status-line.err{color:var(--red)}
+  .vd-status-line.ok{color:var(--green)}
+  .vd-search-box{display:flex;gap:10px;flex-wrap:wrap}
+  .vd-search-box input{flex:1;min-width:200px}
+  .vd-result-list{margin-top:12px;max-height:320px;overflow-y:auto;border:1px solid var(--gray-200);border-radius:12px}
+  .vd-result-item{padding:12px 14px;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:.1s}
+  .vd-result-item:last-child{border-bottom:none}
+  .vd-result-item:hover{background:var(--gray-50)}
+  .vd-result-item.selected{background:var(--gold-light)}
+  .vd-result-item .vd-ri-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;color:var(--navy)}
+  .vd-result-item .vd-ri-sub{font-size:11px;color:var(--gray-400);margin-top:2px}
+  .vd-badge-verified{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle}
+  .vd-badge-sesuai{background:#DCFCE7;color:var(--green)}
+  .vd-badge-tidaksesuai{background:#FEE2E2;color:var(--red)}
+  .vd-badge-perbaikan{background:#FEF3C7;color:var(--amber)}
+  .vd-section-header{display:flex;align-items:center;gap:10px;margin:22px 0 12px}
+  .vd-section-header:first-child{margin-top:0}
+  .vd-section-num{background:var(--navy);color:var(--gold-light);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
+  .vd-section-header h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--navy)}
+  .vd-kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+  @media(max-width:640px){.vd-kv-grid{grid-template-columns:1fr}}
+  .vd-kv{background:var(--gray-50);border:1.5px solid var(--gray-100);border-radius:10px;padding:9px 12px;transition:.15s}
+  .vd-kv .vd-k{font-size:11px;color:var(--gray-400);font-weight:600;margin-bottom:2px}
+  .vd-kv .vd-v{font-size:13px;color:var(--gray-800);word-break:break-word}
+  .vd-kv .vd-v.empty{color:var(--gray-400);font-style:italic}
+  .vd-kv .vd-v a{color:var(--navy);font-weight:600}
+  .vd-kv.vd-tidaksesuai{background:#FEF2F2;border-color:#F3B4B4}
+  .vd-kv.vd-tidaksesuai .vd-k{color:var(--red)}
+  .vd-kv-check{display:flex;align-items:center;gap:5px;margin-top:7px;padding-top:7px;border-top:1px dashed var(--gray-200)}
+  .vd-kv-check label{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;color:var(--gray-600)}
+  .vd-kv-check input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);cursor:pointer}
+  .vd-kv.vd-tidaksesuai .vd-kv-check label{color:var(--red)}
+  .vd-doc-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100);font-size:13px}
+  .vd-doc-row:last-child{border-bottom:none}
+  .vd-doc-row-main{display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1;flex-wrap:wrap}
+  .vd-doc-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+  .vd-doc-ada{background:#DCFCE7;color:var(--green)}
+  .vd-doc-tidak{background:#FEE2E2;color:var(--red)}
+  .vd-doc-kosong{background:var(--gray-100);color:var(--gray-400)}
+  .vd-doc-alasan{font-size:11.5px;color:var(--gray-600);margin-top:3px;font-style:italic}
+  .vd-doc-row.vd-tidaksesuai{background:#FEF2F2;margin:0 -10px;padding:9px 10px;border-radius:8px}
+  .vd-doc-row{flex-wrap:wrap}
+  .vd-doc-preview{width:100%;margin-top:6px}
+  .vd-doc-thumb{display:inline-block;cursor:zoom-in;border-radius:8px;overflow:hidden;border:1.5px solid var(--gray-200);line-height:0}
+  .vd-doc-thumb img{width:72px;height:72px;object-fit:cover;display:block;transition:opacity .15s}
+  .vd-doc-thumb:hover img{opacity:.85}
+  .vd-doc-linkbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--white);color:var(--navy);font-size:11.5px;font-weight:700;text-decoration:none;cursor:pointer;transition:all .15s}
+  .vd-doc-linkbtn:hover{border-color:var(--navy);background:var(--gray-50)}
+  .vd-doc-nofile{font-size:11.5px;color:var(--gray-400);font-style:italic}
+  .vd-doc-ket-wrap{width:100%;margin-top:6px}
+  .vd-doc-ket-input{width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:12.5px;font-family:'Inter',sans-serif;background:var(--white)}
+  .vd-doc-ket-input:focus{outline:none;border-color:var(--navy)}
+  .vd-doc-ket-wrap.vd-doc-ket-missing .vd-doc-ket-input{border-color:var(--red);background:#FEF2F2}
+  #docPreviewModal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:600}
+  #docPreviewModal.open{opacity:1;pointer-events:auto}
+  #docPreviewModal img{max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  #docPreviewModal .doc-preview-close{position:absolute;top:18px;right:22px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  #docPreviewModal .doc-preview-close:hover{background:rgba(255,255,255,.3)}
+  .vd-section-catatan{margin-top:14px}
+  .vd-section-catatan label{display:block;font-size:11.5px;font-weight:700;color:var(--gray-600);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:5px}
+  .vd-section-catatan textarea{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);resize:vertical;min-height:50px}
+  .vd-section-catatan textarea:focus{outline:none;border-color:var(--navy)}
+  .vd-empty-state{text-align:center;padding:40px 20px;color:var(--gray-400);font-size:13px}
+  .vd-selected-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--gold-light);border:1.5px solid var(--gold);border-radius:14px;padding:11px 16px;margin-bottom:20px}
+  .vd-selected-bar .vd-sb-text{font-size:12.5px;color:var(--navy)}
+  .vd-selected-bar .vd-sb-text b{font-family:'Plus Jakarta Sans',sans-serif}
+  .vd-selected-bar .vd-sb-btn{flex-shrink:0;background:var(--navy);color:var(--white);border:none;border-radius:999px;padding:7px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+  .vd-selected-bar .vd-sb-btn:hover{background:var(--navy-light)}
+
+  /* Keterangan pilihan tahap di pop up */
+  #stageChoiceModal .stage-opt-desc{display:block;margin-top:8px;padding:7px 10px;border-radius:10px;background:#FFF8E1;border:1px solid var(--gold);font-size:11.5px;line-height:1.45;color:var(--gray-800);font-weight:500}
+  #stageChoiceModal .modal-box{max-width:420px}
+
+  /* Pilihan Sesuai / Tidak Sesuai per item (Verifikasi Data Dukung) */
+  .vd-sel{display:flex;gap:6px;margin-top:7px;padding-top:7px;border-top:1px dashed var(--gray-200);flex-wrap:wrap}
+  .vd-doc-row .vd-sel{border-top:none;margin-top:0;padding-top:0}
+  .vd-sel label{display:flex;align-items:center;gap:5px;padding:4px 12px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:11px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;color:var(--gray-600);background:var(--white);white-space:nowrap;transition:.15s}
+  .vd-sel input{width:13px;height:13px;cursor:pointer}
+  .vd-sel label.opt-sesuai input{accent-color:var(--green)}
+  .vd-sel label.opt-tidak input{accent-color:var(--red)}
+  .vd-sel label.opt-sesuai:has(input:checked){border-color:var(--green);background:#ECFDF5;color:#065F46}
+  .vd-sel label.opt-tidak:has(input:checked){border-color:var(--red);background:#FEF2F2;color:#7F1D1D}
+  .vd-sel.vd-sel-missing label{border-color:var(--red);border-style:dashed}
+  .vd-sel-hint{display:none;width:100%;font-size:10.5px;color:var(--red)}
+  .vd-sel.vd-sel-missing .vd-sel-hint{display:block}
+
+  /* Warna status rumah (selaras form pengembang) */
+  .vd-status-cat{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:12px;color:var(--gray-800);margin:6px 0 8px;padding:6px 10px;border-radius:8px;text-align:center}
+  .vd-status-cat.komersil{background-color:#ddd}
+  .vd-status-cat.subsidi{background-color:rgba(255,255,0,0.22)}
+  .vd-kv.vd-st{border-left-width:6px}
+
+  /* Catatan Hasil Verifikasi */
+  .vd-hasil-sub{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:18px;padding:14px 16px;display:grid;gap:14px}
+  .vd-hasil-sub .subsection-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--navy-light);border-bottom:1px solid var(--gray-200);padding-bottom:8px}
+  #vd-vKetWrap{display:none}
+  #vd-vKetWrap.show{display:flex}
+  .vd-badge-belum{background:#FEF3C7;color:var(--amber)}
+</style>
+<style>
+  /* Form tunggal (tanpa tab) */
+  .form-panel{opacity:1;pointer-events:auto}
+  .vd-search-box input{padding:9px 16px;border:1.5px solid var(--gray-200);border-radius:999px;font-size:14px;font-family:'Inter',sans-serif;background:var(--white);outline:none}
+  .vd-search-box input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(14,91,115,.12)}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- MODAL PREVIEW DOKUMEN/FOTO -->
+<div id="docPreviewModal">
+ <button type="button" class="doc-preview-close" id="docPreviewClose">✕</button>
+ <img id="docPreviewImg" src="" alt="Preview dokumen">
+</div>
+
+<header class="site-header">
+ <div class="header-inner">
+ <div class="header-text">
+ <h1>Form Verifikasi Data Dukung</h1>
+ </div>
+ </div>
+</header>
+
+<div class="main">
+ <!-- TAB 0 -->
+ <div class="form-panel active" id="panel-0">
+ <div class="panel-header"><div class="panel-number">Form 1</div><div><h2>Verifikasi Data Dukung</h2><p>Verifikasi dokumen/data dukung objek perumahan yang telah dikirim pengembang</p></div></div>
+ <div class="panel-body">
+
+ <div class="section" id="vd-loadCard">
+ <div class="section-header"><span class="section-num">🔗</span><h3>Sumber Data</h3></div>
+ <div class="section-body">
+ <button type="button" class="btn btn-ghost" id="vd-btnMuat">🔄 Muat Ulang Data</button>
+ <div class="vd-status-line" id="vd-loadStatus">⏳ Memuat data...</div>
+ </div>
+ </div>
+
+ <div class="section" id="vd-cariCard" style="display:none">
+ <div class="section-header" id="vd-cariCardHeader"><span class="section-num">🔍</span><h3>Cari Data yang Akan Diverifikasi</h3></div>
+ <div class="section-body">
+ <div class="vd-search-box">
+ <input type="text" id="vd-searchInput" placeholder="Ketik Nama Perumahan atau ID SIKUMBANG...">
+ </div>
+ <div class="field">
+ <label>Atau pilih dari daftar</label>
+ <select id="vd-dropdownSelect">
+ <option value="">— Pilih entri —</option>
+ </select>
+ </div>
+ <div class="vd-result-list" id="vd-resultList" style="display:none"></div>
+ </div>
+ </div>
+
+ <div class="section" id="vd-detailCard" style="display:none">
+ <div class="section-header"><span class="section-num">📋</span><h3>Detail Data Objek Perumahan</h3></div>
+ <div class="section-body">
+ <div id="vd-detailBody"></div>
+ </div>
+ </div>
+
+ <div class="section" id="vd-verifCard" style="display:none">
+ <div class="section-header"><span class="section-num">✅</span><h3>Hasil Verifikasi Dokumen/Data Dukung</h3></div>
+ <div class="section-body">
+ <div class="field-row">
+ <div class="field">
+ <label>Nama Verifikator <span class="req">*</span></label>
+ <input type="text" id="vd-vNama" placeholder="Nama petugas verifikasi">
+ </div>
+ <div class="field">
+ <label>Tanggal Verifikasi</label>
+ <input type="date" id="vd-vTanggal">
+ </div>
+ </div>
+  <div class="vd-hasil-sub">
+ <div class="subsection-title">📝 Catatan Hasil Verifikasi</div>
+ <div class="field">
+ <label>Status <span class="req">*</span></label>
+ <div class="radio-group">
+ <label><input type="radio" name="vd-vStatus" value="Sudah"> Sudah</label>
+ <label><input type="radio" name="vd-vStatus" value="Belum"> Belum</label>
+ </div>
+ </div>
+ <div class="field">
+ <label>Catatan <span class="req">*</span></label>
+ <div class="radio-group">
+ <label><input type="radio" name="vd-vCatatan" value="Sesuai"> Sesuai</label>
+ <label><input type="radio" name="vd-vCatatan" value="Tidak Sesuai"> Tidak Sesuai</label>
+ </div>
+ </div>
+ <div class="field" id="vd-vKetWrap">
+ <label>Apa yang tidak sesuai? <span class="req">*</span></label>
+ <textarea id="vd-vKetTidakSesuai" placeholder="Uraikan data/dokumen yang tidak sesuai..."></textarea>
+ </div>
+ <div class="field">
+ <label>Rekomendasi</label>
+ <textarea id="vd-vRekomendasi" placeholder="Tuliskan rekomendasi tindak lanjut..."></textarea>
+ </div>
+ </div>
+ <button type="button" class="btn btn-primary" id="vd-btnSimpanVerif">💾 Simpan Hasil Verifikasi</button>
+ <div class="vd-status-line" id="vd-verifStatus"></div>
+ </div>
+ </div>
+
+ </div>
+ </div>
+</div>
+
+<footer class="footer-nav">
+ <button class="btn-home-bar" onclick="window.location.href='index.html'" type="button"><span class="label">Home</span></button>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbyHIY3ypJqDtF8PdJbZbaRI4pH8WoqU1l6Lj8bdHqln1bAdfMZxR3RVFLd3rcm16ois/exec';
+
+function el(tag, attrs, children) {
+  var e = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(function(k) {
+    if (k === 'style') e.style.cssText = attrs[k];
+    else if (k === 'cls') e.className = attrs[k];
+    else if (k === 'text') e.textContent = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  });
+  if (children) children.forEach(function(c) { if (c) e.appendChild(c); });
+  return e;
+}
+
+function showToast(msg, isErr) {
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('error',!!isErr); t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 4000);
+}
+
+/* ===================================================================== */
+/* ===== TAB "VERIFIKASI DATA DUKUNG" — cari & verifikasi data dukung === */
+/* Menggunakan GAS_URL, el(), dan showToast() yang sudah didefinisikan   */
+/* di atas (sama dengan URL Apps Script tab lainnya).                    */
+/* ===================================================================== */
+(function(){
+
+  var VD_FIELD_LABELS = {
+    t1_id_sikumbang: 'ID Lokasi SIKUMBANG',
+    t1_nama_perumahan: 'Nama Perumahan',
+    t1_nama_pt: 'Nama PT',
+    t1_asosiasi: 'Nama Asosiasi',
+    t1_kontraktor: 'Nama Kontraktor',
+    t1_alamat: 'Alamat Perumahan',
+    t1_koordinat: 'Koordinat Lokasi',
+    t1_luas_perumahan: 'Luas Perumahan (m²)',
+    pengisi_nama: 'Nama Pengisi',
+    pengisi_jabatan: 'Jabatan Pengisi',
+    pengisi_telepon: 'No. Telepon Pengisi'
+  };
+  var VD_TIPE_RUMAH_FIELDS = {
+    'Rumah Subsidi': [
+      ['t1_subsidi_tipe_1','t1_subsidi_unit_1','t1_subsidi_harga_1'],
+      ['t1_subsidi_tipe_2','t1_subsidi_unit_2','t1_subsidi_harga_2'],
+      ['t1_subsidi_tipe_3','t1_subsidi_unit_3','t1_subsidi_harga_3']
+    ],
+    'Rumah Komersil': [
+      ['t1_komersil_tipe_1','t1_komersil_unit_1','t1_komersil_harga_1'],
+      ['t1_komersil_tipe_2','t1_komersil_unit_2','t1_komersil_harga_2'],
+      ['t1_komersil_tipe_3','t1_komersil_unit_3','t1_komersil_harga_3']
+    ]
+  };
+  var VD_STATUS_RUMAH_FIELDS = {
+    'Rumah Komersil': [
+      ['status_komersil_kavling','Kavling'],['status_komersil_pembangunan','Pembangunan'],
+      ['status_komersil_readystock','Ready Stock'],['status_komersil_dipesan','Dipesan'],['status_komersil_terjual','Terjual']
+    ],
+    'Rumah Subsidi': [
+      ['status_subsidi_kavling','Kavling'],['status_subsidi_pembangunan','Pembangunan'],
+      ['status_subsidi_readystock','Ready Stock'],['status_subsidi_prosesbank','Proses Bank'],['status_subsidi_terjual','Terjual']
+    ]
+  };
+  var VD_STATUS_WARNA = {status_komersil_kavling:'#718096',status_komersil_pembangunan:'#855831',status_komersil_readystock:'#362825',status_komersil_dipesan:'#4C1D95',status_komersil_terjual:'#343a40',status_subsidi_kavling:'#f7ca18',status_subsidi_pembangunan:'#e67e22',status_subsidi_readystock:'#28a745',status_subsidi_prosesbank:'#007bff',status_subsidi_terjual:'#dc3545'};
+  var VD_DOK_LABELS = {
+    1:'Gambar Site Plan Perumahan', 2:'DED (Detailed Engineering Design) Perumahan',
+    3:'Rencana Kerja dan Syarat-syarat (RKS)', 4:'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)',
+    5:'Nomor Induk Berusaha (NIB)', 6:'Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR)',
+    7:'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL atau Dokumen Lain Sesuai Ketentuan)', 8:'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)',
+    9:'As Built Drawing', 10:'Sertifikat Laik Fungsi (SLF)',
+    11:'Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi'
+  };
+  // Cadangan: cari kolom "Foto: ..." yang diawali nama dokumen yang sama
+  // (antisipasi jika nama dokumen di form pengembang sedikit berbeda)
+  function vdFotoByPrefix(row, label){
+    var base = String(label).split('(')[0].trim().toLowerCase();
+    if (!base) return '';
+    var keys = Object.keys(row);
+    for (var k=0;k<keys.length;k++){
+      var key = keys[k];
+      if (key.indexOf('Foto: ')===0 && key.slice(6).toLowerCase().indexOf(base)===0 && String(row[key]||'').trim()) return row[key];
+    }
+    return '';
+  }
+  var VD_VERIF_COLS = ['Status Verifikasi','Catatan Verifikasi','Uraian Tidak Sesuai','Rekomendasi','Nama Verifikator','Tanggal Verifikasi','Checklist Detail','Catatan Bagian'];
+  var VD_KNOWN_KEYS = ['_row','Timestamp','Form'].concat(Object.keys(VD_FIELD_LABELS), VD_VERIF_COLS,
+    'legalitas_tanah_ada,legalitas_tanah_jenis,legalitas_tanah_jenis_lainnya,alasan_legalitas_tanah'.split(','));
+  Object.keys(VD_TIPE_RUMAH_FIELDS).forEach(function(k){ VD_TIPE_RUMAH_FIELDS[k].forEach(function(g){ VD_KNOWN_KEYS=VD_KNOWN_KEYS.concat(g); }); });
+  Object.keys(VD_STATUS_RUMAH_FIELDS).forEach(function(k){ VD_STATUS_RUMAH_FIELDS[k].forEach(function(p){ VD_KNOWN_KEYS.push(p[0]); }); });
+  for (var vd_d=1; vd_d<=11; vd_d++){
+    VD_KNOWN_KEYS.push('dok_ada_'+vd_d); VD_KNOWN_KEYS.push('alasan_dok_'+vd_d); VD_KNOWN_KEYS.push('dok_url_'+vd_d);
+    VD_KNOWN_KEYS.push('Foto: dok_'+vd_d); VD_KNOWN_KEYS.push('Foto: dok_ada_'+vd_d); VD_KNOWN_KEYS.push('Foto: dok_'+vd_d+'_foto');
+    VD_KNOWN_KEYS.push('Foto: '+VD_DOK_LABELS[vd_d]);
+  }
+  VD_KNOWN_KEYS.push('Foto: Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL)');
+  VD_KNOWN_KEYS.push('legalitas_tanah_url');
+  VD_KNOWN_KEYS.push('Foto: legalitas_tanah'); VD_KNOWN_KEYS.push('Foto: legalitas_tanah_ada'); VD_KNOWN_KEYS.push('Foto: legalitas_tanah_foto');
+  VD_KNOWN_KEYS.push('Foto: Legalitas Penguasaan Tanah');
+
+  var vdAllRows = [];
+  var vdSelectedRow = null;
+  var vdChecklistState = {};   // { fieldKey: true(Sesuai) / false(Tidak Sesuai) }
+  var vdCatatanBagian = {};    // { namaSection: teks catatan manual }
+  var vdDocKeteranganState = {}; // { fieldKey: teks keterangan wajib saat dokumen Tidak Sesuai }
+
+  function vdFmtVal(v){
+    if (v===undefined || v===null || v==='') return null;
+    return String(v);
+  }
+  function vdKv(label, value, fieldKey){
+    var isUrl = value && /^https?:\/\//i.test(value);
+    var box = el('div',{cls:'vd-kv'});
+    box.appendChild(el('div',{cls:'vd-k',text:label}));
+    if (value===null){
+      box.appendChild(el('div',{cls:'vd-v empty',text:'— belum diisi —'}));
+    } else if (isUrl){
+      var v = el('div',{cls:'vd-v'});
+      var a = el('a',{href:value,target:'_blank',text:'📎 Lihat Lampiran'});
+      v.appendChild(a); box.appendChild(v);
+    } else {
+      box.appendChild(el('div',{cls:'vd-v',text:value}));
+    }
+    if (fieldKey) vdAttachChecklist(box, fieldKey);
+    return box;
+  }
+
+  // ---------- Pilihan Sesuai / Tidak Sesuai per item data (wajib pilih salah satu) ----------
+  var vdRenderedKeys = [];
+  function vdMakeSel(fieldKey, onChange){
+    if (vdRenderedKeys.indexOf(fieldKey) === -1) vdRenderedKeys.push(fieldKey);
+    var wrap = el('div',{cls:'vd-sel'});
+    wrap.setAttribute('data-key', fieldKey);
+    var nm = 'vd-sel-' + fieldKey;
+    [['Sesuai',true,'opt-sesuai'],['Tidak Sesuai',false,'opt-tidak']].forEach(function(o){
+      var r = el('input',{type:'radio',name:nm,value:o[0]});
+      r.checked = (vdChecklistState[fieldKey] === o[1]);
+      r.addEventListener('change', function(){
+        vdChecklistState[fieldKey] = o[1];
+        wrap.classList.remove('vd-sel-missing');
+        if (onChange) onChange(o[1]);
+      });
+      wrap.appendChild(el('label',{cls:o[2]},[r, document.createTextNode(o[0])]));
+    });
+    wrap.appendChild(el('div',{cls:'vd-sel-hint',text:'⚠️ Pilih Sesuai atau Tidak Sesuai'}));
+    return wrap;
+  }
+  function vdAttachChecklist(box, fieldKey){
+    box.classList.toggle('vd-tidaksesuai', vdChecklistState[fieldKey] === false);
+    box.appendChild(vdMakeSel(fieldKey, function(ok){ box.classList.toggle('vd-tidaksesuai', !ok); }));
+  }
+
+  // ---------- Checkbox checklist khusus baris dokumen (doc-row) ----------
+  // ---------- Preview dokumen/foto asli dari pengembang ----------
+  function vdToDirectUrl(url){
+    if (!url) return '';
+    url = String(url).trim();
+    var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m && m[1] && /drive\.google\.com/.test(url)) {
+      return 'https://drive.google.com/uc?export=view&id=' + m[1];
+    }
+    return url;
+  }
+  function vdIsImageUrl(url){
+    return /\.(jpe?g|png|gif|webp|bmp)(\?|$)/i.test(url) || (/drive\.google\.com\/uc\?export=view/.test(url));
+  }
+  function vdFirstVal(row, keys){
+    for (var i=0;i<keys.length;i++){
+      if (row[keys[i]]) return row[keys[i]];
+    }
+    return '';
+  }
+  function vdDocPreview(rawUrl){
+    var wrap = el('div',{cls:'vd-doc-preview'});
+    var url = vdToDirectUrl(rawUrl);
+    if (!url) {
+      wrap.appendChild(el('span',{cls:'vd-doc-nofile',text:'Belum ada file diupload pengembang'}));
+      return wrap;
+    }
+    if (vdIsImageUrl(url)) {
+      var thumb = el('div',{cls:'vd-doc-thumb'});
+      var img = el('img'); img.src = url; img.loading = 'lazy';
+      img.onerror = function(){
+        thumb.remove();
+        var link = el('a',{cls:'vd-doc-linkbtn',text:'📄 Lihat Dokumen'});
+        link.href = url; link.target = '_blank'; link.rel = 'noopener';
+        wrap.appendChild(link);
+      };
+      thumb.appendChild(img);
+      thumb.addEventListener('click', function(){ openDocPreviewModal(url); });
+      wrap.appendChild(thumb);
+    } else {
+      var link2 = el('a',{cls:'vd-doc-linkbtn',text:'📄 Lihat Dokumen'});
+      link2.href = url; link2.target = '_blank'; link2.rel = 'noopener';
+      wrap.appendChild(link2);
+    }
+    return wrap;
+  }
+  function openDocPreviewModal(url){
+    var modal = document.getElementById('docPreviewModal');
+    var img = document.getElementById('docPreviewImg');
+    if (!modal || !img) return;
+    img.src = url;
+    modal.classList.add('open');
+  }
+  (function(){
+    var modal = document.getElementById('docPreviewModal');
+    var closeBtn = document.getElementById('docPreviewClose');
+    if (!modal) return;
+    function closeIt(){ modal.classList.remove('open'); }
+    if (closeBtn) closeBtn.addEventListener('click', closeIt);
+    modal.addEventListener('click', function(e){ if (e.target === modal) closeIt(); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeIt(); });
+  })();
+
+  function vdAttachDocChecklist(rowEl, fieldKey){
+    var tidak = vdChecklistState[fieldKey] === false;
+    rowEl.classList.toggle('vd-tidaksesuai', tidak);
+
+    // Kotak Keterangan wajib diisi saat "Tidak Sesuai"
+    var ketWrap = el('div',{cls:'vd-doc-ket-wrap'});
+    var ketInput = el('input',{type:'text',cls:'vd-doc-ket-input',placeholder:'Keterangan (wajib diisi karena Tidak Sesuai)...'});
+    ketInput.value = vdDocKeteranganState[fieldKey] || '';
+    ketInput.addEventListener('input', function(){
+      vdDocKeteranganState[fieldKey] = ketInput.value;
+      ketWrap.classList.toggle('vd-doc-ket-missing', !ketInput.value.trim());
+    });
+    ketWrap.appendChild(ketInput);
+    ketWrap.style.display = tidak ? '' : 'none';
+    if (tidak && !ketInput.value.trim()) ketWrap.classList.add('vd-doc-ket-missing');
+
+    rowEl.appendChild(vdMakeSel(fieldKey, function(ok){
+      rowEl.classList.toggle('vd-tidaksesuai', !ok);
+      ketWrap.style.display = ok ? 'none' : '';
+      ketWrap.classList.toggle('vd-doc-ket-missing', !ok && !ketInput.value.trim());
+    }));
+    rowEl.appendChild(ketWrap);
+  }
+
+  // ---------- Kotak catatan manual per section ----------
+  function vdSectionCatatan(sectionKey, placeholder){
+    var wrap = el('div',{cls:'vd-section-catatan'});
+    wrap.appendChild(el('label',{text:'📝 Catatan untuk bagian ini'}));
+    var ta = el('textarea',{placeholder: placeholder || 'Tuliskan catatan verifikasi untuk bagian ini (opsional)...'});
+    ta.value = vdCatatanBagian[sectionKey] || '';
+    ta.addEventListener('input', function(){ vdCatatanBagian[sectionKey] = ta.value; });
+    wrap.appendChild(ta);
+    return wrap;
+  }
+
+  var vdBtnMuat = document.getElementById('vd-btnMuat');
+  if (vdBtnMuat) vdBtnMuat.addEventListener('click', vdMuatData);
+
+  function vdMuatData(){
+    var statusEl = document.getElementById('vd-loadStatus');
+    statusEl.className='vd-status-line'; statusEl.textContent='⏳ Memuat data...';
+    fetch(GAS_URL + (GAS_URL.indexOf('?')>-1?'&':'?') + 'action=list')
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if (!res.ok) throw new Error(res.message || 'Gagal memuat data');
+        vdAllRows = res.rows || [];
+        statusEl.className='vd-status-line ok';
+        statusEl.textContent='✅ '+vdAllRows.length+' data berhasil dimuat.';
+        document.getElementById('vd-cariCard').style.display='';
+        vdRenderDropdown(vdAllRows);
+        vdRenderResultList('');
+      })
+      .catch(function(err){
+        statusEl.className='vd-status-line err';
+        statusEl.textContent='❌ Gagal memuat data: '+err.message+' (pastikan backend verifikasi sudah ditempel & di-deploy)';
+      });
+  }
+
+  function vdLabelForRow(row){
+    var nama = row['t1_nama_perumahan'] || '(tanpa nama)';
+    var id = row['t1_id_sikumbang'] ? ' — '+row['t1_id_sikumbang'] : '';
+    return nama + id;
+  }
+  function vdIsVerified(row){ return !!(row['Status Verifikasi'] && String(row['Status Verifikasi']).trim()); }
+  function vdBadgeForRow(row){
+    if (!vdIsVerified(row)) return '';
+    var st = String(row['Status Verifikasi']).trim();
+    if (st === 'Belum') return '<span class="vd-badge-verified vd-badge-belum">Belum</span>';
+    // Format baru: Status = Sudah, hasil ada di kolom Catatan Verifikasi
+    var s = st === 'Sudah' ? (row['Catatan Verifikasi'] || 'Sudah') : st;
+    var cls = s==='Sesuai' ? 'vd-badge-sesuai' : s==='Tidak Sesuai' ? 'vd-badge-tidaksesuai' : 'vd-badge-perbaikan';
+    return '<span class="vd-badge-verified '+cls+'">'+s+'</span>';
+  }
+
+  function vdRenderDropdown(rows){
+    var sel = document.getElementById('vd-dropdownSelect');
+    sel.innerHTML = '<option value="">— Pilih entri —</option>';
+    rows.forEach(function(row){
+      var opt = el('option',{value:String(row._row), text: vdLabelForRow(row) + (vdIsVerified(row)?' ✓':'')});
+      sel.appendChild(opt);
+    });
+  }
+  var vdDropdownSelect = document.getElementById('vd-dropdownSelect');
+  if (vdDropdownSelect) vdDropdownSelect.addEventListener('change', function(){
+    var rowNum = this.value;
+    if (!rowNum) return;
+    var row = vdAllRows.find(function(r){ return String(r._row)===rowNum; });
+    if (row) vdSelectRow(row);
+  });
+
+  var vdSearchInput = document.getElementById('vd-searchInput');
+  if (vdSearchInput) vdSearchInput.addEventListener('input', function(){
+    vdRenderResultList(this.value.trim().toLowerCase());
+  });
+  function vdRenderResultList(q){
+    var list = document.getElementById('vd-resultList');
+    list.innerHTML = '';
+    if (!q){ list.style.display='none'; return; }
+    var matched = vdAllRows.filter(function(row){
+      var nama = String(row['t1_nama_perumahan']||'').toLowerCase();
+      var idsk = String(row['t1_id_sikumbang']||'').toLowerCase();
+      return nama.indexOf(q)>-1 || idsk.indexOf(q)>-1;
+    });
+    if (matched.length===0){
+      list.style.display='';
+      list.appendChild(el('div',{cls:'vd-empty-state',text:'Tidak ada data yang cocok.'}));
+      return;
+    }
+    list.style.display='';
+    matched.forEach(function(row){
+      var item = el('div',{cls:'vd-result-item'});
+      var title = el('div',{cls:'vd-ri-title',html: vdLabelForRow(row) + vdBadgeForRow(row)});
+      var sub = el('div',{cls:'vd-ri-sub',text:'Baris #'+row._row + (row['Timestamp']?' • '+row['Timestamp']:'')});
+      item.appendChild(title); item.appendChild(sub);
+      item.addEventListener('click', function(){ vdSelectRow(row); });
+      list.appendChild(item);
+    });
+  }
+
+  function vdSelectRow(row){
+    vdSelectedRow = row;
+    var dd = document.getElementById('vd-dropdownSelect');
+    if (dd) dd.value = String(row._row);
+
+    // Muat ulang checklist & catatan per bagian: pakai hasil verifikasi sebelumnya kalau ada,
+    // kalau belum pernah default semua "Sesuai" & catatan kosong.
+    try { vdChecklistState = row['Checklist Detail'] ? JSON.parse(row['Checklist Detail']) : {}; }
+    catch(e){ vdChecklistState = {}; }
+    try { vdCatatanBagian = row['Catatan Bagian'] ? JSON.parse(row['Catatan Bagian']) : {}; }
+    catch(e){ vdCatatanBagian = {}; }
+    try { vdDocKeteranganState = row['Keterangan Tidak Sesuai'] ? JSON.parse(row['Keterangan Tidak Sesuai']) : {}; }
+    catch(e){ vdDocKeteranganState = {}; }
+
+    vdRenderDetail(row);
+    vdRenderVerifForm(row);
+    document.getElementById('vd-detailCard').style.display='';
+    document.getElementById('vd-verifCard').style.display='';
+    document.getElementById('vd-detailCard').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function vdGantiData(){
+    var cariCard = document.getElementById('vd-cariCard');
+    if (cariCard) cariCard.scrollIntoView({behavior:'smooth', block:'start'});
+    var searchInput = document.getElementById('vd-searchInput');
+    if (searchInput) { searchInput.focus(); searchInput.select(); }
+  }
+
+  function vdRenderDetail(row){
+    vdRenderedKeys = [];
+    var body = document.getElementById('vd-detailBody');
+    body.innerHTML = '';
+
+    // Bar info: data yang sedang diverifikasi + tombol untuk ganti pilihan
+    var sbar = el('div',{cls:'vd-selected-bar'});
+    var sbarText = el('div',{cls:'vd-sb-text'});
+    sbarText.innerHTML = '🏠 Sedang memverifikasi: <b>'+vdLabelForRow(row)+'</b>. Salah pilih? Klik tombol di samping untuk ganti data.';
+    var sbarBtn = el('button',{type:'button',cls:'vd-sb-btn',text:'🔁 Ganti Data'});
+    sbarBtn.addEventListener('click', vdGantiData);
+    sbar.appendChild(sbarText); sbar.appendChild(sbarBtn);
+    body.appendChild(sbar);
+
+    // I. Identitas
+    body.appendChild(el('div',{cls:'vd-section-header'},[
+      el('span',{cls:'vd-section-num',text:'INFO'}), el('h3',{text:'Identitas Perumahan'})
+    ]));
+    var idGrid = el('div',{cls:'vd-kv-grid'});
+    var VD_TANPA_PILIHAN = ['t1_luas_perumahan','pengisi_nama','pengisi_jabatan','pengisi_telepon'];
+    Object.keys(VD_FIELD_LABELS).forEach(function(k){ idGrid.appendChild(vdKv(VD_FIELD_LABELS[k], vdFmtVal(row[k]), VD_TANPA_PILIHAN.indexOf(k)>-1 ? null : k)); });
+    body.appendChild(idGrid);
+    body.appendChild(vdSectionCatatan('Identitas Perumahan'));
+
+    // II. Tipe Rumah
+    body.appendChild(el('div',{cls:'vd-section-header'},[
+      el('span',{cls:'vd-section-num',text:'I'}), el('h3',{text:'Tipe Rumah'})
+    ]));
+    var vdAdaTipeRumah = false;
+    Object.keys(VD_TIPE_RUMAH_FIELDS).forEach(function(kategori){
+      var any = VD_TIPE_RUMAH_FIELDS[kategori].some(function(g){ return vdFmtVal(row[g[0]]); });
+      if (!any) return;
+      vdAdaTipeRumah = true;
+      body.appendChild(el('div',{style:'font-size:12px;font-weight:700;color:var(--gray-600);margin:10px 0 6px',text:kategori}));
+      var grid = el('div',{cls:'vd-kv-grid'});
+      VD_TIPE_RUMAH_FIELDS[kategori].forEach(function(g, idx){
+        if (!vdFmtVal(row[g[0]])) return;
+        grid.appendChild(vdKv('Tipe #'+(idx+1), vdFmtVal(row[g[0]]), g[0]));
+        grid.appendChild(vdKv('Jumlah Unit #'+(idx+1), vdFmtVal(row[g[1]]), null));
+        grid.appendChild(vdKv('Harga #'+(idx+1), vdFmtVal(row[g[2]]), g[2]));
+      });
+      body.appendChild(grid);
+    });
+    if (vdAdaTipeRumah) body.appendChild(vdSectionCatatan('Tipe Rumah'));
+
+    // III. Status Rumah
+    body.appendChild(el('div',{cls:'vd-section-header'},[
+      el('span',{cls:'vd-section-num',text:'II'}), el('h3',{text:'Status Rumah di Perumahan'})
+    ]));
+    Object.keys(VD_STATUS_RUMAH_FIELDS).forEach(function(kategori){
+      body.appendChild(el('div',{cls:'vd-status-cat '+(kategori.indexOf('Subsidi')>-1?'subsidi':'komersil'),text:kategori.toUpperCase()}));
+      var grid = el('div',{cls:'vd-kv-grid'});
+      VD_STATUS_RUMAH_FIELDS[kategori].forEach(function(p){ var kv = vdKv(p[1], vdFmtVal(row[p[0]]), p[0]); kv.classList.add('vd-st'); kv.style.borderLeftColor = VD_STATUS_WARNA[p[0]]; grid.appendChild(kv); });
+      body.appendChild(grid);
+    });
+    body.appendChild(vdSectionCatatan('Status Rumah di Perumahan'));
+
+    // IV. Data Dukung / Dokumen
+    body.appendChild(el('div',{cls:'vd-section-header'},[
+      el('span',{cls:'vd-section-num',text:'III'}), el('h3',{text:'Data Dukung / Dokumen'})
+    ]));
+    var dokBox = el('div',{});
+    // Legalitas tanah (khusus)
+    var legAda = row['legalitas_tanah_ada'];
+    var legRow = el('div',{cls:'vd-doc-row'});
+    var legMain = el('div',{cls:'vd-doc-row-main'});
+    legMain.appendChild(el('span',{text:'Legalitas Penguasaan Tanah'}));
+    if (legAda==='Ada'){
+      var tag = el('span',{cls:'vd-doc-tag vd-doc-ada',text:'Ada — '+(row['legalitas_tanah_jenis']||'-')+(row['legalitas_tanah_jenis']==='Lainnya'&&row['legalitas_tanah_jenis_lainnya']?': '+row['legalitas_tanah_jenis_lainnya']:'')});
+      legMain.appendChild(tag);
+    } else if (legAda==='Tidak Ada'){
+      legMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-tidak',text:'Tidak Ada'}));
+    } else {
+      legMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-kosong',text:'Belum diisi'}));
+    }
+    legRow.appendChild(legMain);
+    if (legAda === 'Ada') vdAttachDocChecklist(legRow, 'legalitas_tanah_ada'); // dokumen tidak ada → tidak ada yang diverifikasi
+    if (legAda === 'Ada') legRow.appendChild(vdDocPreview(vdFirstVal(row, [
+      'Foto: Legalitas Penguasaan Tanah', 'Foto: legalitas_tanah', 'Foto: legalitas_tanah_ada', 'Foto: legalitas_tanah_foto', 'legalitas_tanah_url'
+    ])));
+    dokBox.appendChild(legRow);
+    if (legAda==='Tidak Ada' && row['alasan_legalitas_tanah']){
+      dokBox.appendChild(el('div',{cls:'vd-doc-alasan',text:'Alasan: '+row['alasan_legalitas_tanah']}));
+    }
+    // Dokumen lain (index 1-11)
+    for (var i=1;i<=11;i++){
+      var ada = row['dok_ada_'+i];
+      var r = el('div',{cls:'vd-doc-row'});
+      var rMain = el('div',{cls:'vd-doc-row-main'});
+      rMain.appendChild(el('span',{text:VD_DOK_LABELS[i]}));
+      if (ada==='Ada') rMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-ada',text:'Ada'}));
+      else if (ada==='Tidak Ada') rMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-tidak',text:'Tidak Ada'}));
+      else rMain.appendChild(el('span',{cls:'vd-doc-tag vd-doc-kosong',text:'Belum diisi'}));
+      r.appendChild(rMain);
+      if (ada === 'Ada') vdAttachDocChecklist(r, 'dok_ada_'+i); // dokumen tidak ada → tidak ada yang diverifikasi
+      if (ada === 'Ada') r.appendChild(vdDocPreview(vdFirstVal(row, [
+        'Foto: '+VD_DOK_LABELS[i], 'Foto: dok_'+i, 'Foto: dok_ada_'+i, 'Foto: dok_'+i+'_foto', 'dok_url_'+i
+      ]) || vdFotoByPrefix(row, VD_DOK_LABELS[i])));
+      dokBox.appendChild(r);
+      if (ada==='Tidak Ada' && row['alasan_dok_'+i]){
+        dokBox.appendChild(el('div',{cls:'vd-doc-alasan',text:'Alasan: '+row['alasan_dok_'+i]}));
+      }
+    }
+    body.appendChild(dokBox);
+    body.appendChild(vdSectionCatatan('Data Dukung / Dokumen'));
+
+    if (row['Timestamp']){
+      body.appendChild(el('div',{style:'margin-top:14px;font-size:11px;color:var(--gray-400)',text:'Dikirim oleh pengembang pada: '+row['Timestamp']}));
+    }
+  }
+
+  function vdRenderVerifForm(row){
+    document.getElementById('vd-vNama').value = row['Nama Verifikator'] || '';
+    document.getElementById('vd-vTanggal').value = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('input[name="vd-vStatus"]').forEach(function(r){ r.checked = (r.value === row['Status Verifikasi']); });
+    document.querySelectorAll('input[name="vd-vCatatan"]').forEach(function(r){ r.checked = (r.value === row['Catatan Verifikasi']); });
+    document.getElementById('vd-vKetTidakSesuai').value = row['Uraian Tidak Sesuai'] || '';
+    document.getElementById('vd-vRekomendasi').value = row['Rekomendasi'] || '';
+    vdToggleKet();
+    document.getElementById('vd-verifStatus').textContent = vdIsVerified(row)
+      ? 'ℹ️ Data ini sudah pernah diverifikasi oleh '+row['Nama Verifikator']+' pada '+row['Tanggal Verifikasi']+'. Menyimpan ulang akan menimpa hasil sebelumnya.'
+      : '';
+    document.getElementById('vd-verifStatus').className = 'vd-status-line';
+  }
+
+  function vdToggleKet(){
+    var c = document.querySelector('input[name="vd-vCatatan"]:checked');
+    document.getElementById('vd-vKetWrap').classList.toggle('show', !!(c && c.value === 'Tidak Sesuai'));
+  }
+  document.querySelectorAll('input[name="vd-vCatatan"]').forEach(function(r){ r.addEventListener('change', vdToggleKet); });
+
+  var vdBtnSimpanVerif = document.getElementById('vd-btnSimpanVerif');
+  if (vdBtnSimpanVerif) vdBtnSimpanVerif.addEventListener('click', function(){
+    if (!vdSelectedRow){ showToast('⚠️ Pilih data terlebih dahulu.', true); return; }
+    var nama = document.getElementById('vd-vNama').value.trim();
+    var statusRadio = document.querySelector('input[name="vd-vStatus"]:checked');
+    var statusEl = document.getElementById('vd-verifStatus');
+
+    if (!nama){ showToast('⚠️ Isi Nama Verifikator terlebih dahulu.', true); return; }
+
+    // Validasi: setiap item wajib dipilih Sesuai / Tidak Sesuai
+    var belumDipilih = vdRenderedKeys.filter(function(k){ return vdChecklistState[k] !== true && vdChecklistState[k] !== false; });
+    if (belumDipilih.length){
+      document.querySelectorAll('#vd-detailBody .vd-sel').forEach(function(w){
+        var k = w.getAttribute('data-key');
+        w.classList.toggle('vd-sel-missing', belumDipilih.indexOf(k) > -1);
+      });
+      var first = document.querySelector('#vd-detailBody .vd-sel-missing');
+      if (first) first.scrollIntoView({behavior:'smooth', block:'center'});
+      showToast('⚠️ Ada '+belumDipilih.length+' item yang belum dipilih Sesuai / Tidak Sesuai.', true);
+      return;
+    }
+
+    // Validasi: setiap dokumen yang ditandai "Tidak Sesuai" wajib punya Keterangan
+    var docKeys = ['legalitas_tanah_ada'];
+    for (var vk=1; vk<=11; vk++) docKeys.push('dok_ada_'+vk);
+    var belumLengkap = docKeys.filter(function(k){
+      return vdRenderedKeys.indexOf(k) > -1 && vdChecklistState[k] === false && !(vdDocKeteranganState[k] && vdDocKeteranganState[k].trim());
+    });
+    if (belumLengkap.length){
+      showToast('⚠️ Ada '+belumLengkap.length+' dokumen "Tidak Sesuai" yang Keterangannya belum diisi. Cek bagian Data Dukung/Dokumen.', true);
+      document.querySelectorAll('.vd-doc-ket-wrap').forEach(function(w){
+        var inp = w.querySelector('.vd-doc-ket-input');
+        if (inp && !inp.value.trim() && w.style.display !== 'none') w.classList.add('vd-doc-ket-missing');
+      });
+      return;
+    }
+
+    var catatanRadio = document.querySelector('input[name="vd-vCatatan"]:checked');
+    var ketTidak = document.getElementById('vd-vKetTidakSesuai').value.trim();
+    if (!statusRadio){ showToast('⚠️ Pilih Status (Sudah/Belum) pada Catatan Hasil Verifikasi.', true); return; }
+    if (!catatanRadio){ showToast('⚠️ Pilih Catatan (Sesuai/Tidak Sesuai) pada Catatan Hasil Verifikasi.', true); return; }
+    if (catatanRadio.value === 'Tidak Sesuai' && !ketTidak){
+      showToast('⚠️ Tuliskan apa yang tidak sesuai.', true);
+      document.getElementById('vd-vKetTidakSesuai').focus(); return;
+    }
+
+    var payload = {
+      action: 'verify',
+      row: vdSelectedRow._row,
+      data: {
+        'Status Verifikasi': statusRadio.value,
+        'Catatan Verifikasi': catatanRadio.value,
+        'Uraian Tidak Sesuai': catatanRadio.value === 'Tidak Sesuai' ? ketTidak : '',
+        'Rekomendasi': document.getElementById('vd-vRekomendasi').value.trim(),
+        'Nama Verifikator': nama,
+        'Tanggal Verifikasi': document.getElementById('vd-vTanggal').value,
+        'Checklist Detail': JSON.stringify(vdRenderedKeys.reduce(function(o,k){ o[k]=vdChecklistState[k]; return o; }, {})),
+        'Catatan Bagian': JSON.stringify(vdCatatanBagian),
+        'Keterangan Tidak Sesuai': JSON.stringify(Object.keys(vdDocKeteranganState).reduce(function(o,k){ if (vdRenderedKeys.indexOf(k)>-1 && vdChecklistState[k]===false) o[k]=vdDocKeteranganState[k]; return o; }, {}))
+      }
+    };
+
+    var btn = document.getElementById('vd-btnSimpanVerif');
+    btn.disabled = true; btn.textContent = '⏳ Menyimpan...';
+
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        btn.disabled = false; btn.textContent = '💾 Simpan Hasil Verifikasi';
+        if (!res.ok) throw new Error(res.message || 'Gagal menyimpan');
+        showToast('✅ Hasil verifikasi berhasil disimpan!');
+        statusEl.className = 'vd-status-line ok';
+        statusEl.textContent = '✅ Tersimpan.';
+        Object.assign(vdSelectedRow, payload.data);
+        vdRenderDropdown(vdAllRows);
+      })
+      .catch(function(err){
+        btn.disabled = false; btn.textContent = '💾 Simpan Hasil Verifikasi';
+        showToast('❌ Gagal menyimpan: '+err.message, true);
+        statusEl.className = 'vd-status-line err';
+        statusEl.textContent = '❌ '+err.message;
+      });
+  });
+
+  // Muat otomatis saat halaman dibuka
+  window.addEventListener('load', vdMuatData);
+
+})();
+</script>
+</body>
+</html>

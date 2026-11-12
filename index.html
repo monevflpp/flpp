@@ -311,6 +311,32 @@
   .portal-b .portal-cta {
     background: var(--teal); color: #fff;
   }
+  /* Dashboard & Form Laporan berdampingan */
+  .access-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+  .access-grid .dashboard-cta-section { margin: 0; flex-direction: column; align-items: flex-start; gap: 18px; }
+  .access-grid .dashboard-cta-btn { align-self: stretch; justify-content: space-between; }
+  @media (max-width: 720px) { .access-grid { grid-template-columns: 1fr; } }
+  .portal-a .portal-step { background: var(--navy); }
+  /* Daftar formulir (langkah bernomor) */
+  .portal-steps { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+  .portal-step {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px 12px 12px; border-radius: 22px;
+    background: var(--teal); color: #fff; text-decoration: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: opacity .2s, transform .2s;
+  }
+  .portal-step:hover { opacity: .9; transform: translateX(2px); }
+  .portal-step .step-num {
+    width: 30px; height: 30px; border-radius: 10px; flex-shrink: 0;
+    background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+  }
+  .portal-step .step-text { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .portal-step .step-text strong { font-size: 14px; font-weight: 700; }
+  .portal-step .step-text small { font-size: 11.5px; font-weight: 500; opacity: .85; line-height: 1.35; font-family: 'Inter', sans-serif; }
+  .portal-step .cta-arrow-circle { flex-shrink: 0; }
+  .portal-step-hint { font-size: 12px; color: var(--gray-600); padding: 2px 6px; line-height: 1.45; }
   .cta-arrow-circle {
     width: 32px; height: 32px; border-radius: 50%;
     background: rgba(255,255,255,.2);
@@ -475,28 +501,36 @@
 
   <div class="portals-grid">
 
-    <!-- PORTAL A: OBJEK PERUMAHAN -->
+    <!-- PORTAL A: PENGEMBANG PERUMAHAN -->
     <div class="portal portal-a">
       <div class="portal-header">
         <span class="portal-badge">Formulir Pengembang</span>
         <span class="portal-icon">🏘️</span>
         <div class="portal-title">Formulir Pengembang Perumahan</div>
-        <div class="portal-subtitle">Form Isian oleh Pengembang Perumahan</div>
+        <div class="portal-subtitle">Data objek perumahan &amp; verifikasi data dukung</div>
       </div>
       <div class="portal-body">
         <p class="portal-desc">
-          Formulir isian mandiri yang dilakukan oleh <strong>pengembang perumahan</strong> mengenai data-data perumahan FLPP, meliputi identitas proyek, spesifikasi fisik, kelengkapan legalitas, dan kesiapan hunian.
+          <strong>Pengembang perumahan</strong> mengisi data perumahan FLPP — identitas proyek, tipe dan status unit rumah, serta kelengkapan dokumen/data dukung. Data ini kemudian <strong>diverifikasi oleh Tim Kementerian PKP</strong> dan menjadi dasar survei pengendalian di lapangan.
         </p>
         <div class="portal-who">
           <div class="portal-who-text">
-            <strong>Diisi oleh: Pengembang Perumahan</strong>
-            Pihak pengembang atau developer yang mengajukan atau mengelola perumahan dalam program FLPP mengisi formulir ini secara mandiri.
+            <strong>Diisi oleh: Pengembang (1) · Diverifikasi oleh: Tim Kementerian PKP (2)</strong>
+            ID Lokasi SIKUMBANG yang diisi pengembang dipakai di semua formulir berikutnya.
           </div>
         </div>
-        <a class="portal-cta" href="form-objek-perumahan.html">
-          <span>Buka Formulir Pengembang Perumahan</span>
-          <div class="cta-arrow-circle">&#8594;</div>
-        </a>
+        <div class="portal-steps">
+          <a class="portal-step" href="form-objek-perumahan.html">
+            <span class="step-num">1</span>
+            <span class="step-text"><strong>Formulir Pengembang Perumahan</strong><small>Identitas perumahan, tipe &amp; status unit rumah, kondisi rumah saat ini, dan upload dokumen data dukung</small></span>
+            <span class="cta-arrow-circle">&#8594;</span>
+          </a>
+          <a class="portal-step" href="form-verifikasi-data-dukung.html">
+            <span class="step-num">2</span>
+            <span class="step-text"><strong>Verifikasi Data Dukung</strong><small>Pemeriksaan kesesuaian dokumen/data dukung yang diinput pengembang (Sesuai / Tidak Sesuai) beserta catatan dan rekomendasi</small></span>
+            <span class="cta-arrow-circle">&#8594;</span>
+          </a>
+        </div>
       </div>
     </div>
 
@@ -506,38 +540,59 @@
         <span class="portal-badge">Formulir Survei Pengendalian</span>
         <span class="portal-icon">📊</span>
         <div class="portal-title">Formulir Survei Pengendalian</div>
-        <div class="portal-subtitle">Survei oleh Tim Direktorat Jenderal Teknis</div>
+        <div class="portal-subtitle">Survei lapangan oleh Tim Kementerian PKP</div>
       </div>
       <div class="portal-body">
         <p class="portal-desc">
-          Formulir isian survei yang dilakukan oleh <strong>Tim Direktorat Jenderal Teknis, Kementerian Perumahan dan Kawasan Permukiman</strong> untuk mengendalikan dan memverifikasi kualitas perumahan FLPP di lapangan.
+          Formulir survei lapangan oleh <strong>Tim Kementerian Perumahan dan Kawasan Permukiman</strong> untuk mengendalikan kualitas perumahan FLPP. Kedua formulir memuat tab <strong>Kondisi PSU</strong> (prasarana, sarana, dan utilitas perumahan), lalu dilanjutkan dengan pemeriksaan rumah sesuai tahapnya.
         </p>
         <div class="portal-who">
           <div class="portal-who-text">
-            <strong>Diisi oleh: Tim Direktorat Jenderal Teknis — Kementerian PKP</strong>
-            Petugas survei dari Ditjen Teknis yang melakukan inspeksi dan verifikasi lapangan mengisi formulir ini berdasarkan temuan langsung di lokasi perumahan.
+            <strong>Diisi oleh: Tim Kementerian PKP di lokasi perumahan</strong>
+            Pilih formulir sesuai kondisi rumah yang disurvei.
           </div>
         </div>
-        <a class="portal-cta" href="form-survei-pengendalian.html">
-          <span>Buka Formulir Survei Pengendalian</span>
-          <div class="cta-arrow-circle">&#8594;</div>
-        </a>
+        <div class="portal-steps">
+          <a class="portal-step" href="form-tahap-penyaluran.html">
+            <span class="step-num">1</span>
+            <span class="step-text"><strong>Tahap Penyaluran</strong><small>Pilih form ini jika kondisi rumah masih dalam proses pembangunan. Memuat Kondisi PSU dan pemeriksaan mutu komponen bangunan (pondasi, sloof, kolom, ring balok, atap, lantai, dinding, utilitas rumah) dilengkapi contoh gambar Buku Saku Rumah Layak Huni.</small></span>
+            <span class="cta-arrow-circle">&#8594;</span>
+          </a>
+          <a class="portal-step" href="form-tahap-pasca-penyaluran.html">
+            <span class="step-num">2</span>
+            <span class="step-text"><strong>Tahap Pasca Penyaluran</strong><small>Pilih form ini jika rumah telah dihuni / setelah penyaluran FLPP. Memuat Kondisi PSU, status keterhunian, profil penghuni, pemanfaatan rumah, kondisi fisik bangunan, utilitas rumah, dan penilaian penerima manfaat.</small></span>
+            <span class="cta-arrow-circle">&#8594;</span>
+          </a>
+        </div>
       </div>
     </div>
 
   </div>
 
-  <!-- DASHBOARD CTA -->
-  <div class="dashboard-cta-section">
-    <div class="dashboard-cta-text">
-      <div class="dashboard-cta-label">Admin &amp; Manajemen</div>
-      <div class="dashboard-cta-title">🖥️ Masuk ke Dashboard</div>
-      <div class="dashboard-cta-desc">Lihat rekap data, kelola pengajuan, dan pantau progres survei perumahan FLPP secara menyeluruh.</div>
+  <!-- DASHBOARD & FORM LAPORAN -->
+  <div class="access-grid">
+    <div class="dashboard-cta-section access-card">
+      <div class="dashboard-cta-text">
+        <div class="dashboard-cta-label">Akses Umum</div>
+        <div class="dashboard-cta-title">🖥️ Dashboard</div>
+        <div class="dashboard-cta-desc">Peta titik lokasi perumahan yang sudah disurvei dan rekap data pengendalian FLPP. Dapat dibuka tanpa password.</div>
+      </div>
+      <a class="dashboard-cta-btn" href="dashboard.html">
+        <span>Buka Dashboard</span>
+        <div class="dashboard-cta-btn-icon">&#8594;</div>
+      </a>
     </div>
-    <a class="dashboard-cta-btn" href="dashboard.html">
-      <span>Buka Dashboard</span>
-      <div class="dashboard-cta-btn-icon">&#8594;</div>
-    </a>
+    <div class="dashboard-cta-section access-card">
+      <div class="dashboard-cta-text">
+        <div class="dashboard-cta-label">🔒 Khusus Admin</div>
+        <div class="dashboard-cta-title">📋 Form Laporan</div>
+        <div class="dashboard-cta-desc">Penyusunan Catatan Hasil Review (CHV) dan Berita Acara per perumahan. Memerlukan password admin.</div>
+      </div>
+      <a class="dashboard-cta-btn" href="form-laporan.html">
+        <span>Buka Form Laporan</span>
+        <div class="dashboard-cta-btn-icon">&#8594;</div>
+      </a>
+    </div>
   </div>
 
 </main>

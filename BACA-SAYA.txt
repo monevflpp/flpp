@@ -1,0 +1,59 @@
+PAKET FORM SURVEI PENGENDALIAN FLPP
+Direktorat Pembiayaan Perumahan Perdesaan — versi 12 November 2026
+
+ISI FOLDER
+0. index.html                       → halaman depan (tautan ke keempat form + dashboard)
+   dashboard.html                   → dashboard admin: peta titik lokasi & rekap data
+   form-laporan.html                → Form Laporan: Catatan Hasil Review (CHV) & Berita Acara
+1. form-objek-perumahan.html        → diisi PENGEMBANG (data objek perumahan & dokumen data dukung)
+2. form-verifikasi-data-dukung.html → diisi TIM: verifikasi dokumen/data dukung dari pengembang
+3. form-tahap-penyaluran.html       → diisi TIM di lapangan: tab Kondisi PSU + Tahap Penyaluran
+                                       (rumah masih dalam proses pembangunan)
+4. form-tahap-pasca-penyaluran.html → diisi TIM di lapangan: tab Kondisi PSU + Tahap Pasca Penyaluran
+                                       (rumah sudah dihuni / setelah penyaluran FLPP)
+5. img/rlh/                         → 16 gambar referensi Buku Saku Rumah Layak Huni 2025
+                                       (dipakai oleh form 3 dan 4)
+6. xlsx.full.min.js, exceljs.min.js → pustaka ekspor/impor Excel (SheetJS & ExcelJS) yang sudah ada di GitHub;
+                                       tidak dipakai keempat form; dashboard.html memuat pustaka yang sama dari CDN. Boleh tetap disimpan.
+
+URUTAN PEMAKAIAN
+Pengembang isi form 1 → Tim verifikasi di form 2 → Tim survei lapangan di form 3 (rumah masih dibangun) atau form 4 (rumah sudah dihuni)
+(ID SIKUMBANG di form 2, 3, dan 4 dipilih dari daftar yang diinput pengembang di form 1)
+
+CARA UNGGAH KE GITHUB
+- Unggah index.html, keempat file form .html, dan folder img/ ke repositori yang sama, dengan susunan persis seperti folder ini.
+- Folder img/ harus sejajar dengan file .html, supaya contoh gambar tampil.
+- File lama form-survei-pengendalian.html sudah digantikan form 2, 3, dan 4. Hapus atau simpan sebagai cadangan.
+- index.html sudah menautkan ke keempat form, dashboard, dan Form Laporan; ganti dashboard.html dan tambahkan form-laporan.html.
+- Dashboard dapat dibuka umum tanpa password; Form Laporan memakai password admin.
+
+KOLOM BARU DI SPREADSHEET
+Jika Apps Script tidak membuat kolom otomatis, tambahkan judul kolom berikut.
+
+Form 1 (Pengembang):
+  kondisi_pembangunan, jumlah_unit_pembangunan, kondisi_dihuni, jumlah_unit_dihuni
+
+Form 2 (Verifikasi):
+  Uraian Tidak Sesuai, Rekomendasi
+  (Status Verifikasi kini berisi Sudah/Belum; Catatan Verifikasi berisi Sesuai/Tidak Sesuai)
+
+Form 3 & 4 — tab Kondisi PSU:
+  p1_koordinat
+  psu_status_0_0, psu_status_0_1, psu_status_1_0, psu_status_1_1, psu_status_2_0 s.d. psu_status_6_0,
+  psu_status_7_0 s.d. psu_status_7_5, psu_status_8_0 s.d. psu_status_8_2
+  psu_jalanutama_lebar, psu_jalanutama_kendaraan, psu_jalanling_lebar, psu_jalanling_kendaraan
+  psu_aksesmasuk_terhubung, psu_aksesmasuk_lebar, psu_aksesmasuk_kendaraan, psu_k_0_2, ket_psu_0_2
+  psu_drainase_keterhubungan, psu_drainase_outlet_kondisi, psu_drainase_outlet_pintu,
+  psu_drainase_tidak_terhubung_uraian, psu_drainase_genangan
+  psu_airbersih_kontinuitas, psu_airbersih_kualitas
+  psu_airlimbah_jarak_sumur, psu_airlimbah_greywater
+  psu_sampah_mekanisme, psu_sampah_fasilitas, psu_sampah_frekuensi
+  psu_listrik_sambungan, psu_listrik_daya, psu_pju_cakupan
+  psu_risiko_jenis, ket_psu_9_0
+
+Form 3 — Tahap Penyaluran:   py_util_airlimbah_septik
+Form 4 — Pasca Penyaluran:   pf_util_airlimbah_septik
+  (status_huni & tahun_huni tetap; kini berada di section Identitas Unit)
+
+CATATAN
+- Hapus data uji coba (dummy Citra Gardenia) dari spreadsheet & Drive setelah pengujian selesai.
