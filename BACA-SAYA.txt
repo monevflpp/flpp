@@ -43,17 +43,47 @@ Form 3 & 4 — tab Kondisi PSU:
   psu_status_7_0 s.d. psu_status_7_5, psu_status_8_0 s.d. psu_status_8_2
   psu_jalanutama_lebar, psu_jalanutama_kendaraan, psu_jalanling_lebar, psu_jalanling_kendaraan
   psu_aksesmasuk_terhubung, psu_aksesmasuk_lebar, psu_aksesmasuk_kendaraan, psu_k_0_2, ket_psu_0_2
-  psu_drainase_keterhubungan, psu_drainase_outlet_kondisi, psu_drainase_outlet_pintu,
-  psu_drainase_tidak_terhubung_uraian, psu_drainase_genangan
-  psu_airbersih_kontinuitas, psu_airbersih_kualitas
-  psu_airlimbah_jarak_sumur, psu_airlimbah_greywater
-  psu_sampah_mekanisme, psu_sampah_fasilitas, psu_sampah_frekuensi
+  psu_drainase_keterhubungan, psu_drainase_genangan            (Jalur Utama)
+  psu_drainling_keterhubungan, psu_drainling_genangan          (Jalur Lingkungan)
+  psu_airbersih_sumber, psu_airbersih_infrastruktur, psu_airbersih_kontinuitas, psu_airbersih_syarat_fisik
+  psu_airlimbah_sistem, psu_airlimbah_komponen
+  psu_sampah_sistem, psu_sampah_komponen
   psu_listrik_sambungan, psu_listrik_daya, psu_pju_cakupan
   psu_risiko_jenis, ket_psu_9_0
+  psu_kelola_ada, psu_kelola_pihak, psu_kelola_iuran, psu_kelola_iuran_nominal, psu_kelola_kondisi, ket_psu_kelola
+  ket_psu_serah
+  psu_status_11_0, psu_mat_11_0, psu_k_11_0, ket_psu_11_0   (10.0 Sarana Keamanan dan Keselamatan Lingkungan)
 
-Form 3 — Tahap Penyaluran:   py_util_airlimbah_septik
-Form 4 — Pasca Penyaluran:   pf_util_airlimbah_septik
+Form 3 & 4 — Jaringan Utilitas Bangunan (Form 3 berawalan py_util_, Form 4 berawalan pf_util_):
+  Urutan baru: Drainase, Air Bersih, Air Limbah, Persampahan, Listrik, Proteksi Kebakaran, Fiber Optik
+  _drainase_terpisah, _airlimbah_terpisah, _airlimbah_septik
+  _air_sambungan, _air_kondisi_kran, _air_kondisi
+  _listrik_daya, _listrik_daya_lainnya_text, _listrik_sambungan_pln, _listrik_instalasi, _listrik_titik, _listrik_kondisi
+  _kebakaran_apar
+  serta kolom catatan_ untuk jawaban yang memunculkan kotak keterangan, contoh:
+  catatan_py_util_listrik_instalasi, catatan_py_util_drainase_terpisah, catatan_py_util_kebakaran_apar
+  (kolom lama yang tidak diisi lagi: _air_sumber, _air_distribusi, _air_tandon, _listrik_ke_unit, _airlimbah_saluran,
+   catatan_tambahan_py_10_0 / catatan_tambahan_pf_utilitas — diganti keterangan per elemen ket_py_util_* / ket_pf_util_*;
+   dashboard tetap membaca data lama yang sudah masuk)
   (status_huni & tahun_huni tetap; kini berada di section Identitas Unit)
+
+Form 4 — Pasca Penyaluran (revisi 13 November 2026):
+  ket_status_huni                         (keterangan bila Tidak Dihuni / Dijual)
+  gaji_debitur                            (kini angka rupiah, diisi manual; dulu pilihan rentang)
+  zona_penghasilan, kesesuaian_penghasilan, catatan_kesesuaian_penghasilan
+  Persepsi Debitur: sumber_info, info_kpr, kesesuaian_program, syarat_bank, kemudahan_syarat, proses_bank,
+                    transparansi_biaya, kualitas_bangunan, fasilitas_lingkungan, manfaat_program,
+                    kepuasan_program, rekomendasi_program, masukan_saran
+  (tahu_pkp tidak diisi lagi — digantikan sumber_info; tahun_huni tetap, kini di bagian Data Debitur)
+
+TAMPILAN HP (versi 13 November 2026)
+- Form 1–4 memakai tampilan baru untuk HP: header ringkas dengan progres pengisian, bagian bisa dilipat,
+  pilihan jawaban berbentuk ubin besar, tombol bawah tetap (Beranda · Daftar Bagian · Draft · Berikutnya/Kirim).
+- Hanya tampilan yang berubah: nama kolom, draft, dan pengiriman data tetap sama. Tidak ada kolom spreadsheet baru.
+- Isian yang sama antar tab (nama surveyor, ID SIKUMBANG, koordinat perumahan) otomatis disalin ke tab berikutnya bila masih kosong.
+- Pertanyaan lanjutan utilitas otomatis disembunyikan bila tidak relevan (kolomnya tetap ada, nilainya kosong).
+- Form 4: "Apakah Debitur Sama dengan Responden?" kini terisi otomatis dari "Hubungan dengan Debitur" (kolom tetap terisi).
+- Kode tampilan berada di bagian paling bawah tiap file (penanda "UI-MOBILE"), jadi tidak perlu mengunggah file tambahan.
 
 CATATAN
 - Hapus data uji coba (dummy Citra Gardenia) dari spreadsheet & Drive setelah pengujian selesai.

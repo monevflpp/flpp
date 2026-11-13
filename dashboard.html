@@ -1258,7 +1258,7 @@ function renderOverview() {
 
   // Gaji (urut)
   const gajiOrder = ['< 2 Juta','2-5 Juta','5-6 Juta','6-7 Juta','7-8 Juta','> 8 Juta'];
-  const gajiRaw = count(pasca,'gaji_debitur');
+  const gajiRaw = count(pasca,'gaji_kelompok');
   const gajiOrdered = {};
   gajiOrder.forEach(k => { if (gajiRaw[k]) gajiOrdered[k] = gajiRaw[k]; });
   barChart(document.getElementById('bar-gaji'), gajiOrdered, () => 'var(--gold)', n_pasca, {nosort:true});
@@ -1279,11 +1279,16 @@ function renderOverview() {
   const pkp  = pasca.filter(r=>r.tahu_pkp && !/tidak|kurang/i.test(r.tahu_pkp)).length;
   const bank = pasca.filter(r=>r.syarat_bank && !/tidak|kurang/i.test(r.syarat_bank)).length;
   const cepat= pasca.filter(r=>r.proses_bank && !/tidak|kurang/i.test(r.proses_bank)).length;
+  const pos = f => pasca.filter(r=>r[f] && !/tidak|kurang/i.test(r[f])).length;
   barChart(document.getElementById('bar-penilaian'), {
     'Kemudahan Info KPR': tahu,
-    'Tahu Program PKP': pkp,
+    'Tahu dari Kanal Resmi PKP': pkp,
     'Syarat Bank Jelas': bank,
     'Proses Cepat': cepat,
+    'Biaya Transparan': pos('transparansi_biaya'),
+    'Rumah Sesuai Spesifikasi': pos('kualitas_bangunan'),
+    'Puas dengan Program': pos('kepuasan_program'),
+    'Merekomendasikan': pos('rekomendasi_program'),
   }, () => 'var(--gold)', n_pasca);
 }
 
@@ -1320,8 +1325,8 @@ function renderPerumahan() {
       <div class="p-card-row">Terjual Subsidi <span>${fmt(r.status_subsidi_terjual)} (${terjualPct}%)</span></div>
       <div class="p-card-row">Proses Bank <span>${fmt(r.status_subsidi_prosesbank)}</span></div>
       <div class="p-card-row">Ready Stock <span>${fmt(r.status_subsidi_readystock)}</span></div>
-      <div class="p-card-row">Ada Rumah Dibangun <span>${r.kondisi_pembangunan ? r.kondisi_pembangunan + (r.kondisi_pembangunan === 'Ya' ? ' (' + fmt(r.jumlah_unit_pembangunan) + ' unit)' : '') : '-'}</span></div>
-      <div class="p-card-row">Ada Rumah Dihuni <span>${r.kondisi_dihuni ? r.kondisi_dihuni + (r.kondisi_dihuni === 'Ya' ? ' (' + fmt(r.jumlah_unit_dihuni) + ' unit)' : '') : '-'}</span></div>
+      <div class="p-card-row">Rumah Subsidi Dibangun <span>${r.kondisi_pembangunan ? r.kondisi_pembangunan + (r.kondisi_pembangunan === 'Ya' ? ' (' + fmt(r.jumlah_unit_pembangunan) + ' unit)' : '') : '-'}</span></div>
+      <div class="p-card-row">Rumah Subsidi Dihuni <span>${r.kondisi_dihuni ? r.kondisi_dihuni + (r.kondisi_dihuni === 'Ya' ? ' (' + fmt(r.jumlah_unit_dihuni) + ' unit)' : '') : '-'}</span></div>
       <div class="p-card-row">Verifikasi Data Dukung <span>${hasilVerifikasi(r).status || 'Belum Diverifikasi'}</span></div>
       <div class="p-card-cta">📄 Klik untuk Laporan Lengkap</div>
     </div>`;
@@ -1943,8 +1948,8 @@ const KOMPONEN_SLOOF   = ['py_sloofb_mortar','py_sloofb_koneksi','py_sloofb_tula
 const KOMPONEN_KOLOM   = ['py_kolomb_mortar','py_kolomb_koneksi','py_kolomb_tulangan','py_kolomb_sengkang_d','py_kolomb_sengkang_j','py_kolomb_dimensi'];
 const KOMPONEN_RINGBALOK=['py_ringbalok_mortar','py_ringbalok_koneksi','py_ringbalok_tulangan','py_ringbalok_sengkang_d','py_ringbalok_sengkang_j','py_ringbalok_dimensi'];
 const KOMPONEN_RAB     = ['py_rab_penopang','py_rab_koneksi','py_rab_jarak','py_rab_angkur','py_rab_tebal'];
-const UTIL_SALUR       = ['py_util_air','py_util_listrik','py_util_airlimbah','py_util_fiber','py_util_kebakaran','py_util_drainase','py_util_sampah'];
-const UTIL_SALUR_LBL   = ['Air Bersih','Listrik','Air Limbah','Fiber Optik','Akses Pemadam','Drainase','Persampahan'];
+const UTIL_SALUR       = ['py_util_drainase','py_util_air','py_util_airlimbah','py_util_sampah','py_util_listrik','py_util_kebakaran','py_util_fiber'];
+const UTIL_SALUR_LBL   = ['Drainase','Air Bersih','Air Limbah','Persampahan','Listrik','Proteksi Kebakaran','Fiber Optik'];
 const RLH_FIELDS       = ['py_rlh_luas','py_rlh_dapur','py_rlh_carport','py_rlh_cahaya','py_rlh_angin','py_rlh_closet'];
 const RLH_LABELS       = ['Luas Min 7.2–9 m²','Dapur','Carport','Pencahayaan 10%','Penghawaan 5%','Toilet Leher Angsa'];
 
@@ -1981,7 +1986,7 @@ function renderSalur() {
     utilData[UTIL_SALUR_LBL[i]] = data.filter(r => /^tersedia/i.test(r[f]||'')).length;
   });
   barChart(document.getElementById('salur-bar-util'), utilData,
-    k => k==='Akses Pemadam' ? 'var(--red)' : k==='Fiber Optik' ? 'var(--amber)' : 'var(--green)', n);
+    k => k==='Proteksi Kebakaran' ? 'var(--red)' : k==='Fiber Optik' ? 'var(--amber)' : 'var(--green)', n);
 
   // RLH
   const rlhData = {};
@@ -2025,8 +2030,8 @@ function renderSalur() {
 // ══════════════════════════════════════════════════════
 // PASCA PENYALURAN (Sheet 5)
 // ══════════════════════════════════════════════════════
-const UTIL_PASCA = ['pf_util_air','pf_util_listrik','pf_util_airlimbah','pf_util_fiber','pf_util_kebakaran','pf_util_drainase','pf_util_sampah'];
-const UTIL_PASCA_LBL = ['Air Bersih','Listrik','Air Limbah','Fiber Optik','Akses Pemadam','Drainase','Persampahan'];
+const UTIL_PASCA = ['pf_util_drainase','pf_util_air','pf_util_airlimbah','pf_util_sampah','pf_util_listrik','pf_util_kebakaran','pf_util_fiber'];
+const UTIL_PASCA_LBL = ['Drainase','Air Bersih','Air Limbah','Persampahan','Listrik','Proteksi Kebakaran','Fiber Optik'];
 
 function getPascaFiltered() {
   const filterP   = document.getElementById('pasca-filter')?.value || '';
@@ -2081,18 +2086,23 @@ function renderPasca() {
   const utilP = {};
   UTIL_PASCA.forEach((f,i) => { utilP[UTIL_PASCA_LBL[i]] = data.filter(r=>/^tersedia/i.test(r[f]||'')).length; });
   barChart(document.getElementById('pasca-bar-util'), utilP,
-    k => k==='Akses Pemadam'?'var(--red)':k==='Fiber Optik'?'var(--amber)':'var(--teal)', n);
+    k => k==='Proteksi Kebakaran'?'var(--red)':k==='Fiber Optik'?'var(--amber)':'var(--teal)', n);
 
   // Penilaian pasca
   const tahuVal  = data.filter(r=>r.info_kpr&&!/tidak|kurang/i.test(r.info_kpr)).length;
   const pkpVal   = data.filter(r=>r.tahu_pkp&&!/tidak|kurang/i.test(r.tahu_pkp)).length;
   const bankVal  = data.filter(r=>r.syarat_bank&&!/tidak|kurang/i.test(r.syarat_bank)).length;
   const cepatVal = data.filter(r=>r.proses_bank&&!/tidak|kurang/i.test(r.proses_bank)).length;
+  const posVal = f => data.filter(r=>r[f] && !/tidak|kurang/i.test(r[f])).length;
   barChart(document.getElementById('pasca-bar-nilai'), {
     'Kemudahan Info KPR': tahuVal,
-    'Tahu Program PKP': pkpVal,
+    'Tahu dari Kanal Resmi PKP': pkpVal,
     'Syarat Bank Jelas': bankVal,
     'Proses Kredit Cepat': cepatVal,
+    'Biaya Transparan': posVal('transparansi_biaya'),
+    'Rumah Sesuai Spesifikasi': posVal('kualitas_bangunan'),
+    'Puas dengan Program': posVal('kepuasan_program'),
+    'Merekomendasikan': posVal('rekomendasi_program'),
   }, () => 'var(--gold)', n);
 
   renderPascaUnits();
@@ -2126,7 +2136,7 @@ function renderPascaUnits() {
         <div class="unit-field">Jenis Kelamin: <b>${v((r.jk_debitur||r.jk_penghuni))}</b></div>
         <div class="unit-field">Status Kawin: <b>${v((r.kawin_debitur||r.kawin_penghuni))}</b></div>
         <div class="unit-field">Pekerjaan: <b>${v((r.kerja_debitur||r.kerja_penghuni))}</b></div>
-        <div class="unit-field">Penghasilan: <b>${v((r.gaji_debitur||r.gaji_penghuni))}</b></div>
+        <div class="unit-field">Penghasilan: <b>${v((r.gaji_debitur||r.gaji_penghuni))}</b>${r.zona_penghasilan ? ` · ${v(r.zona_penghasilan)} · <b>${v(r.kesesuaian_penghasilan)}</b>` : ''}</div>
         <div class="unit-field">Jumlah Penghuni: <b>${v(r.penghuni)}</b></div>
         <div class="unit-field">Luas Tanah / Bangunan: <b>${v(r.p3_luas_tanah)}</b> / <b>${v(r.p3_luas_bangunan)}</b> m²</div>
         <div class="unit-field">Jumlah Kamar: <b>${v(r.p3_jumlah_kamar)}</b></div>
@@ -2149,9 +2159,10 @@ function renderPascaUnits() {
         <div class="unit-field">Persampahan: ${pill(r.pf_util_sampah)} ${pill(r.pf_util_sampah_kondisi)}</div>
         <div class="unit-field">Info KPR: <b>${v(r.info_kpr)}</b></div>
         <div class="unit-field">Tahu PKP: <b>${v(r.tahu_pkp)}</b></div>
+        ${r.kepuasan_program ? `<div class="unit-field">Kepuasan: <b>${v(r.kepuasan_program)}</b></div><div class="unit-field">Rekomendasi: <b>${v(r.rekomendasi_program)}</b></div>` : ''}
         <div class="unit-field">Syarat Bank: <b>${v(r.syarat_bank)}</b></div>
         <div class="unit-field">Proses Bank: <b>${v(r.proses_bank)}</b></div>
-        ${r.status_huni && !['Dihuni Sendiri','Bebas Sewa','Disewakan'].includes(r.status_huni) ? `<div class="unit-field" style="grid-column:1/-1;color:var(--red)">⛔ Rumah tidak dihuni — survei unit berhenti di Identitas Unit.</div>` : ''}
+        ${r.status_huni && !['Dihuni Sendiri','Bebas Sewa','Disewakan'].includes(r.status_huni) ? `<div class="unit-field" style="grid-column:1/-1;color:var(--red)">⛔ Rumah tidak dihuni — survei unit berhenti di Identitas Unit.${r.ket_status_huni ? ' Keterangan: ' + v(r.ket_status_huni) : ''}</div>` : ''}
         ${r.catatan_tambahan_pf_lantai ? `<div class="unit-field" style="grid-column:1/-1">📝 Keterangan Lantai: <b>${r.catatan_tambahan_pf_lantai}</b></div>` : ''}
         ${r.catatan_tambahan_pf_dinding ? `<div class="unit-field" style="grid-column:1/-1">📝 Keterangan Dinding: <b>${r.catatan_tambahan_pf_dinding}</b></div>` : ''}
         ${r.catatan_tambahan_pf_atap ? `<div class="unit-field" style="grid-column:1/-1">📝 Keterangan Atap: <b>${r.catatan_tambahan_pf_atap}</b></div>` : ''}
@@ -2218,8 +2229,8 @@ function showReport(idx) {
       ${fld('Ready Stock Subsidi', fmt(obj.status_subsidi_readystock))}
       ${fld('Proses Bank', fmt(obj.status_subsidi_prosesbank))}
       ${fld('Terjual Subsidi', fmt(obj.status_subsidi_terjual))}
-      ${fld('Ada Rumah Sedang Dibangun', obj.kondisi_pembangunan ? obj.kondisi_pembangunan + (obj.kondisi_pembangunan === 'Ya' ? ' · ' + fmt(obj.jumlah_unit_pembangunan) + ' unit' : '') : '-')}
-      ${fld('Ada Rumah Sudah Dihuni', obj.kondisi_dihuni ? obj.kondisi_dihuni + (obj.kondisi_dihuni === 'Ya' ? ' · ' + fmt(obj.jumlah_unit_dihuni) + ' unit' : '') : '-')}
+      ${fld('Rumah Subsidi Sedang Dibangun', obj.kondisi_pembangunan ? obj.kondisi_pembangunan + (obj.kondisi_pembangunan === 'Ya' ? ' · ' + fmt(obj.jumlah_unit_pembangunan) + ' unit' : '') : '-')}
+      ${fld('Rumah Subsidi Sudah Dihuni', obj.kondisi_dihuni ? obj.kondisi_dihuni + (obj.kondisi_dihuni === 'Ya' ? ' · ' + fmt(obj.jumlah_unit_dihuni) + ' unit' : '') : '-')}
     </div>
   </div>`;
 
@@ -2291,12 +2302,21 @@ function showReport(idx) {
       ${fld('RTH Hijau', [psu.psu_mat_8_0, psu.psu_k_8_0].filter(Boolean).join(' · '))}
       ${fld('RTH Non-Hijau', [psu.psu_mat_8_1, psu.psu_k_8_1].filter(Boolean).join(' · '))}
       ${fld('Ruang Terbuka Biru', [psu.psu_mat_8_2, psu.psu_k_8_2].filter(Boolean).join(' · '))}
-      ${fld('Keterhubungan Drainase', psu.psu_drainase_keterhubungan)}
-      ${fld('Riwayat Genangan', psu.psu_drainase_genangan)}
+      ${fld('Keterhubungan Drainase (Jalur Utama)', psu.psu_drainase_keterhubungan)}
+      ${fld('Keterhubungan Drainase (Jalur Lingkungan)', psu.psu_drainling_keterhubungan || psu.psu_drainling_terhubung)}
+      ${fld('Riwayat Genangan', psu.psu_drainase_genangan_ringkas)}
+      ${fld('Sumber Air Bersih', psu.psu_airbersih_sumber || psu.psu_airbersih_sistem)}
+      ${fld('Syarat Fisik Air Terpenuhi', psu.psu_airbersih_syarat_fisik)}
       ${fld('Air Bersih — Kontinuitas', psu.psu_airbersih_kontinuitas)}
       ${fld('Sambungan Listrik ke Rumah', psu.psu_listrik_sambungan)}
+      ${fld('Sarana Keamanan & Keselamatan', [psu.psu_mat_11_0, psu.psu_k_11_0].filter(Boolean).join(' · '))}
       ${fld('Risiko Lokasi', psu.psu_risiko_jenis)}
+      ${fld('Pengelola Lingkungan/PSU', psu.psu_kelola_pihak_ringkas)}
+      ${fld('Iuran Pengelolaan (IPL)', psu.psu_kelola_iuran_ringkas)}
+      ${fld('Kondisi Pengelolaan', psu.psu_kelola_kondisi)}
       ${fld('Serah Terima PSU', psu.psu_serah_terima)}
+      ${fld('Keterangan Serah Terima', psu.ket_psu_serah)}
+      ${fld('Keterangan Pengelolaan', psu.ket_psu_kelola)}
     </div>`;
   } else { html += `<div class="report-empty">Belum ada data PSU.</div>`; }
   html += `</div>`;
@@ -2521,25 +2541,48 @@ function initFilters() {
 // tanpa mengubah data asli di spreadsheet.
 // ══════════════════════════════════════════════════════
 const UTIL_PRIMER = {           // butir utama tiap elemen utilitas per rumah
-  air:       ['distribusi','Jaringan perpipaan'],
-  listrik:   ['ke_unit','Tersedia'],
+  air:       ['sambungan',null], // 'Belum Tersambung / Tidak Ada' = tidak tersedia
+  listrik:   ['sambungan_pln',null], // 'Belum Terpasang Meteran PLN' = tidak tersedia
   airlimbah: ['septik',null],    // Septic Tank / Bio Septic Tank = tersedia
   fiber:     ['ke_unit','Tersedia'],
   kebakaran: ['akses','Memadai'],
   drainase:  ['saluran','Tersedia'],
   sampah:    ['wadah','Tersedia']
 };
+// Keterangan Jaringan Utilitas: sejak Nov 2026 tidak ada lagi kotak keterangan di akhir bagian,
+// jadi catatan disusun dari keterangan per elemen (Drainase, Air Bersih, dst.).
+const UTIL_KET_LBL = {drainase:'Drainase', air:'Air Bersih', airlimbah:'Air Limbah', sampah:'Persampahan', listrik:'Listrik', kebakaran:'Proteksi Kebakaran', fiber:'Fiber Optik'};
+function ketUtil(r, pre) {
+  if (!r) return '';
+  return Object.keys(UTIL_KET_LBL).map(k => { const v = String(r['ket_' + pre + '_' + k] || '').trim(); return v ? UTIL_KET_LBL[k] + ': ' + v : ''; }).filter(Boolean).join('; ');
+}
+// Pasca (Nov 2026): penghasilan diisi angka -> dikelompokkan untuk grafik; persepsi debitur versi baru
+const GAJI_KELOMPOK = ['< 2 Juta','2-5 Juta','5-6 Juta','6-7 Juta','7-8 Juta','> 8 Juta'];
+function normalisasiPasca(r) {
+  const raw = String(r.gaji_debitur ?? '').trim();
+  if (raw && /^(Rp\s?)?[\d.\s]+$/i.test(raw)) {
+    const n = Number(raw.replace(/\D/g, ''));
+    r.gaji_nominal = n;
+    r.gaji_debitur = 'Rp' + n.toLocaleString('id-ID');
+    r.gaji_kelompok = n < 2e6 ? '< 2 Juta' : n <= 5e6 ? '2-5 Juta' : n <= 6e6 ? '5-6 Juta' : n <= 7e6 ? '6-7 Juta' : n <= 8e6 ? '7-8 Juta' : '> 8 Juta';
+  } else if (raw) r.gaji_kelompok = raw;
+  // "Tahu program dari Kementerian PKP" (versi lama) = sumber informasi Kanal Resmi PKP (versi baru)
+  if (!r.tahu_pkp && r.sumber_info) r.tahu_pkp = /Kanal Resmi/i.test(r.sumber_info) ? 'Setuju' : 'Tidak Setuju';
+}
 function setJikaKosong(r, k, val) { if ((r[k] === undefined || r[k] === '') && val) r[k] = val; }
 function normalisasiUtil(r, pre) {
   Object.keys(UTIL_PRIMER).forEach(el => {
-    const [item, positif] = UTIL_PRIMER[el];
+    let [item, positif] = UTIL_PRIMER[el];
+    // data versi sebelumnya (perpipaan air): pakai kolom lama bila kolom baru kosong
+    if (el === 'air' && !r[`${pre}_air_sambungan`] && r[`${pre}_air_distribusi`]) { item = 'distribusi'; positif = 'Jaringan perpipaan'; }
+    if (el === 'listrik' && !r[`${pre}_listrik_sambungan_pln`] && r[`${pre}_listrik_ke_unit`]) { item = 'ke_unit'; positif = 'Tersedia'; }
     const v = String(r[`${pre}_${el}_${item}`] || '').trim();
     if (!v) return;
-    const ok = positif ? v === positif : !/tidak/i.test(v);
+    const ok = positif ? v === positif : !/tidak|belum terpasang/i.test(v);
     let detail = '';
-    if (el === 'air') detail = r[`${pre}_air_sumber`] || '';
+    if (el === 'air') detail = item === 'sambungan' ? v : (r[`${pre}_air_sumber`] || '');
     if (el === 'airlimbah' && ok) detail = v;
-    if (el === 'listrik') detail = r[`${pre}_listrik_sumber`] || '';
+    if (el === 'listrik') detail = [r[`${pre}_listrik_sumber`], r[`${pre}_listrik_daya`]].filter(Boolean).join(', ');
     setJikaKosong(r, `${pre}_${el}`, ok ? ('Tersedia' + (detail ? ' (' + detail + ')' : '')) : 'Tidak Tersedia');
   });
   // "Sanitasi" pada tampilan lama = perpipaan air limbah rumah
@@ -2550,9 +2593,21 @@ function normalisasiUtil(r, pre) {
 function normalisasiDB() {
   // PSU
   (DB.psu || []).forEach(r => {
-    setJikaKosong(r, 'psu_mat_2_0', [r.psu_airbersih_sistem, r.psu_airbersih_komponen].filter(Boolean).join(' — '));
-    setJikaKosong(r, 'psu_mat_3_0', r.psu_airlimbah_sistem);
-    setJikaKosong(r, 'psu_mat_4_0', r.psu_sampah_mekanisme);
+    // Air bersih: sumber + infrastruktur (form terbaru) / jenis sistem + komponen (versi sebelumnya)
+    setJikaKosong(r, 'psu_mat_2_0', [r.psu_airbersih_sumber || r.psu_airbersih_sistem, r.psu_airbersih_infrastruktur || r.psu_airbersih_komponen].filter(Boolean).join(' — '));
+    setJikaKosong(r, 'psu_mat_3_0', [r.psu_airlimbah_sistem, r.psu_airlimbah_komponen].filter(Boolean).join(' — '));
+    setJikaKosong(r, 'psu_mat_4_0', [r.psu_sampah_sistem || r.psu_sampah_mekanisme, r.psu_sampah_komponen].filter(Boolean).join(' — '));
+    // Foto jalan: nama kolom mengikuti judul subbagian (sempat berganti nama)
+    [['PSU_Fas_0_0_Jalan Utama di Perumahan','PSU_Fas_0_0_Jalan Utama Perumahan'],
+     ['PSU_Fas_0_1_Jalan Lingkungan di Perumahan','PSU_Fas_0_1_Jalan Lingkungan Perumahan'],
+     ['PSU_Fas_0_2_Jalan Akses ke Perumahan','PSU_Fas_0_2_Akses Masuk dari Jalan Umum']].forEach(([baru, lama]) => setJikaKosong(r, 'Foto: ' + baru, r['Foto: ' + lama]));
+    // Drainase: riwayat genangan & keterhubungan per jalur
+    const gen = [r.psu_drainase_genangan ? 'Utama: ' + r.psu_drainase_genangan : '', r.psu_drainling_genangan ? 'Lingkungan: ' + r.psu_drainling_genangan : ''].filter(Boolean).join(' · ');
+    setJikaKosong(r, 'psu_drainase_genangan_ringkas', gen || r.psu_drainase_outlet_kondisi);
+    setJikaKosong(r, 'psu_drainase_ket_ringkas', r.psu_drainling_keterhubungan ? 'Keterhubungan jalur lingkungan: ' + r.psu_drainling_keterhubungan : (r.psu_drainling_terhubung ? 'Jalur lingkungan ke jalur utama: ' + r.psu_drainling_terhubung : r.psu_drainase_tidak_terhubung_uraian));
+    // Pengelolaan lingkungan/PSU
+    if (r.psu_kelola_ada) setJikaKosong(r, 'psu_kelola_pihak_ringkas', r.psu_kelola_ada === 'Ada' ? (r.psu_kelola_pihak || 'Ada') : 'Tidak ada pengelola');
+    if (r.psu_kelola_iuran) setJikaKosong(r, 'psu_kelola_iuran_ringkas', [r.psu_kelola_iuran === 'Ada' ? 'Iuran: Rp ' + (r.psu_kelola_iuran_nominal || '-') + '/bulan' : 'Tidak ada iuran', r.ket_psu_kelola].filter(Boolean).join(' · '));
     // Kondisi kosong karena status "Belum Ada"/"Tidak Ada"/di luar kawasan → tampilkan statusnya
     Object.keys(r).forEach(k => {
       const m = k.match(/^psu_status_(\d+_\d+)$/);
@@ -2571,8 +2626,9 @@ function normalisasiDB() {
     });
   });
   // Tahap Penyaluran & Pasca: utilitas per rumah
-  (DB.salur || []).forEach(r => normalisasiUtil(r, 'py_util'));
-  (DB.pasca  || []).forEach(r => normalisasiUtil(r, 'pf_util'));
+  (DB.salur || []).forEach(r => { normalisasiUtil(r, 'py_util'); setJikaKosong(r, 'catatan_tambahan_py_10_0', ketUtil(r, 'py_util')); });
+  (DB.pasca  || []).forEach(r => normalisasiPasca(r));
+  (DB.pasca  || []).forEach(r => { normalisasiUtil(r, 'pf_util'); setJikaKosong(r, 'catatan_tambahan_pf_utilitas', ketUtil(r, 'pf_util')); });
 }
 
 function refreshAllViews() {
@@ -2868,7 +2924,7 @@ function baGetDokCondisi(perIdx) {
     salKetNote['Lantai']           = sal.catatan_tambahan_py_7_0 || '';
     salKetNote['Dinding']          = sal.catatan_tambahan_py_8_0 || '';
     salKetNote['Ketentuan Rumah Layak Huni'] = sal.catatan_tambahan_py_9_0 || '';
-    salKetNote['Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)'] = sal.catatan_tambahan_py_10_0 || '';
+    salKetNote['Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)'] = sal.catatan_tambahan_py_10_0 || ketUtil(sal, 'py_util');
   }
 
   // Pasca kondisi (rata-rata dari semua unit)
@@ -2892,7 +2948,7 @@ function baGetDokCondisi(perIdx) {
     pasKetNote['Lantai']  = firstNote('catatan_tambahan_pf_lantai');
     pasKetNote['Dinding'] = firstNote('catatan_tambahan_pf_dinding');
     pasKetNote['Atap']    = firstNote('catatan_tambahan_pf_atap');
-    pasKetNote['Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)'] = firstNote('catatan_tambahan_pf_utilitas');
+    pasKetNote['Jaringan Utilitas Bangunan (Mechanical Electrical Plumbing)'] = firstNote('catatan_tambahan_pf_utilitas') || (pas.map(r => ketUtil(r, 'pf_util')).filter(Boolean)[0] || '');
     pasKetNote['Ketentuan Rumah Layak Huni'] = firstNote('catatan_tambahan_pf_rlh');
     pasKetNote['Status Penghunian'] = firstNote('masukan_saran');
     pasKetNote['Fungsi Bangunan']   = '';
@@ -3641,12 +3697,12 @@ function barisGaleriFoto(row, daftar, kolom, judul) {
 }
 
 const CHV_PSU = [
-  { label: 'Jalan Utama Perumahan',          field: 'psu_k_0_0', matField: 'psu_mat_0_0', ketField: 'ket_psu_0_0', fotoField: 'PSU_Fas_0_0_Jalan Utama Perumahan' },
-  { label: 'Jalan Lingkungan Perumahan',      field: 'psu_k_0_1', matField: 'psu_mat_0_1', ketField: 'ket_psu_0_1', fotoField: 'PSU_Fas_0_1_Jalan Lingkungan Perumahan' },
-  { label: 'Akses Masuk dari Jalan Umum',     field: 'psu_k_0_2', matField: 'psu_aksesmasuk_terhubung', ketField: 'ket_psu_0_2', fotoField: 'PSU_Fas_0_2_Akses Masuk dari Jalan Umum' },
+  { label: 'Jalan Utama di Perumahan',        field: 'psu_k_0_0', matField: 'psu_mat_0_0', ketField: 'ket_psu_0_0', fotoField: 'PSU_Fas_0_0_Jalan Utama di Perumahan' },
+  { label: 'Jalan Lingkungan di Perumahan',    field: 'psu_k_0_1', matField: 'psu_mat_0_1', ketField: 'ket_psu_0_1', fotoField: 'PSU_Fas_0_1_Jalan Lingkungan di Perumahan' },
+  { label: 'Jalan Akses ke Perumahan',         field: 'psu_k_0_2', matField: 'psu_aksesmasuk_terhubung', ketField: 'ket_psu_0_2', fotoField: 'PSU_Fas_0_2_Jalan Akses ke Perumahan' },
   { label: 'Drainase Jalur Utama',            field: 'psu_k_1_0', matField: 'psu_mat_1_0', ketField: 'ket_psu_1_0', fotoField: 'PSU_Fas_1_0_Jalur Utama' },
   { label: 'Drainase Jalur Lingkungan',       field: 'psu_k_1_1', matField: 'psu_mat_1_1', ketField: 'ket_psu_1_1', fotoField: 'PSU_Fas_1_1_Jalur Lingkungan' },
-  { label: 'Keterhubungan & Titik Pembuangan Akhir', field: 'psu_drainase_outlet_kondisi', matField: 'psu_drainase_keterhubungan', ketField: 'psu_drainase_tidak_terhubung_uraian', fotoField: 'PSU_Drainase_Titik_Outlet' },
+  { label: 'Keterhubungan & Riwayat Genangan', field: 'psu_drainase_genangan_ringkas', matField: 'psu_drainase_keterhubungan', ketField: 'psu_drainase_ket_ringkas', fotoField: 'PSU_Drainase_Titik_Outlet' },
   { label: 'Sistem Jaringan Air Bersih',      field: 'psu_k_2_0', matField: 'psu_mat_2_0', ketField: 'ket_psu_2_0', fotoField: 'PSU_Sistem Jaringan Air Bersih' },
   { label: 'Sistem Pengelolaan Air Limbah',   field: 'psu_k_3_0', matField: 'psu_mat_3_0', ketField: 'ket_psu_3_0', fotoField: 'PSU_Sistem Pengelolaan Air Limbah' },
   { label: 'Sistem Pengelolaan Sampah',       field: 'psu_k_4_0', matField: 'psu_mat_4_0', ketField: 'ket_psu_4_0', fotoField: 'PSU_Sistem Pengelolaan Sampah' },
@@ -3663,6 +3719,8 @@ const CHV_PSU = [
   { label: 'Ruang Terbuka Non Hijau',         field: 'psu_k_8_1', matField: null, ketField: 'ket_psu_8_1', isRTH: true, fotoField: 'PSU_Fas_8_1_Ruang Terbuka Non Hijau' },
   { label: 'Ruang Terbuka Biru',              field: 'psu_k_8_2', matField: null, ketField: 'ket_psu_8_2', isRTH: true, fotoField: 'PSU_Fas_8_2_Ruang Terbuka Biru' },
   { label: 'Risiko Lokasi',                  field: 'psu_risiko_jenis', matField: null, ketField: 'ket_psu_9_0', fotoField: 'PSU_Fas_9_0_Risiko Lokasi' },
+  { label: 'Pengelolaan & Pemeliharaan Lingkungan/PSU', field: 'psu_kelola_kondisi', matField: 'psu_kelola_pihak_ringkas', ketField: 'psu_kelola_iuran_ringkas', fotoField: null },
+  { label: 'Sarana Keamanan dan Keselamatan Lingkungan', field: 'psu_k_11_0', matField: 'psu_mat_11_0', ketField: 'ket_psu_11_0', fotoField: 'PSU_Fas_11_0_Sarana Keamanan dan Keselamatan Lingkungan' },
 ];
 
 // Pengelompokan aspek PSU (No urut mengikuti kelompok, bukan per-baris CHV_PSU)
@@ -3680,6 +3738,8 @@ const PSU_GROUPS = [
   { title: 'Fasilitas Umum',                  start: 11, end: 17 },
   { title: 'Ruang Terbuka',                   start: 18, end: 20 },
   { title: 'Risiko Lokasi',                   start: 21, end: 21 },
+  { title: 'Pengelolaan Lingkungan/PSU',      start: 22, end: 22 },
+  { title: 'Sarana Keamanan dan Keselamatan',  start: 23, end: 23 },
 ];
 
 // Struktur D: Fisik Bangunan Tahap Penyaluran
@@ -3747,15 +3807,22 @@ const CHV_FISIK_SALUR = [
     { label: 'Toilet Leher Angsa',    acuan: 'Memenuhi/Tidak', field: 'py_rlh_closet', type: 'kondisi' },
   ]},
   { aspek: 'Jaringan Utilitas Bangunan', fotoField: ['py_util_air_foto','py_util_listrik_foto','py_util_airlimbah_foto','py_util_fiber_foto','py_util_kebakaran_foto','py_util_drainase_foto','py_util_sampah_foto'], tambahan: 'catatan_tambahan_py_10_0', subs: [
-    { label: 'Sumber Air Bersih',     acuan: 'PDAM/Kawasan/Sumur Individu', field: 'py_util_air_sumber', type: 'text' },
-    { label: 'Perpipaan Air ke Rumah', acuan: 'Jaringan perpipaan/Tidak', field: 'py_util_air_distribusi', type: 'kondisi' },
-    { label: 'Tandon dari Developer', acuan: 'Tersedia/Tidak', field: 'py_util_air_tandon', type: 'kondisi' },
-    { label: 'Listrik ke Unit Rumah', acuan: 'Tersedia/Tidak', field: 'py_util_listrik_ke_unit', type: 'kondisi' },
-    { label: 'Pengolahan Air Limbah', acuan: 'Septic Tank/Bio Septic Tank', field: 'py_util_airlimbah_septik', type: 'kondisi' },
-    { label: 'Fiber Optik ke Rumah',  acuan: 'Tersedia/Tidak', field: 'py_util_fiber_ke_unit', type: 'kondisi' },
-    { label: 'Akses Pemadam ke Rumah', acuan: 'Memadai/Tidak', field: 'py_util_kebakaran_akses', type: 'kondisi' },
     { label: 'Drainase Depan Rumah',  acuan: 'Tersedia/Tidak', field: 'py_util_drainase_saluran', type: 'kondisi' },
+    { label: 'Drainase Terpisah dari Saluran Air Limbah', acuan: 'Terpisah', field: 'py_util_drainase_terpisah', type: 'text' },
+    { label: 'Sambungan Air ke Unit', acuan: 'Jaringan Kawasan/PDAM/Sumur Individu', field: 'py_util_air_sambungan', type: 'text' },
+    { label: 'Kondisi Air Saat Kran Dicek', acuan: 'Mengalir Lancar & Jernih', field: 'py_util_air_kondisi_kran', type: 'text' },
+    { label: 'Kondisi Keseluruhan Air Bersih', acuan: 'Baik / Berfungsi', field: 'py_util_air_kondisi', type: 'text' },
+    { label: 'Pengolahan Air Limbah', acuan: 'Septic Tank/Bio Septic Tank', field: 'py_util_airlimbah_septik', type: 'kondisi' },
+    { label: 'Saluran Air Limbah Terpisah dari Drainase', acuan: 'Terpisah', field: 'py_util_airlimbah_terpisah', type: 'text' },
     { label: 'Tempat Sampah Depan Rumah', acuan: 'Tersedia/Tidak', field: 'py_util_sampah_wadah', type: 'kondisi' },
+    { label: 'Daya Listrik', acuan: '900/1.300/2.200 VA', field: 'py_util_listrik_daya', type: 'text' },
+    { label: 'Status Sambungan Listrik PLN', acuan: 'Meteran (kWh) Terpasang & Listrik Menyala', field: 'py_util_listrik_sambungan_pln', type: 'text' },
+    { label: 'Kerapian & Keamanan Instalasi Kabel', acuan: 'Rapi & Aman', field: 'py_util_listrik_instalasi', type: 'text' },
+    { label: 'Fungsi Titik Lampu, Saklar & Stopkontak', acuan: 'Semua Terpasang Lengkap & Berfungsi Normal', field: 'py_util_listrik_titik', type: 'text' },
+    { label: 'Kondisi Keseluruhan Listrik', acuan: 'Baik / Berfungsi', field: 'py_util_listrik_kondisi', type: 'text' },
+    { label: 'Akses Pemadam ke Rumah', acuan: 'Memadai/Tidak', field: 'py_util_kebakaran_akses', type: 'kondisi' },
+    { label: 'Ketersediaan APAR', acuan: 'Tersedia/Tidak', field: 'py_util_kebakaran_apar', type: 'kondisi' },
+    { label: 'Fiber Optik ke Rumah',  acuan: 'Tersedia/Tidak', field: 'py_util_fiber_ke_unit', type: 'kondisi' },
   ]},
   { aspek: 'Penghijauan Dalam Kavling', fotoField: 'py_11.0', tambahan: 'catatan_tambahan_py_11_0', useTambahan: true, subs: [
     { label: 'Tingkat Penghijauan',   acuan: 'Sangat Baik/Baik/Sedang/Minimal/Tidak terdapat', field: 'py_hijau_kavling', type: 'text' },
