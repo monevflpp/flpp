@@ -131,6 +131,15 @@
   .doc-wrapper{border-bottom:1px solid var(--gray-100);padding:10px 0 8px}
   .doc-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .doc-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .doc-detail{display:none;margin-top:10px;background:#F4F8FA;border:1px solid #D5E5EB;border-radius:14px;padding:12px}
+  .doc-detail.show{display:block}
+  .doc-detail-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px}
+  .doc-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .doc-detail-grid .field{gap:5px!important}
+  .doc-detail-grid .field>label{font-size:12px!important}
+  .doc-detail-full{grid-column:1/-1}
+  .doc-detail textarea{min-height:60px}
+  @media(max-width:640px){.doc-detail-grid{grid-template-columns:1fr}}
   .doc-item{display:flex;align-items:center;gap:6px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:999px;padding:5px 12px;font-size:11px;max-width:220px}
   .doc-item img{width:36px;height:36px;object-fit:cover;border-radius:4px;flex-shrink:0}
   .doc-del{cursor:pointer;color:var(--gray-400);margin-left:auto;flex-shrink:0;font-size:12px}
@@ -770,8 +779,6 @@ window.addEventListener('load', function() {
     saveDraft('panel-0', this);
   });
 
-  // Muat draft otomatis saat halaman dibuka
-  loadDraftIfExists('panel-0');
 
   // ---- DOKUMEN LIST ----
   var dokumenGroups=[
@@ -807,6 +814,29 @@ window.addEventListener('load', function() {
   ];
   var dokContainer=document.getElementById('dokumen-list');
   var dokIdx=0;
+
+  // Rincian dokumen saat "Ada": nomor, tanggal penerbitan, disahkan oleh, keterangan lainnya (opsional)
+  function makeDocDetail(prefix) {
+    var box = el('div', {cls:'doc-detail'});
+    box.appendChild(el('div', {cls:'doc-detail-title', text:'📝 Rincian Dokumen (opsional)'}));
+    var grid = el('div', {cls:'doc-detail-grid'});
+    [['nomor','Nomor Dokumen','text','Contoh: 503/123/PBG/2024'],
+     ['tanggal','Tanggal Penerbitan','date',''],
+     ['pengesah','Disahkan oleh','text','Contoh: Dinas PUPR Kab. ...'],
+    ].forEach(function(d){
+      var f = el('div', {cls:'field'});
+      f.appendChild(el('label', {text:d[1]}));
+      var inp = el('input'); inp.type = d[2]; inp.id = prefix + '_' + d[0]; if (d[3]) inp.placeholder = d[3];
+      f.appendChild(inp); grid.appendChild(f);
+    });
+    var fk = el('div', {cls:'field doc-detail-full'});
+    fk.appendChild(el('label', {text:'Keterangan Dokumen Lainnya'}));
+    var ta = el('textarea'); ta.id = prefix + '_keterangan'; ta.placeholder = 'Mis. masa berlaku, revisi, catatan lain terkait dokumen...';
+    fk.appendChild(ta); grid.appendChild(fk);
+    box.appendChild(grid);
+    box.clearAll = function(){ box.querySelectorAll('input,textarea').forEach(function(x){ x.value = ''; }); };
+    return box;
+  }
 
   function renderLegalitasItem(item, i) {
     var wrapper=el('div',{cls:'doc-wrapper'});
@@ -876,10 +906,13 @@ window.addEventListener('load', function() {
       }
     });
 
+    var detail = makeDocDetail('legalitas_tanah');
     // Logika toggle saat radio Ada/Tidak Ada berubah
     grp.addEventListener('change', function(ev){
       var val=ev.target.value;
       wrapper.classList.remove('wajib-kosong');
+      detail.classList.toggle('show', val==='Ada');
+      if(val!=='Ada') detail.clearAll();
       if(val==='Tidak Ada'){
         alasanWrap.classList.add('show');
         jenisWrap.classList.remove('show');
@@ -903,6 +936,7 @@ window.addEventListener('load', function() {
 
     wrapper.appendChild(el('div',{cls:'wajib-hint',text:'⚠️ Pilih Ada atau Tidak Ada'}));
     wrapper.appendChild(jenisWrap);
+    wrapper.appendChild(detail);
     wrapper.appendChild(alasanWrap);
     wrapper.appendChild(prev);
     dokContainer.appendChild(wrapper);
@@ -959,10 +993,13 @@ window.addEventListener('load', function() {
         }
       });
 
+      var detail = makeDocDetail('dok_'+i);
       // Logika toggle saat radio berubah
       grp.addEventListener('change', function(ev){
         var val = ev.target.value;
         wrapper.classList.remove('wajib-kosong');
+        detail.classList.toggle('show', val==='Ada');
+        if(val!=='Ada') detail.clearAll();
         if(val==='Tidak Ada'){
           alasanWrap.classList.add('show');
           uploadBtn.style.display='none';
@@ -980,11 +1017,16 @@ window.addEventListener('load', function() {
       wrapper.appendChild(row);
 
       wrapper.appendChild(el('div',{cls:'wajib-hint',text:'⚠️ Pilih Ada atau Tidak Ada'}));
+      wrapper.appendChild(detail);
       wrapper.appendChild(alasanWrap);
       wrapper.appendChild(prev);
       dokContainer.appendChild(wrapper);
     });
   });
+
+  // Muat draft otomatis saat halaman dibuka — setelah daftar dokumen selesai dibuat,
+  // supaya pilihan Ada/Tidak Ada, alasan, dan rincian dokumen ikut dipulihkan
+  loadDraftIfExists('panel-0');
 });
 
 /* ===== FORMAT RIBUAN UNTUK ISIAN ANGKA (1.000 / 1.234,56) ===== */
@@ -1283,6 +1325,10 @@ function restoreDraft(panelId, data) {
         c.checked = vals.indexOf(c.value) > -1;
       });
     }
+  });
+  // Tampilkan kembali kotak jenis legalitas / rincian / alasan sesuai pilihan dokumen yang dipulihkan
+  panel.querySelectorAll('#dokumen-list input[type=radio]:checked').forEach(function(r) {
+    r.dispatchEvent(new Event('change', {bubbles:true}));
   });
   syncKondisiRumah();
 }
