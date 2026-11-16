@@ -420,7 +420,7 @@ textarea,input,select,button{font-family:'Inter',system-ui,sans-serif}
 </style>
 <!-- UI-MOBILE CSS END -->
 </head>
-<body>
+<body data-no-home>
 
 
 <header class="site-header">
@@ -553,9 +553,6 @@ textarea,input,select,button{font-family:'Inter',system-ui,sans-serif}
  <div class="foto-status" id="foto-status-panel-0"></div>
  <button class="btn-draft" id="btnDraft" data-panel="panel-0">Simpan Draft</button>
  <button class="btn-send" id="btnKirim" data-panel="panel-0" data-form="Data Objek Perumahan - Pengembang">Kirim Data</button>
- </div>
- <div class="send-area">
- <a class="btn-home-bar" href="index.html"><span class="label">Home</span></a>
  </div>
  </div>
  </div>
@@ -1561,7 +1558,9 @@ function resetFormFields(panelId) {
   function build(){
     document.body.classList.add('uim');
     var hdr = $('.site-header'), inner = $('.site-header .header-inner');
-    if (inner && !$('.uim-ibtn', inner)){
+    // Form untuk pihak luar (mis. pengembang) memakai <body data-no-home>: tanpa tombol ke beranda/index
+    var noHome = document.body.hasAttribute('data-no-home');
+    if (inner && !noHome && !$('.uim-ibtn', inner)){
       var back = document.createElement('a'); back.className = 'uim-ibtn'; back.href = 'index.html'; back.setAttribute('aria-label','Kembali ke beranda'); back.textContent = '←'; back.title = 'Beranda';
       inner.insertBefore(back, inner.firstChild);
     }
