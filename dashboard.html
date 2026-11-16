@@ -1641,9 +1641,8 @@ function dokKeteranganVerif(hv, idx) {
 
 function renderVerifikasi() {
   const filter = document.getElementById('vfy-filter')?.value || '';
-  // Panel verifikasi pada form menulis hasilnya ke sheet Data Objek Perumahan.
-  // Sheet "Verifikasi Data Objek Perumahan" adalah sisa versi lama; dipakai
-  // hanya bila masih menyimpan baris.
+  // DB.verifikasi = data pengembang yang sudah digabung dengan hasil verifikasi
+  // dari tab "Verifikasi Data Objek Perumahan" (lihat gabungVerifikasi()).
   let data = (DB.verifikasi && DB.verifikasi.length) ? DB.verifikasi : DB.objek;
   if (filter) data = data.filter(r => r.t1_nama_perumahan === filter);
 
@@ -2590,7 +2589,29 @@ function normalisasiUtil(r, pre) {
   if (pipa) setJikaKosong(r, `${pre}_sanitasi`, pipa);
   setJikaKosong(r, `${pre}_sanitasi_kondisi`, r[`${pre}_airlimbah_kondisi`]);
 }
+// Hasil verifikasi kini disimpan Apps Script di tab "Verifikasi Data Objek Perumahan"
+// (satu baris per data pengembang). Hasil terbaru per ID SIKUMBANG ditempelkan ke data
+// pengembang, lalu DB.verifikasi memakai data gabungan itu supaya semua tampilan
+// (rekap dokumen, profil perumahan, CHV, Berita Acara) membaca sumber yang sama.
+const KOLOM_VERIFIKASI = ['Status Verifikasi','Catatan Verifikasi','Uraian Tidak Sesuai','Rekomendasi','Nama Verifikator','Tanggal Verifikasi','Checklist Detail','Catatan Bagian','Keterangan Tidak Sesuai'];
+function gabungVerifikasi() {
+  if (!DB.objek || !DB.objek.length || DB.verifikasi === DB.objek) return;
+  const terbaru = {};
+  (DB.verifikasi || []).forEach(v => {
+    if (!String(v['Status Verifikasi'] || '').trim()) return;
+    const id = String(v.t1_id_sikumbang || '').trim(), nm = String(v.t1_nama_perumahan || '').trim();
+    if (id) terbaru['id:' + id] = v;
+    if (nm) terbaru['nm:' + nm] = v;
+  });
+  DB.objek.forEach(o => {
+    const v = terbaru['id:' + String(o.t1_id_sikumbang || '').trim()] || terbaru['nm:' + String(o.t1_nama_perumahan || '').trim()];
+    if (v) KOLOM_VERIFIKASI.forEach(k => { if (v[k] !== undefined) o[k] = v[k]; });
+  });
+  DB.verifikasi = DB.objek;
+}
+
 function normalisasiDB() {
+  gabungVerifikasi();
   // PSU
   (DB.psu || []).forEach(r => {
     // Air bersih: sumber + infrastruktur (form terbaru) / jenis sistem + komponen (versi sebelumnya)
