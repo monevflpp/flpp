@@ -267,6 +267,8 @@
   .vd-doc-tidak{background:#FEE2E2;color:var(--red)}
   .vd-doc-kosong{background:var(--gray-100);color:var(--gray-400)}
   .vd-doc-alasan{font-size:11.5px;color:var(--gray-600);margin-top:3px;font-style:italic}
+  .vd-doc-rinci{margin-top:6px;padding:8px 10px;background:#F4F8FA;border:1px solid #D5E5EB;border-radius:10px;font-size:12px;color:var(--gray-800);display:grid;gap:4px}
+  .vd-doc-rinci a{color:var(--navy);font-weight:600;text-decoration:underline;word-break:break-all}
   .vd-doc-row.vd-tidaksesuai{background:#FEF2F2;margin:0 -10px;padding:9px 10px;border-radius:8px}
   .vd-doc-row{flex-wrap:wrap}
   .vd-doc-preview{width:100%;margin-top:6px}
@@ -1085,6 +1087,7 @@ function showToast(msg, isErr) {
     if (legAda === 'Ada') legRow.appendChild(vdDocPreview(vdFirstVal(row, [
       'Foto: Legalitas Penguasaan Tanah', 'Foto: legalitas_tanah', 'Foto: legalitas_tanah_ada', 'Foto: legalitas_tanah_foto', 'legalitas_tanah_url'
     ])));
+    if (legAda === 'Ada') { var rLeg = vdRincianDok(row, 'legalitas_tanah'); if (rLeg) legRow.appendChild(rLeg); }
     dokBox.appendChild(legRow);
     if (legAda==='Tidak Ada' && row['alasan_legalitas_tanah']){
       dokBox.appendChild(el('div',{cls:'vd-doc-alasan',text:'Alasan: '+row['alasan_legalitas_tanah']}));
@@ -1103,6 +1106,7 @@ function showToast(msg, isErr) {
       if (ada === 'Ada') r.appendChild(vdDocPreview(vdFirstVal(row, [
         'Foto: '+VD_DOK_LABELS[i], 'Foto: dok_'+i, 'Foto: dok_ada_'+i, 'Foto: dok_'+i+'_foto', 'dok_url_'+i
       ]) || vdFotoByPrefix(row, VD_DOK_LABELS[i])));
+      if (ada === 'Ada') { var rDok = vdRincianDok(row, 'dok_'+i); if (rDok) r.appendChild(rDok); }
       dokBox.appendChild(r);
       if (ada==='Tidak Ada' && row['alasan_dok_'+i]){
         dokBox.appendChild(el('div',{cls:'vd-doc-alasan',text:'Alasan: '+row['alasan_dok_'+i]}));
@@ -1114,6 +1118,27 @@ function showToast(msg, isErr) {
     if (row['Timestamp']){
       body.appendChild(el('div',{style:'margin-top:14px;font-size:11px;color:var(--gray-400)',text:'Dikirim oleh pengembang pada: '+row['Timestamp']}));
     }
+  }
+
+  // Rincian dokumen dari pengembang: nomor, tanggal, pengesah, link file besar, keterangan
+  function vdRincianDok(row, prefix){
+    var nomor = row[prefix+'_nomor'], tgl = row[prefix+'_tanggal'], sah = row[prefix+'_pengesah'],
+        link = String(row[prefix+'_link'] || '').trim(), ket = row[prefix+'_keterangan'];
+    if (!nomor && !tgl && !sah && !link && !ket) return null;
+    var box = el('div',{cls:'vd-doc-rinci'});
+    var bagian = [];
+    if (nomor) bagian.push('No. ' + nomor);
+    if (tgl)   { var tf = vdFmtVal(tgl), m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(tf)); bagian.push('Tgl. ' + (m ? m[3] + '/' + m[2] + '/' + m[1] : tf)); }
+    if (sah)   bagian.push('Disahkan: ' + sah);
+    if (bagian.length) box.appendChild(el('div',{text: bagian.join(' · ')}));
+    if (ket) box.appendChild(el('div',{cls:'vd-doc-alasan',text:'Keterangan: ' + ket}));
+    if (link) {
+      var a = el('a',{text:'🔗 Buka file dari link pengembang'});
+      a.href = /^https?:\/\//i.test(link) ? link : ('https://' + link);
+      a.target = '_blank'; a.rel = 'noopener';
+      box.appendChild(a);
+    }
+    return box;
   }
 
   function vdRenderVerifForm(row){

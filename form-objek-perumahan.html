@@ -139,8 +139,32 @@
   .doc-detail-grid .field>label{font-size:12px!important}
   .doc-detail-full{grid-column:1/-1}
   .doc-detail textarea{min-height:60px}
+  body.kirim-lock{overflow:hidden}
+  #kirim-overlay{display:none}
+  #kirim-overlay.show{display:flex;position:fixed;inset:0;z-index:9999;background:rgba(10,30,40,.55);align-items:center;justify-content:center;padding:16px}
+  #kirim-overlay.show.page{background:var(--cream,#F4F1E6);align-items:flex-start;overflow:auto}
+  .ko-card{background:#fff;border-radius:20px;padding:28px 22px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .ko-card h2{font-family:'Plus Jakarta Sans',sans-serif;color:var(--navy);font-size:18px;margin:14px 0 6px}
+  .ko-step{font-size:13px;color:var(--gray-600);min-height:34px;word-break:break-word}
+  .ko-bar{height:8px;background:#EEE9DA;border-radius:99px;overflow:hidden;margin:10px 0 12px}.ko-bar i{display:block;height:100%;background:var(--navy);border-radius:99px;transition:width .4s}
+  .ko-warn{font-size:12px;color:#B45309;background:#FEF4E2;border-radius:10px;padding:8px 10px}
+  .ko-spin{width:46px;height:46px;border-radius:50%;border:4px solid #E7F1F4;border-top-color:var(--navy);margin:0 auto;animation:kospin 1s linear infinite}
+  @keyframes kospin{to{transform:rotate(360deg)}}
+  .ko-page{background:#fff;border-radius:22px;max-width:560px;width:100%;margin:6vh auto 24px;padding:34px 24px 26px;text-align:center;box-shadow:0 6px 24px rgba(60,50,20,.08);border-top:8px solid var(--navy)}
+  .ko-ok{width:76px;height:76px;border-radius:50%;background:#10B981;color:#fff;font-size:44px;font-weight:800;line-height:76px;margin:0 auto 14px}
+  .ko-ok.bad{background:#EF4444}
+  .ko-page h1{font-family:'Plus Jakarta Sans',sans-serif;color:var(--navy);font-size:22px;margin:0 0 8px}
+  .ko-lead{font-size:14px;color:var(--gray-800);line-height:1.55;margin:0 0 16px}
+  .ko-tbl{width:100%;border-collapse:collapse;text-align:left;font-size:13px;margin:0 0 14px}
+  .ko-tbl td{padding:9px 10px;border-bottom:1px solid #EEE9DA;vertical-align:top}.ko-tbl td:first-child{color:var(--gray-600);width:42%}
+  .ko-tbl code{font-size:12px;word-break:break-all}
+  .ko-note{font-size:12.5px;background:#FFFBF0;border:1px solid #EADFB8;border-radius:12px;padding:10px 12px;margin:0 0 16px;line-height:1.5}
+  .ko-note.ok{background:#E8F8F1;border-color:#A7E3CB}
+  .ko-btn{display:block;width:100%;min-height:48px;border:none;border-radius:14px;background:var(--navy);color:#fff;font:700 14px 'Plus Jakarta Sans',sans-serif;cursor:pointer;margin-top:8px}
+  .ko-btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
   .doc-detail-hint{font-size:11.5px;color:var(--gray-600);margin:-4px 0 10px;line-height:1.45}
   .doc-detail .req{color:var(--red)}
+  .doc-detail .field.link-sorot input{border-color:#F59E0B!important;box-shadow:0 0 0 3px rgba(245,158,11,.2)!important;background:#FFFBF0!important}
   .doc-detail input.doc-kosong{border-color:var(--red)!important;background:#FFF5F5!important}
   @media(max-width:640px){.doc-detail-grid{grid-template-columns:1fr}}
   .doc-item{display:flex;align-items:center;gap:6px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:999px;padding:5px 12px;font-size:11px;max-width:220px}
@@ -564,6 +588,9 @@ textarea,input,select,button{font-family:'Inter',system-ui,sans-serif}
 <div id="toast"></div>
 
 <script>
+// Batas TEKNIS Apps Script (± 50 MB per kiriman; file membengkak ± 35% saat dikirim).
+// Bukan batas kebijakan: file yang lebih besar diarahkan memakai kolom Link File.
+var MAX_FILE_MB = 35;
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbyHIY3ypJqDtF8PdJbZbaRI4pH8WoqU1l6Lj8bdHqln1bAdfMZxR3RVFLd3rcm16ois/exec';
 
 var fotoState   = {};
@@ -657,6 +684,14 @@ function processAndUploadFiles(files, fieldName, panelId, previewEl, isDocMode) 
   var ts       = getSessionTimestamp(panelId);
   var list     = ensureFotoState(panelId);
   Array.from(files).forEach(function(file) {
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      // Terlalu besar untuk jalur unggah Apps Script: arahkan ke kolom Link File dokumen ini
+      var wrap = previewEl && previewEl.closest ? previewEl.closest('.doc-wrapper') : null;
+      var linkInp = wrap ? wrap.querySelector('input[id$="_link"]') : null;
+      showToast('📎 File "' + file.name + '" (' + (file.size/1048576).toFixed(0) + ' MB) terlalu besar untuk diunggah lewat form. Unggah ke Google Drive/Dropbox, lalu tempel link-nya di kolom "Link File".', true);
+      if (linkInp) { linkInp.closest('.field').classList.add('link-sorot'); setTimeout(function(){ linkInp.scrollIntoView({behavior:'smooth', block:'center'}); linkInp.focus(); }, 300); }
+      return;
+    }
     var isImg = file.type.startsWith('image/');
     var reader = new FileReader();
     reader.onload = function(e) {
@@ -834,6 +869,12 @@ window.addEventListener('load', function() {
       inp.addEventListener('change', function(){ inp.classList.remove('doc-kosong'); });
       f.appendChild(inp); grid.appendChild(f);
     });
+    var fl = el('div', {cls:'field doc-detail-full'});
+    fl.appendChild(el('label', {text:'Link File (opsional — untuk file berukuran besar)'}));
+    var li = el('input'); li.type = 'text'; li.inputMode = 'url'; li.id = prefix + '_link';
+    li.placeholder = 'Tempel link Google Drive / Dropbox (pastikan bisa dibuka siapa saja yang memiliki link)';
+    li.addEventListener('input', function(){ li.closest('.field').classList.remove('link-sorot'); });
+    fl.appendChild(li); grid.appendChild(fl);
     var fk = el('div', {cls:'field doc-detail-full'});
     fk.appendChild(el('label', {text:'Keterangan Dokumen Lainnya (opsional)'}));
     var ta = el('textarea'); ta.id = prefix + '_keterangan'; ta.placeholder = 'Mis. masa berlaku, revisi, catatan lain terkait dokumen...';
@@ -1242,15 +1283,150 @@ async function submitForm(panelId, formName, btn) {
     } else {
       var gsUrl = GAS_URL;
       if (!gsUrl || gsUrl.indexOf('GANTI_DENGAN_URL_ANDA') > -1) { showToast('⚠️ URL Apps Script belum dikonfigurasi.', true); btn.textContent='📤 Kirim Data'; btn.disabled=false; return; }
-      var iid='ifr_'+Date.now(); var ifr=el('iframe'); ifr.name=iid; ifr.style.display='none';
-      var frm=el('form'); frm.method='POST'; frm.action=gsUrl; frm.target=iid; frm.style.display='none';
-      var inp2=el('input'); inp2.type='hidden'; inp2.name='payload'; inp2.value=JSON.stringify(payload);
-      frm.appendChild(inp2); document.body.appendChild(ifr); document.body.appendChild(frm);
-      ifr.onload=function(){ showToast('✅ Data & foto berhasil dikirim!'); btn.textContent='📤 Kirim Data'; btn.disabled=false; resetFormFields(panelId); window.scrollTo({top:0,behavior:'smooth'}); setTimeout(function(){try{document.body.removeChild(frm);document.body.removeChild(ifr);}catch(e){}},1000); };
-      setTimeout(function(){try{document.body.removeChild(frm);document.body.removeChild(ifr);}catch(e){} showToast('✅ Data terkirim!'); btn.textContent='📤 Kirim Data'; btn.disabled=false; resetFormFields(panelId); },30000);
-      frm.submit();
+      kirimAndal(panelId, formName, btn, data);
     }
   } catch(err) { console.error(err); showToast('❌ Gagal: '+err.message,true); btn.textContent='📤 Kirim Data'; btn.disabled=false; }
+}
+
+/* ================================================================
+   PENGIRIMAN ANDAL + HALAMAN KONFIRMASI (17 Nov 2026)
+   1. Isian disimpan dulu sebagai draft di perangkat.
+   2. Dokumen diunggah SATU PER SATU (bukan sekaligus), dengan coba ulang otomatis.
+   3. Data dikirim dan BALASAN server dibaca: halaman "Data Berhasil Terkirim" hanya
+      muncul bila server menyatakan data tersimpan. Bila gagal, isian TIDAK dihapus.
+   ================================================================ */
+function postGAS_(body, asForm) {
+  var ctl = ('AbortController' in window) ? new AbortController() : null;
+  var tm = ctl ? setTimeout(function(){ ctl.abort(); }, 6 * 60 * 1000) : null;
+  var opt = { method:'POST', redirect:'follow', signal: ctl ? ctl.signal : undefined };
+  if (asForm) { opt.body = new URLSearchParams({ payload: JSON.stringify(body) }); }
+  else { opt.body = JSON.stringify(body); opt.headers = { 'Content-Type':'text/plain;charset=utf-8' }; }
+  return fetch(GAS_URL, opt).then(function(r){
+    if (tm) clearTimeout(tm);
+    if (!r.ok) throw new Error('Server membalas ' + r.status);
+    return r.text();
+  }).then(function(t){
+    try { return JSON.parse(t); } catch(e) { throw new Error('Balasan server tidak dikenali.'); }
+  }, function(err){
+    if (tm) clearTimeout(tm);
+    throw new Error(err && err.name === 'AbortError' ? 'Waktu pengiriman habis (sinyal lemah?).' : 'Koneksi internet terputus atau server tidak dapat dihubungi.');
+  });
+}
+function bukanAksiDikenal_(res) { return res && res.ok === false && /Unknown action|Request tidak dikenali/i.test(res.message || ''); }
+
+function overlayKirim_(mode, opt) {
+  var ov = document.getElementById('kirim-overlay');
+  if (!ov) {
+    ov = el('div'); ov.id = 'kirim-overlay'; document.body.appendChild(ov);
+  }
+  opt = opt || {};
+  document.body.classList.toggle('kirim-lock', mode !== 'tutup');
+  if (mode === 'tutup') { ov.className = ''; ov.innerHTML = ''; return; }
+  if (mode === 'proses') {
+    ov.className = 'show';
+    ov.innerHTML = '<div class="ko-card"><div class="ko-spin"></div><h2>Mengirim data…</h2>'
+      + '<p class="ko-step" id="ko-step">' + (opt.step || 'Menyiapkan') + '</p>'
+      + '<div class="ko-bar"><i id="ko-bar" style="width:' + (opt.pct || 3) + '%"></i></div>'
+      + '<p class="ko-warn">Jangan tutup atau pindah halaman sampai muncul konfirmasi.</p></div>';
+    return;
+  }
+  if (mode === 'progres') {
+    var st = document.getElementById('ko-step'), br = document.getElementById('ko-bar');
+    if (st) st.textContent = opt.step; if (br) br.style.width = Math.max(3, Math.min(100, opt.pct)) + '%';
+    return;
+  }
+  if (mode === 'sukses') {
+    ov.className = 'show page';
+    ov.innerHTML = '<div class="ko-page"><div class="ko-ok">✓</div>'
+      + '<h1>Data Berhasil Terkirim</h1>'
+      + '<p class="ko-lead">Terima kasih. Data perumahan Anda sudah tersimpan di database Direktorat Pembiayaan Perumahan Perdesaan, Kementerian PKP.</p>'
+      + '<table class="ko-tbl">'
+      + '<tr><td>Nama Perumahan</td><td><b>' + esc_(opt.nama || '-') + '</b></td></tr>'
+      + '<tr><td>ID SIKUMBANG</td><td><b>' + esc_(opt.id || '-') + '</b></td></tr>'
+      + '<tr><td>Diisi oleh</td><td>' + esc_(opt.pengisi || '-') + '</td></tr>'
+      + '<tr><td>Waktu kirim</td><td>' + esc_(opt.waktu) + '</td></tr>'
+      + '<tr><td>Dokumen terunggah</td><td>' + opt.jmlDok + ' file</td></tr>'
+      + '<tr><td>Nomor referensi</td><td><code>' + esc_(opt.ref) + '</code></td></tr>'
+      + '</table>'
+      + '<p class="ko-note">📸 Simpan tangkapan layar (screenshot) halaman ini sebagai bukti pengiriman.</p>'
+      + '<button type="button" class="ko-btn" id="ko-baru">Isi Form untuk Perumahan Lain</button></div>';
+    document.getElementById('ko-baru').onclick = function(){ overlayKirim_('tutup'); window.scrollTo({top:0}); };
+    window.scrollTo({top:0});
+    return;
+  }
+  if (mode === 'gagal') {
+    ov.className = 'show page';
+    ov.innerHTML = '<div class="ko-page"><div class="ko-ok bad">!</div>'
+      + '<h1>Data Belum Terkirim</h1>'
+      + '<p class="ko-lead">' + esc_(opt.pesan || 'Terjadi kendala saat mengirim.') + '</p>'
+      + '<p class="ko-note ok">✓ Isian dan dokumen Anda <b>masih tersimpan</b> di halaman ini. Jangan tutup halaman, lalu tekan <b>Coba Kirim Lagi</b>' + (opt.sudahUpload ? ' (' + opt.sudahUpload + ' dokumen yang sudah terunggah tidak akan diunggah ulang)' : '') + '.</p>'
+      + '<button type="button" class="ko-btn" id="ko-ulang">Coba Kirim Lagi</button>'
+      + '<button type="button" class="ko-btn ghost" id="ko-kembali">Kembali ke Form</button></div>';
+    document.getElementById('ko-ulang').onclick = function(){ overlayKirim_('tutup'); opt.ulang(); };
+    document.getElementById('ko-kembali').onclick = function(){ overlayKirim_('tutup'); };
+    return;
+  }
+}
+function esc_(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+async function kirimAndal(panelId, formName, btn, data) {
+  var resetBtn = function(){ btn.textContent = '📤 Kirim Data'; btn.disabled = false; };
+  // 1) simpan draft dulu (tanpa pesan), supaya isian aman bila halaman tertutup
+  try { localStorage.setItem(DRAFT_KEY_PREFIX + panelId, JSON.stringify({ data: collectData(panelId), savedAt: new Date().toLocaleString('id-ID') })); } catch(e) {}
+  var list = (fotoState[panelId] || []);
+  var antre = list.filter(function(it){ return !(it.status === 'success' && it.url); });
+  var kunci = { 'Form': formName, 't1_id_sikumbang': data['t1_id_sikumbang'] || '', 't1_nama_perumahan': data['t1_nama_perumahan'] || '' };
+  var modeLama = false;
+  overlayKirim_('proses', { step: antre.length ? 'Menyiapkan ' + antre.length + ' dokumen…' : 'Mengirim data…', pct: 3 });
+  try {
+    // 2) unggah dokumen satu per satu
+    for (var i = 0; i < antre.length && !modeLama; i++) {
+      var it = antre[i];
+      overlayKirim_('progres', { step: 'Mengunggah dokumen ' + (i+1) + ' dari ' + antre.length + ': ' + it.fileName, pct: 5 + 80 * i / antre.length });
+      var res = null, errTerakhir = null;
+      for (var coba = 1; coba <= 3; coba++) {
+        try {
+          res = await postGAS_({ action:'uploadFile', formName: formName, data: kunci,
+                                 file: { fieldName: it.fieldName, fileName: it.fileName, mimeType: it.mimeType, base64: it.base64 } });
+          if (res && res.ok) break;
+          if (bukanAksiDikenal_(res)) break;
+          errTerakhir = new Error(res && res.message ? res.message : 'Gagal mengunggah ' + it.fileName);
+        } catch(e) { errTerakhir = e; }
+        if (coba < 3) await new Promise(function(r){ setTimeout(r, 1500 * coba); });
+      }
+      if (bukanAksiDikenal_(res)) { modeLama = true; break; }          // Apps Script versi lama
+      if (!res || !res.ok) throw errTerakhir || new Error('Gagal mengunggah ' + it.fileName);
+      it.status = 'success'; it.url = res.url;
+    }
+    // 3) kirim data + daftar link dokumen, lalu baca balasannya
+    overlayKirim_('progres', { step: 'Menyimpan data ke database…', pct: 90 });
+    var fp = buildFotoPayload(panelId);
+    var hasil;
+    if (!modeLama) {
+      hasil = await postGAS_({ action:'submit', payload: { data: data, fotoUrls: fp.fotoUrls, fotos: [] } });
+      if (bukanAksiDikenal_(hasil)) modeLama = true;
+    }
+    if (modeLama) {
+      // Cadangan untuk Apps Script versi lama: kirim seperti dulu, tapi balasannya tetap dibaca
+      hasil = await postGAS_({ data: data, fotoUrls: fp.fotoUrls, fotos: fp.fotos }, true);
+    }
+    if (!(hasil && (hasil.success === true || hasil.ok === true))) {
+      throw new Error((hasil && hasil.message) ? hasil.message : 'Server tidak mengonfirmasi data tersimpan.');
+    }
+    // 4) berhasil
+    var jmlDok = (fotoState[panelId] || []).length;
+    var info = { nama: data['t1_nama_perumahan'], id: data['t1_id_sikumbang'], pengisi: data['pengisi_nama'],
+                 waktu: new Date().toLocaleString('id-ID', {dateStyle:'long', timeStyle:'short'}) + ' WIB',
+                 jmlDok: jmlDok, ref: (data['t1_id_sikumbang'] || 'FLPP') + ' / ' + data['Timestamp'] };
+    resetFormFields(panelId);   // juga menghapus draft
+    resetBtn();
+    overlayKirim_('sukses', info);
+  } catch (err) {
+    resetBtn();
+    var sudah = (fotoState[panelId] || []).filter(function(x){ return x.status === 'success' && x.url; }).length;
+    overlayKirim_('gagal', { pesan: (err && err.message ? err.message : String(err)) + ' Data belum masuk ke database.',
+                             sudahUpload: sudah, ulang: function(){ btn.click(); } });
+  }
 }
 
 function showToast(msg, isErr) {
