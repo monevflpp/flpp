@@ -3395,6 +3395,15 @@ function showToast(msg, isErr) {
       var namaEl = document.getElementById(prefix+'_nama_perumahan');
       if (namaEl) namaEl.value = row['t1_nama_perumahan'] || '';
 
+      // Luas perumahan dari data pengembang (tetap bisa dikoreksi surveyor)
+      var luasEl = document.getElementById(prefix+'_luas_perumahan');
+      if (luasEl) {
+        var lv = row['t1_luas_perumahan'];
+        // angka dari spreadsheet (mis. 12500.5) vs teks berformat (mis. "12.500,5")
+        var luasRaw = typeof lv === 'number' ? String(lv) : formatRibuan_toRaw(lv == null ? '' : lv);
+        luasEl.value = String(luasRaw).trim() ? formatRibuan_toDisplay(luasRaw) : '';
+      }
+
       // Ambil sesuai kolom form objek perumahan: t1_provinsi, t1_kabupaten, t1_alamat
       var alamatParts = sikParseAlamat(row['t1_alamat']);
       var provVal = String(row['t1_provinsi'] || '').trim() || alamatParts.provinsi;
