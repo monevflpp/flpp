@@ -1327,7 +1327,7 @@ function renderPerumahan() {
       <div class="p-card-row">Ready Stock <span>${fmt(r.status_subsidi_readystock)}</span></div>
       <div class="p-card-row">Rumah Subsidi Dibangun <span>${r.kondisi_pembangunan ? r.kondisi_pembangunan + (r.kondisi_pembangunan === 'Ya' ? ' (' + fmt(r.jumlah_unit_pembangunan) + ' unit)' : '') : '-'}</span></div>
       <div class="p-card-row">Rumah Subsidi Dihuni <span>${r.kondisi_dihuni ? r.kondisi_dihuni + (r.kondisi_dihuni === 'Ya' ? ' (' + fmt(r.jumlah_unit_dihuni) + ' unit)' : '') : '-'}</span></div>
-      <div class="p-card-row">Verifikasi Data Dukung <span>${hasilVerifikasi(r).status || 'Belum Diverifikasi'}</span></div>
+      <div class="p-card-row">Verifikasi Data Dukung <span>${hasilVerifikasi(r).status || 'Belum Diverifikasi'}</span></div>${hasilVerifikasi(r).susulanBaru ? '<div class="p-card-row" style="color:#9A5B00;font-weight:600">📎 Ada dokumen susulan — perlu dicek</div>' : ''}
       <div class="p-card-cta">📄 Klik untuk Laporan Lengkap</div>
     </div>`;
   }).join('');
@@ -1613,7 +1613,11 @@ function hasilVerifikasi(obj) {
     tanggal:     obj['Tanggal Verifikasi'] || '',
     checklist:   checklist,
     catatanBagian: amanParse(obj['Catatan Bagian']),
-    keterangan:  amanParse(obj['Keterangan Tidak Sesuai'])
+    keterangan:  amanParse(obj['Keterangan Tidak Sesuai']),
+    // dokumen susulan dari pengembang yang belum dilihat pada verifikasi terakhir
+    susulan:     String(obj['Susulan Terakhir'] || '').replace(/^'/, '').trim(),
+    susulanBaru: (function(){ const t = String(obj['Susulan Terakhir'] || '').replace(/^'/, '').trim();
+                   return !!t && t !== String(obj['Susulan Dicek'] || '').replace(/^'/, '').trim(); })()
   };
 }
 
@@ -2243,6 +2247,7 @@ function showReport(idx) {
       ${fld('Tanggal Verifikasi', hv.tanggal)}
       ${fld('Surveyor Pendata', (vfy && (vfy.surveyor0||vfy['Nama Surveyor'])) || '-')}
     </div>`;
+    if (hv.susulan) html += `<div style="margin:8px 0;padding:10px 14px;border-radius:10px;font-size:13px;${hv.susulanBaru ? 'background:#FFF4E5;border:1px solid #F5B54A;color:#7A4A00' : 'background:#F4F8FA;border:1px solid #D5E5EB;color:#555'}">📎 ${hv.susulanBaru ? '<b>Ada dokumen susulan — perlu dicek</b> (dikirim ' + hv.susulan + ')' : 'Dokumen susulan terakhir (' + hv.susulan + ') sudah dicek'}${obj['Riwayat Susulan'] ? '<br><small>' + String(obj['Riwayat Susulan']).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\n/g, '<br>') + '</small>' : ''}</div>`;
     if (hv.formatBaru) {
       if (hv.uraian) html += `<div class="report-grid">${fld('Yang Tidak Sesuai', hv.uraian)}</div>`;
       if (hv.rekomendasi) html += `<div class="report-grid">${fld('Rekomendasi', hv.rekomendasi)}</div>`;
@@ -2593,7 +2598,7 @@ function normalisasiUtil(r, pre) {
 // (satu baris per data pengembang). Hasil terbaru per ID SIKUMBANG ditempelkan ke data
 // pengembang, lalu DB.verifikasi memakai data gabungan itu supaya semua tampilan
 // (rekap dokumen, profil perumahan, CHV, Berita Acara) membaca sumber yang sama.
-const KOLOM_VERIFIKASI = ['Status Verifikasi','Catatan Verifikasi','Uraian Tidak Sesuai','Rekomendasi','Nama Verifikator','Tanggal Verifikasi','Checklist Detail','Catatan Bagian','Keterangan Tidak Sesuai'];
+const KOLOM_VERIFIKASI = ['Status Verifikasi','Catatan Verifikasi','Uraian Tidak Sesuai','Rekomendasi','Nama Verifikator','Tanggal Verifikasi','Checklist Detail','Catatan Bagian','Keterangan Tidak Sesuai','Susulan Dicek'];
 function gabungVerifikasi() {
   if (!DB.objek || !DB.objek.length || DB.verifikasi === DB.objek) return;
   const terbaru = {};

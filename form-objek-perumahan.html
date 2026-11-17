@@ -139,6 +139,35 @@
   .doc-detail-grid .field>label{font-size:12px!important}
   .doc-detail-full{grid-column:1/-1}
   .doc-detail textarea{min-height:60px}
+
+  /* ===== Pilihan mode & Dokumen Susulan ===== */
+  .mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+  .mode-switch button{border:1.5px solid var(--gray-200);background:#fff;border-radius:16px;padding:12px 10px;text-align:left;cursor:pointer;font-family:inherit;display:flex;gap:10px;align-items:flex-start}
+  .mode-switch button b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:var(--gray-800)}
+  .mode-switch button span.d{display:block;font-size:11.5px;color:var(--gray-400);margin-top:2px;line-height:1.35}
+  .mode-switch button .ic{font-size:22px;line-height:1}
+  .mode-switch button.on{border-color:var(--navy);background:#E7F1F4;box-shadow:0 0 0 3px rgba(14,91,115,.08)}
+  .mode-switch button.on b{color:var(--navy)}
+  .sus-cari{display:flex;gap:8px;align-items:stretch}.sus-cari input{flex:1;min-width:0}
+  .sus-cari button{border:none;border-radius:12px;background:var(--navy);color:#fff;font-weight:700;padding:0 18px;min-height:46px;cursor:pointer;font-family:inherit}
+  .sus-hasil{display:none;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.5}
+  .sus-hasil.ok{display:block;background:#E8F8F1;border:1px solid #A7E3CB}.sus-hasil.err{display:block;background:#FDECEC;border:1px solid #F8C9C9;color:#B91C1C}
+  .sus-hasil.busy{display:block;background:#F4F8FA;border:1px solid #D5E5EB;color:var(--navy)}
+  .sus-hasil b{font-size:14px}
+  .sus-tahap{font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;font-weight:700;color:var(--gray-600);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 4px}
+  .sus-dok{border:1.5px solid var(--gray-200);border-radius:14px;padding:10px 12px;margin:0 0 8px;background:#fff}
+  .sus-dok.on{border-color:var(--navy);background:#FAFCFD}
+  .sus-dok-head{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+  .sus-dok-head input{width:22px;height:22px;margin:1px 0 0;flex-shrink:0;accent-color:var(--navy)}
+  .sus-dok-head .t{flex:1;font-size:13px;font-weight:600;color:var(--gray-800);line-height:1.4}
+  .sus-tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:99px;padding:2px 8px;margin-top:4px}
+  .sus-tag.ada{background:#E8F8F1;color:#047857}.sus-tag.tidak{background:#FDECEC;color:#B91C1C}.sus-tag.kosong{background:#F1EFE7;color:var(--gray-600)}
+  .sus-body{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--gray-200)}
+  .sus-dok.on .sus-body{display:grid;gap:10px}
+  .sus-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  @media(max-width:640px){.sus-grid{grid-template-columns:1fr}}
+  .sus-full{grid-column:1/-1}
+  .sus-kosong-info{font-size:12.5px;color:var(--gray-600);font-style:italic}
   body.kirim-lock{overflow:hidden}
   #kirim-overlay{display:none}
   #kirim-overlay.show{display:flex;position:fixed;inset:0;z-index:9999;background:rgba(10,30,40,.55);align-items:center;justify-content:center;padding:16px}
@@ -1338,19 +1367,17 @@ function overlayKirim_(mode, opt) {
   if (mode === 'sukses') {
     ov.className = 'show page';
     ov.innerHTML = '<div class="ko-page"><div class="ko-ok">✓</div>'
-      + '<h1>Data Berhasil Terkirim</h1>'
-      + '<p class="ko-lead">Terima kasih. Data perumahan Anda sudah tersimpan di database Direktorat Pembiayaan Perumahan Perdesaan, Kementerian PKP.</p>'
+      + '<h1>' + esc_(opt.judul || 'Data Berhasil Terkirim') + '</h1>'
+      + '<p class="ko-lead">' + esc_(opt.lead || 'Terima kasih. Data perumahan Anda sudah tersimpan di database Direktorat Pembiayaan Perumahan Perdesaan, Kementerian PKP.') + '</p>'
       + '<table class="ko-tbl">'
-      + '<tr><td>Nama Perumahan</td><td><b>' + esc_(opt.nama || '-') + '</b></td></tr>'
-      + '<tr><td>ID SIKUMBANG</td><td><b>' + esc_(opt.id || '-') + '</b></td></tr>'
-      + '<tr><td>Diisi oleh</td><td>' + esc_(opt.pengisi || '-') + '</td></tr>'
-      + '<tr><td>Waktu kirim</td><td>' + esc_(opt.waktu) + '</td></tr>'
-      + '<tr><td>Dokumen terunggah</td><td>' + opt.jmlDok + ' file</td></tr>'
-      + '<tr><td>Nomor referensi</td><td><code>' + esc_(opt.ref) + '</code></td></tr>'
+      + (opt.baris || [['Nama Perumahan', '<b>' + esc_(opt.nama || '-') + '</b>'], ['ID SIKUMBANG', '<b>' + esc_(opt.id || '-') + '</b>'],
+                       ['Diisi oleh', esc_(opt.pengisi || '-')], ['Waktu kirim', esc_(opt.waktu)],
+                       ['Dokumen terunggah', opt.jmlDok + ' file'], ['Nomor referensi', '<code>' + esc_(opt.ref) + '</code>']])
+          .map(function(b){ return '<tr><td>' + b[0] + '</td><td>' + b[1] + '</td></tr>'; }).join('')
       + '</table>'
       + '<p class="ko-note">📸 Simpan tangkapan layar (screenshot) halaman ini sebagai bukti pengiriman.</p>'
-      + '<button type="button" class="ko-btn" id="ko-baru">Isi Form untuk Perumahan Lain</button></div>';
-    document.getElementById('ko-baru').onclick = function(){ overlayKirim_('tutup'); window.scrollTo({top:0}); };
+      + '<button type="button" class="ko-btn" id="ko-baru">' + esc_(opt.tombol || 'Isi Form untuk Perumahan Lain') + '</button></div>';
+    document.getElementById('ko-baru').onclick = function(){ overlayKirim_('tutup'); if (opt.setelah) opt.setelah(); window.scrollTo({top:0}); };
     window.scrollTo({top:0});
     return;
   }
@@ -1558,6 +1585,274 @@ function resetFormFields(panelId) {
   resetFotoState(panelId);
   clearDraft(panelId); // Hapus draft setelah data berhasil terkirim
 }
+</script>
+
+<script>
+/* ================================================================
+   DOKUMEN SUSULAN (17 Nov 2026)
+   Pengembang yang sudah pernah mengisi cukup mencari ID SIKUMBANG-nya lalu
+   mengunggah dokumen yang menyusul. Data lain tidak perlu diisi ulang.
+   Link khusus: form-objek-perumahan.html?susulan
+   ================================================================ */
+(function(){
+  var SUS_PANEL = 'panel-susulan';
+  var FORM_NAME = 'Data Objek Perumahan - Pengembang';
+  var DOKS = [
+    {tahap:'Tahap Awal/Persiapan', key:'legalitas_tanah', ada:'legalitas_tanah_ada', label:'Legalitas Penguasaan Tanah', legal:true},
+    {tahap:'Tahap Perencanaan', key:'dok_1', ada:'dok_ada_1', label:'Gambar Site Plan Perumahan'},
+    {tahap:'Tahap Perencanaan', key:'dok_2', ada:'dok_ada_2', label:'DED (Detailed Engineering Design) Perumahan'},
+    {tahap:'Tahap Perencanaan', key:'dok_3', ada:'dok_ada_3', label:'Rencana Kerja dan Syarat-syarat (RKS)'},
+    {tahap:'Tahap Perencanaan', key:'dok_4', ada:'dok_ada_4', label:'Brosur Pemasaran (Spesifikasi Rumah/Floor Plan)'},
+    {tahap:'Tahap Perizinan', key:'dok_5', ada:'dok_ada_5', label:'Nomor Induk Berusaha (NIB)'},
+    {tahap:'Tahap Perizinan', key:'dok_6', ada:'dok_ada_6', label:'Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR)'},
+    {tahap:'Tahap Perizinan', key:'dok_7', ada:'dok_ada_7', label:'Persetujuan Lingkungan (AMDAL/UKL-UPL/SPPL atau Dokumen Lain Sesuai Ketentuan)'},
+    {tahap:'Tahap Perizinan', key:'dok_8', ada:'dok_ada_8', label:'Izin Mendirikan Bangunan (IMB)/Persetujuan Bangunan Gedung (PBG)'},
+    {tahap:'Tahap Pelaksanaan', key:'dok_9', ada:'dok_ada_9', label:'As Built Drawing'},
+    {tahap:'Tahap Pasca Konstruksi', key:'dok_10', ada:'dok_ada_10', label:'Sertifikat Laik Fungsi (SLF)'},
+    {tahap:'Tahap Pasca Konstruksi', key:'dok_11', ada:'dok_ada_11', label:'Surat Keterangan Kelaikan Fungsi Bangunan Rumah oleh Pengawas Konstruksi/Manajemen Konstruksi'}
+  ];
+  var JENIS_LEGAL = ['Sertifikat Hak Milik (SHM)','Hak Guna Bangunan (HGB)','Hak Pengelolaan (HPL)','Tanah Negara','Dokumen Penguasaan Tanah Lainnya yang Sah','Lainnya'];
+  var dataLama = null;   // baris pengembang yang ditemukan
+
+  function $(id){ return document.getElementById(id); }
+  function inp(id, ph, type){ var i = el('input'); i.type = type || 'text'; i.id = id; if (ph) i.placeholder = ph; return i; }
+  function fld(label, child, cls, wajib){
+    var f = el('div', {cls:'field' + (cls ? ' ' + cls : '')});
+    var l = el('label', {text: label + (wajib ? ' ' : '')}); if (wajib) l.appendChild(el('span', {cls:'req', text:'*'}));
+    f.appendChild(l); f.appendChild(child); return f;
+  }
+  function tglIso(v){
+    var t = String(v || '').trim(); if (!t) return '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t.slice(0, 10);
+    var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(t);
+    return m ? m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2) : '';
+  }
+  function jmlFile(v){ return String(v || '').split(/[,\s]+/).filter(function(x){ return /^https?:/.test(x); }).length; }
+
+  function buildPanel(){
+    var main = document.querySelector('.main'), p0 = $('panel-0');
+    if (!main || !p0 || $(SUS_PANEL)) return;
+
+    // Pilihan mode di atas form
+    var sw = el('div', {cls:'mode-switch', id:'mode-switch'});
+    sw.innerHTML = '<button type="button" data-m="baru" class="on"><span class="ic">📝</span><span><b>Pengisian Baru</b><span class="d">Pertama kali mengisi data perumahan</span></span></button>'
+                 + '<button type="button" data-m="susulan"><span class="ic">📎</span><span><b>Kirim Dokumen Susulan</b><span class="d">Sudah pernah mengisi, tinggal menambah dokumen</span></span></button>';
+    main.insertBefore(sw, main.firstChild);
+    sw.addEventListener('click', function(e){ var b = e.target.closest('button[data-m]'); if (b) setMode(b.getAttribute('data-m')); });
+
+    var pn = el('div', {cls:'form-panel', id:SUS_PANEL}); pn.style.display = 'none';
+    var body = el('div', {cls:'panel-body'}); pn.appendChild(body);
+
+    // 1. cari data
+    var s1 = el('div', {cls:'section'});
+    s1.appendChild(el('div', {cls:'section-header', html:'<span class="section-num">1</span><h3>Cari Data Perumahan</h3>'}));
+    var b1 = el('div', {cls:'section-body'});
+    var cari = el('div', {cls:'sus-cari'});
+    var idInp = inp('sus_id', 'Ketik ID Lokasi SIKUMBANG yang dulu diisi'); idInp.autocomplete = 'off';
+    var cBtn = el('button', {type:'button', text:'Cari'});
+    cari.appendChild(idInp); cari.appendChild(cBtn);
+    b1.appendChild(fld('ID Lokasi SIKUMBANG', cari, '', true));
+    b1.appendChild(el('div', {cls:'sus-hasil', id:'sus_hasil'}));
+    s1.appendChild(b1); body.appendChild(s1);
+    cBtn.addEventListener('click', cariData);
+    idInp.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); cariData(); } });
+
+    // 2. pengirim
+    var s2 = el('div', {cls:'section', id:'sus_sec_pengirim'}); s2.style.display = 'none';
+    s2.appendChild(el('div', {cls:'section-header', html:'<span class="section-num">2</span><h3>Pengirim Dokumen Susulan</h3>'}));
+    var b2 = el('div', {cls:'section-body'});
+    b2.appendChild(fld('Nama Lengkap', inp('sus_nama', 'Nama pengirim'), '', true));
+    b2.appendChild(fld('Jabatan', inp('sus_jabatan', 'Jabatan di perusahaan')));
+    var tel = inp('sus_telepon', 'Nomor HP/WhatsApp', 'tel'); tel.inputMode = 'tel';
+    b2.appendChild(fld('Nomor Telepon', tel));
+    s2.appendChild(b2); body.appendChild(s2);
+
+    // 3. dokumen
+    var s3 = el('div', {cls:'section', id:'sus_sec_dok'}); s3.style.display = 'none';
+    s3.appendChild(el('div', {cls:'section-header', html:'<span class="section-num">3</span><h3>Pilih Dokumen Susulan</h3>'}));
+    var b3 = el('div', {cls:'section-body'});
+    b3.appendChild(el('div', {cls:'sus-kosong-info', text:'Centang dokumen yang ingin dikirim, lalu unggah filenya. Dokumen yang tidak dicentang tidak berubah.'}));
+    b3.appendChild(el('div', {id:'sus_dok_list'}));
+    s3.appendChild(b3); body.appendChild(s3);
+
+    // kirim
+    var sa = el('div', {cls:'send-area', id:'sus_send'}); sa.style.display = 'none';
+    var kb = el('button', {cls:'btn-send', type:'button', id:'btnKirimSusulan', text:'📤 Kirim Dokumen Susulan'});
+    kb.setAttribute('data-form', FORM_NAME);
+    kb.addEventListener('click', kirimSusulan);
+    sa.appendChild(kb); body.appendChild(sa);
+
+    p0.parentNode.insertBefore(pn, p0.nextSibling);
+    if (/[?&]susulan\b/i.test(location.search)) setMode('susulan');
+  }
+
+  function setMode(m){
+    var p0 = $('panel-0'), ps = $(SUS_PANEL);
+    var sus = m === 'susulan';
+    p0.style.display = sus ? 'none' : ''; ps.style.display = sus ? '' : 'none';
+    p0.classList.toggle('active', !sus); ps.classList.toggle('active', sus);
+    document.querySelectorAll('#mode-switch button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
+    var h1 = document.querySelector('.site-header .header-text h1');
+    if (h1) { if (!h1.dataset.asli) h1.dataset.asli = h1.textContent; h1.textContent = sus ? 'Kirim Dokumen Susulan' : h1.dataset.asli; }
+    window.scrollTo({top:0});
+    if (sus) setTimeout(function(){ $('sus_id').focus(); }, 200);
+  }
+
+  function setHasil(cls, html){ var h = $('sus_hasil'); h.className = 'sus-hasil ' + cls; h.innerHTML = html; }
+
+  function cariData(){
+    var id = $('sus_id').value.trim();
+    if (!id) { setHasil('err', '⚠️ Isi ID Lokasi SIKUMBANG terlebih dahulu.'); return; }
+    setHasil('busy', '⏳ Mencari data ' + esc_(id) + '…');
+    ['sus_sec_pengirim','sus_sec_dok','sus_send'].forEach(function(x){ $(x).style.display = 'none'; });
+    dataLama = null;
+    postGAS_({action:'susulanCek', id:id}).then(function(res){
+      if (bukanAksiDikenal_(res)) throw new Error('Fitur dokumen susulan belum aktif di server. Mohon hubungi admin Direktorat.');
+      if (!res.ok) { setHasil('err', '❌ ' + esc_(res.message) + '<br>Bila belum pernah mengisi, pilih <b>Pengisian Baru</b>.'); return; }
+      dataLama = res.row;
+      setHasil('ok', '✓ Data ditemukan<br><b>' + esc_(dataLama.t1_nama_perumahan || '-') + '</b><br>'
+        + esc_(dataLama.t1_nama_pt || '') + (dataLama.t1_kabupaten ? ' · ' + esc_(dataLama.t1_kabupaten) : '')
+        + (dataLama['Susulan Terakhir'] ? '<br><small>Dokumen susulan terakhir: ' + esc_(dataLama['Susulan Terakhir']) + '</small>' : ''));
+      renderDokumen();
+      ['sus_sec_pengirim','sus_sec_dok','sus_send'].forEach(function(x){ $(x).style.display = ''; });
+    }).catch(function(err){ setHasil('err', '❌ ' + esc_(err.message)); });
+  }
+
+  function renderDokumen(){
+    var box = $('sus_dok_list'); box.innerHTML = '';
+    fotoState[SUS_PANEL] = [];
+    var tahap = '';
+    DOKS.forEach(function(d){
+      if (d.tahap !== tahap) { tahap = d.tahap; box.appendChild(el('div', {cls:'sus-tahap', text:tahap})); }
+      var ada = String(dataLama[d.ada] || '').trim();
+      var n = jmlFile(dataLama['Foto: ' + d.label]) + (String(dataLama[d.key + '_link'] || '').trim() ? 1 : 0);
+      var tag = ada === 'Ada' ? el('span', {cls:'sus-tag ada', text:'Sudah ada' + (n ? ' · ' + n + ' file/link' : '')})
+              : ada === 'Tidak Ada' ? el('span', {cls:'sus-tag tidak', text:'Belum ada'})
+              : el('span', {cls:'sus-tag kosong', text:'Belum diisi'});
+      var w = el('div', {cls:'sus-dok doc-wrapper'}); w.dataset.key = d.key;
+      var head = el('label', {cls:'sus-dok-head'});
+      var cb = el('input'); cb.type = 'checkbox'; cb.id = 'sus_cek_' + d.key;
+      var t = el('span', {cls:'t'}); t.appendChild(document.createTextNode(d.label)); t.appendChild(el('br')); t.appendChild(tag);
+      head.appendChild(cb); head.appendChild(t); w.appendChild(head);
+
+      var b = el('div', {cls:'sus-body'});
+      if (d.legal) {
+        var sel = el('select', {id:'sus_legal_jenis'});
+        sel.appendChild(el('option', {value:'', text:'— Pilih jenis legalitas —'}));
+        JENIS_LEGAL.forEach(function(j){ sel.appendChild(el('option', {value:j, text:j})); });
+        sel.value = dataLama.legalitas_tanah_jenis || '';
+        b.appendChild(fld('Jenis Legalitas', sel, '', true));
+        var lain = inp('sus_legal_lainnya', 'Sebutkan jenis legalitas lainnya'); lain.value = dataLama.legalitas_tanah_jenis_lainnya || '';
+        var fl = fld('Jenis Lainnya', lain); fl.style.display = sel.value === 'Lainnya' ? '' : 'none';
+        sel.addEventListener('change', function(){ fl.style.display = sel.value === 'Lainnya' ? '' : 'none'; });
+        b.appendChild(fl);
+      }
+      var prev = el('div', {cls:'doc-preview'});
+      b.appendChild(fld('File Dokumen', (function(){ var x = el('div'); x.appendChild(makeDocUploadBtnSus(prev, d.label)); x.appendChild(prev); return x; })()));
+      var g = el('div', {cls:'sus-grid'});
+      var nomor = inp('sus_' + d.key + '_nomor', 'Contoh: 503/123/PBG/2024'); nomor.value = dataLama[d.key + '_nomor'] || '';
+      var tgl = inp('sus_' + d.key + '_tanggal', '', 'date'); tgl.value = tglIso(dataLama[d.key + '_tanggal']);
+      var sah = inp('sus_' + d.key + '_pengesah', 'Contoh: Dinas PUPR Kab. ...'); sah.value = dataLama[d.key + '_pengesah'] || '';
+      g.appendChild(fld('Nomor Dokumen', nomor, '', true));
+      g.appendChild(fld('Tanggal Penerbitan', tgl, '', true));
+      g.appendChild(fld('Disahkan oleh', sah, '', true));
+      var link = inp('sus_' + d.key + '_link', 'Untuk file besar: tempel link Google Drive / Dropbox'); link.inputMode = 'url'; link.value = dataLama[d.key + '_link'] || '';
+      g.appendChild(fld('Link File (opsional — untuk file berukuran besar)', link, 'sus-full'));
+      var ket = el('textarea', {id:'sus_' + d.key + '_keterangan', placeholder:'Mis. dokumen revisi, masa berlaku, catatan lain...'}); ket.value = dataLama[d.key + '_keterangan'] || '';
+      g.appendChild(fld('Keterangan (opsional)', ket, 'sus-full'));
+      b.appendChild(g);
+      b.appendChild(el('div', {cls:'sus-kosong-info', text:'Nomor, tanggal, dan pengesah wajib diisi. Bila dokumen tidak memiliki nomor/pengesahan, isi dengan tanda "-". File lama tidak dihapus; file baru ditambahkan.'}));
+      w.appendChild(b);
+      cb.addEventListener('change', function(){ w.classList.toggle('on', cb.checked); });
+      box.appendChild(w);
+    });
+  }
+
+  function makeDocUploadBtnSus(previewEl, fieldName){
+    var i = el('input'); i.type = 'file'; i.accept = 'image/*,.pdf,.doc,.docx,.xls,.xlsx'; i.multiple = true; i.style.display = 'none';
+    var btn = el('button', {cls:'upload-btn', type:'button', text:'📎 Upload Dokumen'});
+    btn.appendChild(i);
+    btn.addEventListener('click', function(e){ if (e.target !== i) i.click(); });
+    i.addEventListener('change', function(){ processAndUploadFiles(i.files, fieldName, SUS_PANEL, previewEl, true); i.value = ''; });
+    return btn;
+  }
+
+  async function kirimSusulan(){
+    var btn = $('btnKirimSusulan');
+    if (!dataLama) { showToast('⚠️ Cari data perumahan terlebih dahulu.', true); $('sus_id').focus(); return; }
+    var nama = $('sus_nama').value.trim();
+    if (!nama) { showToast('⚠️ Isi nama pengirim.', true); $('sus_nama').focus(); return; }
+    var dipilih = DOKS.filter(function(d){ return $('sus_cek_' + d.key).checked; });
+    if (!dipilih.length) { showToast('⚠️ Centang minimal satu dokumen yang ingin dikirim.', true); return; }
+    var list = fotoState[SUS_PANEL] || [];
+    for (var k = 0; k < dipilih.length; k++) {
+      var d = dipilih[k];
+      var adaFile = list.some(function(x){ return x.fieldName === d.label; });
+      var link = $('sus_' + d.key + '_link').value.trim();
+      if (!adaFile && !link) { showToast('⚠️ "' + d.label + '": unggah file atau isi Link File.', true); $('sus_' + d.key + '_link').scrollIntoView({behavior:'smooth', block:'center'}); return; }
+      var kosong = ['nomor','tanggal','pengesah'].map(function(x){ return $('sus_' + d.key + '_' + x); }).filter(function(x){ return !x.value.trim(); });
+      if (kosong.length) { kosong.forEach(function(x){ x.classList.add('doc-kosong'); x.addEventListener('input', function(){ x.classList.remove('doc-kosong'); }, {once:true}); });
+        showToast('⚠️ Lengkapi nomor, tanggal, dan pengesah untuk "' + d.label + '".', true); kosong[0].scrollIntoView({behavior:'smooth', block:'center'}); kosong[0].focus(); return; }
+      if (d.legal && !$('sus_legal_jenis').value) { showToast('⚠️ Pilih jenis legalitas tanah.', true); $('sus_legal_jenis').focus(); return; }
+    }
+
+    btn.disabled = true; btn.textContent = '⏳ Mengirim…';
+    var kunci = { 'Form': FORM_NAME, 't1_id_sikumbang': dataLama.t1_id_sikumbang, 't1_nama_perumahan': dataLama.t1_nama_perumahan };
+    var antre = list.filter(function(it){ return dipilih.some(function(d){ return d.label === it.fieldName; }) && !(it.status === 'success' && it.url); });
+    overlayKirim_('proses', { step: antre.length ? 'Menyiapkan ' + antre.length + ' file…' : 'Menyimpan…', pct: 3 });
+    try {
+      for (var i = 0; i < antre.length; i++) {
+        var it = antre[i], res = null, errT = null;
+        overlayKirim_('progres', { step: 'Mengunggah file ' + (i+1) + ' dari ' + antre.length + ': ' + it.fileName, pct: 5 + 80 * i / antre.length });
+        for (var coba = 1; coba <= 3; coba++) {
+          try { res = await postGAS_({ action:'uploadFile', formName: FORM_NAME, data: kunci, file: { fieldName: it.fieldName, fileName: it.fileName, mimeType: it.mimeType, base64: it.base64 } });
+                if (res && res.ok) break; if (bukanAksiDikenal_(res)) break; errT = new Error(res && res.message || 'Gagal mengunggah ' + it.fileName);
+          } catch(e) { errT = e; }
+          if (coba < 3) await new Promise(function(r){ setTimeout(r, 1500 * coba); });
+        }
+        if (bukanAksiDikenal_(res)) throw new Error('Fitur dokumen susulan belum aktif di server. Mohon hubungi admin Direktorat.');
+        if (!res || !res.ok) throw errT || new Error('Gagal mengunggah ' + it.fileName);
+        it.status = 'success'; it.url = res.url;
+      }
+      overlayKirim_('progres', { step: 'Menyimpan ke database…', pct: 92 });
+      var data = {}, fotoUrls = {};
+      dipilih.forEach(function(d){
+        data[d.ada] = 'Ada';
+        data[d.legal ? 'alasan_legalitas_tanah' : 'alasan_' + d.key] = '';
+        ['nomor','tanggal','pengesah','link','keterangan'].forEach(function(x){ data[d.key + '_' + x] = $('sus_' + d.key + '_' + x).value.trim(); });
+        if (d.legal) { data.legalitas_tanah_jenis = $('sus_legal_jenis').value; data.legalitas_tanah_jenis_lainnya = $('sus_legal_jenis').value === 'Lainnya' ? $('sus_legal_lainnya').value.trim() : ''; }
+        var urls = (fotoState[SUS_PANEL] || []).filter(function(x){ return x.fieldName === d.label && x.url; }).map(function(x){ return x.url; });
+        if (urls.length) fotoUrls[d.label] = urls;
+      });
+      var hasil = await postGAS_({ action:'susulan', id: dataLama.t1_id_sikumbang, data: data, fotoUrls: fotoUrls,
+        dokumen: dipilih.map(function(d){ return d.label; }),
+        pengirim: { nama: nama, jabatan: $('sus_jabatan').value.trim(), telepon: $('sus_telepon').value.trim() } });
+      if (bukanAksiDikenal_(hasil)) throw new Error('Fitur dokumen susulan belum aktif di server. Mohon hubungi admin Direktorat.');
+      if (!(hasil && hasil.ok)) throw new Error(hasil && hasil.message || 'Server tidak mengonfirmasi data tersimpan.');
+      btn.disabled = false; btn.textContent = '📤 Kirim Dokumen Susulan';
+      var nFile = (fotoState[SUS_PANEL] || []).filter(function(x){ return x.url; }).length;
+      overlayKirim_('sukses', {
+        judul: 'Dokumen Susulan Terkirim',
+        lead: 'Terima kasih. Dokumen susulan sudah tersimpan dan akan diperiksa oleh tim verifikasi Kementerian PKP.',
+        baris: [['Nama Perumahan', '<b>' + esc_(dataLama.t1_nama_perumahan || '-') + '</b>'],
+                ['ID SIKUMBANG', '<b>' + esc_(dataLama.t1_id_sikumbang) + '</b>'],
+                ['Dikirim oleh', esc_(nama)],
+                ['Waktu kirim', esc_(hasil.waktu || new Date().toLocaleString('id-ID'))],
+                ['Dokumen', dipilih.map(function(d){ return '• ' + esc_(d.label); }).join('<br>')],
+                ['File terunggah', nFile + ' file']],
+        tombol: 'Kirim Dokumen Susulan Lain',
+        setelah: function(){ fotoState[SUS_PANEL] = []; dataLama = null; $('sus_id').value = ''; $('sus_hasil').className = 'sus-hasil';
+          ['sus_sec_pengirim','sus_sec_dok','sus_send'].forEach(function(x){ $(x).style.display = 'none'; }); $('sus_dok_list').innerHTML = ''; }
+      });
+    } catch (err) {
+      btn.disabled = false; btn.textContent = '📤 Kirim Dokumen Susulan';
+      var sudah = (fotoState[SUS_PANEL] || []).filter(function(x){ return x.status === 'success' && x.url; }).length;
+      overlayKirim_('gagal', { pesan: (err && err.message ? err.message : String(err)) + ' Dokumen belum tersimpan.', sudahUpload: sudah, ulang: kirimSusulan });
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildPanel); else buildPanel();
+})();
 </script>
 <!-- UI-MOBILE JS START -->
 <script id="ui-mobile-js">
