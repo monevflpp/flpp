@@ -3529,7 +3529,9 @@ window.addEventListener('load', function() {
   function build(){
     document.body.classList.add('uim');
     var hdr = $('.site-header'), inner = $('.site-header .header-inner');
-    if (inner && !$('.uim-ibtn', inner)){
+    // Form untuk pihak luar (mis. pengembang) memakai <body data-no-home>: tanpa tombol ke beranda/index
+    var noHome = document.body.hasAttribute('data-no-home');
+    if (inner && !noHome && !$('.uim-ibtn', inner)){
       var back = document.createElement('a'); back.className = 'uim-ibtn'; back.href = 'index.html'; back.setAttribute('aria-label','Kembali ke beranda'); back.textContent = '←'; back.title = 'Beranda';
       inner.insertBefore(back, inner.firstChild);
     }
