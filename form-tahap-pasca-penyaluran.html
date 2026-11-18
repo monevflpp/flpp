@@ -3911,7 +3911,7 @@ window.addEventListener('load', function() {
   if (oU) window.makeUploadBtn = function (fn, prev) { if (prev && prev.dataset) prev.dataset.fotoField = fn; return oU.apply(this, arguments); };
   if (oD) window.makeDocUploadBtn = function (prev, fn) { if (prev && prev.dataset) prev.dataset.fotoField = fn; return oD.apply(this, arguments); };
 
-  var PER_UNIT = ['Tahap Penyaluran', 'Pasca Penyaluran'];
+  var PER_UNIT = ['Pasca Penyaluran'];   // Tahap Penyaluran & Kondisi PSU dicari dengan ID SIKUMBANG saja
   var sus = null;   // { P, formName, row, simpanan, dimatikan:[], tombol, labelAsli }
   function $(s, r) { return (r || document).querySelector(s); }
   function panelAktif() { var p = $('.form-panel.active'); return p ? p.id : null; }
@@ -4252,6 +4252,9 @@ window.addEventListener('load', function() {
   };
 
   /* ---------- antrean unggah di latar belakang ---------- */
+  // Form yang fotonya disimpan per unit rumah (perlu nomor rumah sebelum diunggah)
+  var PER_UNIT = window.FOTO_ANDAL_PER_UNIT || ['Pasca Penyaluran'];
+  function perluNomor(panelId) { try { return PER_UNIT.indexOf(getFormNameForPanel(panelId)) > -1; } catch (e) { return false; } }
   function kunciPanel(panelId) {
     if (paksaKunci[panelId]) return paksaKunci[panelId];
     if (typeof window.fotoAndalKunci === 'function') { var k0 = window.fotoAndalKunci(panelId); if (k0 !== undefined) return k0; }
@@ -4260,7 +4263,7 @@ window.addEventListener('load', function() {
     P.querySelectorAll('input[id],select[id]').forEach(function (i) {
       var m = /_(id_sikumbang|nama_perumahan|nomor_rumah)$/.exec(i.id); if (!m) return;
       var v = String(i.value || '').trim();
-      if (m[1] === 'nomor_rumah') { perluNo = true; if (v) adaNo = true; }
+      if (m[1] === 'nomor_rumah') { perluNo = perluNomor(panelId); if (v) adaNo = true; }
       if (v) { k[i.id] = v; if (m[1] === 'id_sikumbang') adaId = true; }
     });
     return (adaId && (!perluNo || adaNo)) ? k : null;
@@ -4334,7 +4337,7 @@ window.addEventListener('load', function() {
     else if (gagal) { txt = '⚠️ ' + gagal + ' ' + K + ' gagal diunggah — ketuk untuk coba lagi (' + ok + '/' + n + ' selesai)'; cls = 'warn'; }
     else if (up || (tunggu && !modeLama && kunciPanel(pid))) { txt = '⏳ Mengunggah ' + K + '… ' + ok + ' dari ' + n + ' selesai. Jangan tutup halaman.'; cls = 'busy'; }
     else if (tunggu) { txt = modeLama ? '🕓 ' + tunggu + ' ' + K + ' akan diunggah saat Kirim Data' :
-                       '🕓 ' + tunggu + ' ' + K + ' tersimpan di HP — diunggah setelah ID SIKUMBANG' + (document.querySelector('#' + pid + ' [id$="_nomor_rumah"]') ? ' & nomor rumah' : '') + ' diisi'; cls = 'wait'; }
+                       '🕓 ' + tunggu + ' ' + K + ' tersimpan di HP — diunggah setelah ID SIKUMBANG' + (perluNomor(pid) && document.querySelector('#' + pid + ' [id$="_nomor_rumah"]') ? ' & nomor rumah' : '') + ' diisi'; cls = 'wait'; }
     else { txt = '✅ Semua ' + K + ' (' + n + ') sudah tersimpan di Google Drive'; cls = 'ok'; }
     c.textContent = txt; c.className = 'show ' + cls;
     clearTimeout(chipT);
