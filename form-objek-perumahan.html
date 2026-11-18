@@ -2210,7 +2210,8 @@ function resetFormFields(panelId) {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai); else mulai();
 
-  window.fotoAndal = { selesaikan: selesaikan, proses: proses, pulihkanFoto: pulihkanFoto, chip: chip,
+  function jeda(pid, on) { var i = TANPA_SIMPAN.indexOf(pid); if (on && i < 0) TANPA_SIMPAN.push(pid); if (!on && i > -1) TANPA_SIMPAN.splice(i, 1); }
+  window.fotoAndal = { selesaikan: selesaikan, jeda: jeda, proses: proses, pulihkanFoto: pulihkanFoto, chip: chip,
                        modeLama: function () { return modeLama; } };
 })();
 </script>

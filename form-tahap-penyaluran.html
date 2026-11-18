@@ -380,6 +380,32 @@
   #outbox-banner button.ghost{background:transparent;color:#9A5B00;border:1px solid #F5B54A}
 </style>
 <base target="_blank">
+<!-- FOTO-SUSULAN CSS START -->
+<style>
+  /* ===== FOTO SUSULAN (18 Nov 2026) ===== */
+  .mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+  .mode-switch button{border:1.5px solid var(--gray-200,#E5E1D6);background:#fff;border-radius:16px;padding:12px 10px;text-align:left;cursor:pointer;font-family:inherit;display:flex;gap:10px;align-items:flex-start}
+  .mode-switch button b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:var(--gray-800,#2B2B2B)}
+  .mode-switch button span.d{display:block;font-size:11.5px;color:var(--gray-400,#8A867A);margin-top:2px;line-height:1.35}
+  .mode-switch button .ic{font-size:22px;line-height:1}
+  .mode-switch button.on{border-color:var(--navy,#0E5B73);background:#E7F1F4;box-shadow:0 0 0 3px rgba(14,91,115,.08)}
+  .mode-switch button.on b{color:var(--navy,#0E5B73)}
+  .form-panel.fs-belum > *:not(.fs-card){display:none!important}
+  .fs-card{background:#fff;border:2px solid var(--navy,#0E5B73);border-radius:18px;padding:16px;margin:0 0 14px;box-shadow:0 6px 18px rgba(14,91,115,.08)}
+  .fs-judul{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;color:var(--navy,#0E5B73)}
+  .fs-sub{font-size:12.5px;color:#5c5a52;margin:4px 0 12px;line-height:1.45}
+  .fs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+  .fs-aksi{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .fs-aksi button{border:none;border-radius:12px;padding:11px 16px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13.5px}
+  .fs-cari{background:var(--navy,#0E5B73);color:#fff}.fs-keluar{background:#F1EFE7;color:#5c5a52}
+  .fs-hasil{display:none;margin-top:10px;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5}
+  .fs-hasil.ok{display:block;background:#E8F8F1;border:1px solid #A7E3CB}.fs-hasil.err{display:block;background:#FDECEC;border:1px solid #F8C9C9;color:#B91C1C}
+  .fs-hasil.busy{display:block;background:#F4F8FA;border:1px solid #D5E5EB;color:var(--navy,#0E5B73)}
+  .fs-siap input:disabled,.fs-siap select:disabled,.fs-siap textarea:disabled{opacity:.75;cursor:not-allowed}
+  .fs-ada{display:inline-block;font-size:11.5px;font-weight:700;border-radius:99px;padding:3px 10px;margin:6px 0 4px;background:#E8F8F1;color:#047857}
+  .fs-ada.nol{background:#FFF4E5;color:#9A5B00}
+</style>
+<!-- FOTO-SUSULAN CSS END -->
 <!-- FOTO-ANDAL CSS START -->
 <style>
   /* ===== FOTO ANDAL (18 Nov 2026) ===== */
@@ -3627,6 +3653,209 @@ window.addEventListener('load', function() {
 })();
 </script>
 
+<!-- FOTO-SUSULAN JS START -->
+<script>
+/* ================================================================
+   FOTO SUSULAN (18 Nov 2026) — Kondisi PSU, Tahap Penyaluran, Pasca Penyaluran
+   Data boleh dikirim dulu tanpa foto. Fotonya disusulkan lewat mode
+   "📷 Kirim Foto Susulan": cari data yang sudah terkirim (ID SIKUMBANG,
+   + nomor rumah untuk form per unit), isian lama tampil (hanya-baca), lalu
+   tambahkan foto di bagian yang perlu dan tekan Kirim Foto Susulan.
+   Foto baru ditambahkan ke baris yang sama di spreadsheet; foto lama tetap.
+   ================================================================ */
+(function () {
+  /* Tandai setiap kotak pratinjau foto dengan nama kolomnya */
+  var oF = window.makeFotoUpload, oU = window.makeUploadBtn, oD = window.makeDocUploadBtn;
+  if (oF) window.makeFotoUpload = function (fn) { var r = oF.apply(this, arguments); try { r.wrap[1].dataset.fotoField = fn; } catch (e) {} return r; };
+  if (oU) window.makeUploadBtn = function (fn, prev) { if (prev && prev.dataset) prev.dataset.fotoField = fn; return oU.apply(this, arguments); };
+  if (oD) window.makeDocUploadBtn = function (prev, fn) { if (prev && prev.dataset) prev.dataset.fotoField = fn; return oD.apply(this, arguments); };
+
+  var PER_UNIT = ['Tahap Penyaluran', 'Pasca Penyaluran'];
+  var sus = null;   // { P, formName, row, simpanan, dimatikan:[], tombol, labelAsli }
+  function $(s, r) { return (r || document).querySelector(s); }
+  function panelAktif() { var p = $('.form-panel.active'); return p ? p.id : null; }
+  function perUnit(P) { return PER_UNIT.indexOf(getFormNameForPanel(P)) > -1 && !!$('#' + P + ' [id$="_nomor_rumah"]'); }
+  function nilai(P, akhiran) { var i = $('#' + P + ' [id$="' + akhiran + '"]'); return i ? String(i.value || '').trim() : ''; }
+
+  function pasangSwitch() {
+    var main = $('.main'); if (!main || $('#fs-switch')) return;
+    var sw = document.createElement('div'); sw.className = 'mode-switch'; sw.id = 'fs-switch';
+    sw.innerHTML = '<button type="button" data-m="baru" class="on"><span class="ic">📝</span><span><b>Isi Data</b><span class="d">Pengisian survei seperti biasa</span></span></button>'
+                 + '<button type="button" data-m="susulan"><span class="ic">📷</span><span><b>Kirim Foto Susulan</b><span class="d">Data sudah terkirim, tinggal menambah foto</span></span></button>';
+    main.insertBefore(sw, main.firstChild);
+    sw.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-m]'); if (!b) return;
+      if (b.getAttribute('data-m') === 'susulan') { if (!sus) masuk(panelAktif()); }
+      else if (sus) keluar();
+    });
+  }
+  function tandaiSwitch() {
+    document.querySelectorAll('#fs-switch button').forEach(function (b) { b.classList.toggle('on', (b.getAttribute('data-m') === 'susulan') === !!sus); });
+  }
+
+  function masuk(P) {
+    if (!P) return;
+    var panel = document.getElementById(P);
+    sus = { P: P, formName: getFormNameForPanel(P), row: null, simpanan: null, dimatikan: [] };
+    try { sus.simpanan = collectData(P); } catch (e) {}
+    if (window.fotoAndal && fotoAndal.jeda) fotoAndal.jeda(P, true);
+    panel.classList.add('fs-mode', 'fs-belum');
+    var c = document.createElement('div'); c.className = 'fs-card'; c.id = 'fs-card';
+    var nomor = perUnit(P);
+    c.innerHTML = '<div class="fs-judul">📷 Kirim Foto Susulan — ' + esc_(sus.formName) + '</div>'
+      + '<div class="fs-sub">Cari data yang sudah pernah dikirim. Isian lama akan tampil (tidak bisa diubah); tambahkan foto pada bagian yang perlu, lalu tekan <b>Kirim Foto Susulan</b>. Foto lama tidak dihapus.</div>'
+      + '<div class="fs-grid"><div class="field"><label>ID Lokasi SIKUMBANG <span class="req">*</span></label><input type="text" id="fs_id" autocomplete="off" placeholder="ID SIKUMBANG yang dulu diisi"></div>'
+      + (nomor ? '<div class="field"><label>Nomor Rumah / Blok <span class="req">*</span></label><input type="text" id="fs_no" autocomplete="off" placeholder="Sama persis seperti saat mengisi"></div>' : '')
+      + '</div><div class="fs-aksi"><button type="button" class="fs-cari" id="fs_cari">🔎 Cari Data</button><button type="button" class="fs-keluar" id="fs_keluar">✕ Batal</button></div>'
+      + '<div class="fs-hasil" id="fs_hasil"></div>';
+    panel.insertBefore(c, panel.firstChild);
+    $('#fs_id').value = nilai(P, '_id_sikumbang');
+    if (nomor) $('#fs_no').value = nilai(P, '_nomor_rumah');
+    $('#fs_cari').onclick = cari;
+    $('#fs_keluar').onclick = function () { keluar(); };
+    c.querySelectorAll('input').forEach(function (i) { i.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); cari(); } }); });
+    tandaiSwitch(); window.scrollTo({ top: 0 });
+    setTimeout(function () { $('#fs_id').focus(); }, 200);
+  }
+
+  function hasil(cls, html) { var h = $('#fs_hasil'); if (h) { h.className = 'fs-hasil ' + cls; h.innerHTML = html; } }
+
+  function kosongkanPanel(P) {   // seperti resetFormFields, tetapi TIDAK menghapus draft yang tersimpan
+    var asli = window.clearDraft; window.clearDraft = function () {};
+    try { resetFormFields(P); } finally { window.clearDraft = asli; }
+  }
+
+  function cari() {
+    var P = sus.P, id = $('#fs_id').value.trim(), no = $('#fs_no') ? $('#fs_no').value.trim() : '';
+    if (!id) { hasil('err', '⚠️ Isi ID Lokasi SIKUMBANG.'); return; }
+    if ($('#fs_no') && !no) { hasil('err', '⚠️ Isi nomor rumah.'); return; }
+    hasil('busy', '⏳ Mencari data…');
+    sus.id = id; sus.no = no;
+    postGAS_({ action: 'fotoSusulanCek', formName: sus.formName, id: id, nomor: no }).then(function (res) {
+      if (bukanAksiDikenal_(res)) throw new Error('Fitur foto susulan belum aktif di server. Mohon minta admin memperbarui Apps Script.');
+      if (!res.ok) { hasil('err', '❌ ' + esc_(res.message)); return; }
+      tampilkan(res.row);
+    }).catch(function (err) { hasil('err', '❌ ' + esc_(err.message || err)); });
+  }
+
+  function tampilkan(row) {
+    var P = sus.P, panel = document.getElementById(P);
+    sus.row = row;
+    kosongkanPanel(P);
+    var isi = {}; Object.keys(row).forEach(function (k) { if (!/^Foto: /.test(k)) isi[k] = row[k]; });
+    try { restoreDraft(P, isi); } catch (e) { console.warn(e); }
+    // kunci isian lama (hanya-baca)
+    sus.dimatikan = [];
+    panel.querySelectorAll('input, select, textarea').forEach(function (i) {
+      if (i.closest('.fs-card') || i.disabled) return; i.disabled = true; sus.dimatikan.push(i);
+    });
+    panel.classList.remove('fs-belum'); panel.classList.add('fs-siap');
+    // tanda jumlah foto yang sudah ada
+    panel.querySelectorAll('[data-foto-field]').forEach(function (pv) {
+      var n = +row['Foto: ' + pv.dataset.fotoField] || 0;
+      var t = document.createElement('div'); t.className = 'fs-ada' + (n ? '' : ' nol');
+      t.textContent = n ? '📁 Sudah ada ' + n + ' foto di database' : '📭 Belum ada foto';
+      pv.parentNode.insertBefore(t, pv);
+    });
+    var btn = $('#' + P + ' .btn-send');
+    if (btn) { sus.tombol = btn; sus.labelAsli = btn.textContent; btn.textContent = '📤 Kirim Foto Susulan'; }
+    var nama = row[Object.keys(row).filter(function (k) { return /_nama_perumahan$/.test(k); })[0]] || '';
+    hasil('ok', '✓ Data ditemukan: <b>' + esc_(nama || row[Object.keys(row).filter(function (k) { return /_id_sikumbang$/.test(k); })[0]] || '') + '</b>'
+      + (sus.no ? ' · No. ' + esc_(sus.no) : '') + '<br><small>Dikirim ' + esc_(row.Timestamp || '-')
+      + (row['Foto Susulan Terakhir'] ? ' · foto susulan terakhir ' + esc_(String(row['Foto Susulan Terakhir']).replace(/^'/, '')) : '')
+      + '</small><br>Gulir ke bawah, tambahkan foto pada bagian yang perlu, lalu tekan <b>Kirim Foto Susulan</b>.');
+    $('#fs_id').value = sus.id; $('#fs_id').disabled = true;
+    if ($('#fs_no')) { $('#fs_no').value = sus.no; $('#fs_no').disabled = true; }
+    $('#fs_cari').style.display = 'none'; $('#fs_keluar').textContent = '✕ Keluar dari mode foto susulan';
+  }
+
+  function keluar(paksa) {
+    if (!sus) return;
+    var P = sus.P, panel = document.getElementById(P);
+    var baru = (fotoState[P] || []).length;
+    if (!paksa && sus.row && baru && !confirm('Ada ' + baru + ' foto susulan yang belum dikirim. Keluar dan buang foto tersebut?')) return false;
+    sus.dimatikan.forEach(function (i) { i.disabled = false; });
+    panel.querySelectorAll('.fs-ada').forEach(function (x) { x.remove(); });
+    var c = $('#fs-card'); if (c) c.remove();
+    panel.classList.remove('fs-mode', 'fs-belum', 'fs-siap');
+    if (sus.tombol) sus.tombol.textContent = sus.labelAsli;
+    if (sus.row) {
+      kosongkanPanel(P);
+      if (sus.simpanan) { try { restoreDraft(P, sus.simpanan); } catch (e) {} }
+    }
+    if (window.fotoAndal && fotoAndal.jeda) fotoAndal.jeda(P, false);
+    if (sus.row && window.fotoAndal) fotoAndal.pulihkanFoto(P);
+    sus = null; tandaiSwitch();
+    if (window.fotoAndal) fotoAndal.chip();
+    return true;
+  }
+
+  // Tombol Kirim (termasuk tombol bawah layar) → kirim foto susulan saat mode aktif
+  document.addEventListener('click', function (e) {
+    if (!sus) return;
+    var b = e.target.closest && e.target.closest('.btn-send');
+    if (b && b.closest('.form-panel') && b.closest('.form-panel').id === sus.P) {
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      if (!sus.row) { hasil('err', '⚠️ Cari data terlebih dahulu.'); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      kirim();
+    }
+    var t = e.target.closest && e.target.closest('.tab-btn');
+    if (t && keluar() === false) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }
+  }, true);
+
+  async function kirim() {
+    var P = sus.P, list = fotoState[P] || [];
+    if (!list.length) { showToast('⚠️ Tambahkan minimal satu foto susulan.', true); return; }
+    var kunci = { 'Form': sus.formName };
+    var panel = document.getElementById(P);
+    panel.querySelectorAll('[id$="_id_sikumbang"],[id$="_nama_perumahan"],[id$="_nomor_rumah"]').forEach(function (i) { if (i.value && !i.closest('.fs-card')) kunci[i.id] = i.value.trim(); });
+    var id = sus.id, no = sus.no;
+    overlayKirim_('proses', { step: 'Menyiapkan ' + list.length + ' foto…', pct: 3 });
+    try {
+      var hs = await fotoAndal.selesaikan(P, kunci, function (d, n, nm) {
+        overlayKirim_('progres', { step: 'Mengunggah foto: ' + d + ' dari ' + n + ' selesai' + (nm ? ' — ' + nm : ''), pct: 5 + 80 * (n ? d / n : 1) }); });
+      if (hs.modeLama) throw new Error('Fitur foto susulan belum aktif di server. Mohon minta admin memperbarui Apps Script.');
+      if (!hs.ok) throw new Error(hs.pesan || 'Ada foto yang gagal diunggah.');
+      overlayKirim_('progres', { step: 'Menyimpan ke database…', pct: 92 });
+      var fp = buildFotoPayload(P), res = null;
+      for (var c = 1; c <= 3; c++) {
+        res = await postGAS_({ action: 'fotoSusulan', formName: sus.formName, id: id, nomor: no, fotoUrls: fp.fotoUrls,
+                               pengirim: sus.row['Nama Surveyor'] || '' });
+        if (bukanAksiDikenal_(res)) throw new Error('Fitur foto susulan belum aktif di server. Mohon minta admin memperbarui Apps Script.');
+        if (res && res.ok) break;
+        if (!(res && /sibuk/i.test(res.message || ''))) break;
+        await new Promise(function (r) { setTimeout(r, 3000 * c); });
+      }
+      if (!(res && res.ok)) throw new Error(res && res.message || 'Server tidak mengonfirmasi foto tersimpan.');
+      var nama = $('#fs_hasil b') ? $('#fs_hasil b').textContent : id;
+      overlayKirim_('sukses', {
+        judul: 'Foto Susulan Terkirim',
+        lead: 'Terima kasih. Foto susulan sudah ditambahkan ke data yang sudah terkirim sebelumnya.',
+        baris: [['Formulir', esc_(sus.formName)], ['Perumahan', '<b>' + esc_(nama) + '</b>' + (no ? ' · No. ' + esc_(no) : '')],
+                ['Waktu kirim', esc_(res.waktu || new Date().toLocaleString('id-ID'))], ['Foto ditambahkan', (res.jumlah || list.length) + ' foto']],
+        tombol: 'Selesai',
+        setelah: function () { fotoState[P] = []; keluar(true); }
+      });
+    } catch (err) {
+      overlayKirim_('gagal', { pesan: (err && err.message ? err.message : String(err)) + ' Foto belum ditambahkan ke database.',
+                               sudahUpload: (fotoState[P] || []).filter(function (x) { return x.status === 'success'; }).length, ulang: kirim });
+    }
+  }
+
+  // Mode foto susulan tidak memakai draft (supaya draft pengisian biasa tidak tertimpa)
+  window.addEventListener('load', function () {
+    var asli = window.saveDraft; if (!asli) return;
+    window.saveDraft = function (panelId) {
+      if (sus && sus.P === panelId) { showToast('ℹ️ Mode foto susulan tidak memakai draft. Foto langsung diunggah; tekan Kirim Foto Susulan bila sudah lengkap.'); return; }
+      return asli.apply(this, arguments);
+    };
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasangSwitch); else pasangSwitch();
+  if (/[?&]foto-susulan\b/i.test(location.search)) window.addEventListener('load', function () { setTimeout(function () { if (!sus) masuk(panelAktif()); }, 900); });
+  window.fotoSusulan = { masuk: masuk, keluar: keluar, aktif: function () { return !!sus; } };
+})();
+</script>
+<!-- FOTO-SUSULAN JS END -->
 <!-- FOTO-ANDAL JS START -->
 <script>
 /* ================================================================
@@ -3951,7 +4180,8 @@ window.addEventListener('load', function() {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai); else mulai();
 
-  window.fotoAndal = { selesaikan: selesaikan, proses: proses, pulihkanFoto: pulihkanFoto, chip: chip,
+  function jeda(pid, on) { var i = TANPA_SIMPAN.indexOf(pid); if (on && i < 0) TANPA_SIMPAN.push(pid); if (!on && i > -1) TANPA_SIMPAN.splice(i, 1); }
+  window.fotoAndal = { selesaikan: selesaikan, jeda: jeda, proses: proses, pulihkanFoto: pulihkanFoto, chip: chip,
                        modeLama: function () { return modeLama; } };
 })();
 </script>
