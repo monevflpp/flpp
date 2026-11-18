@@ -286,6 +286,14 @@
     font-size:12px;line-height:20px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)}
   .fa-cadangan{border:1.5px dashed #F5B54A;background:#FFFBF0;border-radius:14px;padding:10px 12px;margin:0 0 12px;font-size:13px}
   .fa-cadangan .fa-cad-sub{font-size:11.5px;color:#7A6A40;margin:2px 0 6px}
+  .fa-salinan{display:flex;gap:12px;align-items:center;background:#fff;border:1.5px solid var(--gray-200,#E5E1D6);border-radius:16px;padding:10px 14px;margin:0 0 14px;cursor:pointer}
+  .fa-salinan input{position:absolute;opacity:0;pointer-events:none}
+  .fa-sw{flex-shrink:0;width:42px;height:24px;border-radius:99px;background:#D6D2C4;position:relative;transition:.2s}
+  .fa-sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
+  .fa-salinan input:checked + .fa-sw{background:var(--navy,#0E5B73)}
+  .fa-salinan input:checked + .fa-sw::after{left:21px}
+  .fa-st > b{display:block;font-size:13px;color:var(--gray-800,#2B2B2B)}
+  .fa-st small{display:block;font-size:11.5px;color:var(--gray-400,#8A867A);line-height:1.35;margin-top:1px}
 </style>
 <!-- FOTO-ANDAL CSS END -->
 <!-- UI-MOBILE CSS START -->
@@ -2020,6 +2028,7 @@ function resetFormFields(panelId) {
         if (linkInp) { var f = linkInp.closest('.field'); if (f) f.classList.add('link-sorot'); setTimeout(function () { linkInp.scrollIntoView({ behavior: 'smooth', block: 'center' }); linkInp.focus(); }, 300); }
         return;
       }
+      simpanSalinan(file0, fieldName, panelId);
       var siapFile = (typeof kompresGambar_ === 'function' && window.FOTO_KOMPRES !== false) ? kompresGambar_(file0) : Promise.resolve(file0);
       siapFile.then(function (file) {
         return bacaDataUrl(file).then(function (dataUrl) {
@@ -2039,6 +2048,53 @@ function resetFormFields(panelId) {
       }).catch(function (err) { showToast('❌ Gagal membaca file ' + file0.name + ': ' + (err && err.message || err), true); });
     });
   };
+
+  /* ---------- salinan foto ke HP (folder Download) ---------- */
+  var KEY_SALINAN = 'flpp_simpan_salinan_foto';
+  var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function salinanAktif() {
+    try { var v = localStorage.getItem(KEY_SALINAN); if (v !== null) return v === '1'; } catch (e) {}
+    return !iOS;   // bawaan: menyala di Android/laptop, mati di iPhone (Safari meminta konfirmasi tiap file)
+  }
+  var antreUnduh = [], unduhJalan = false;
+  function unduhBerikut() {
+    if (unduhJalan || !antreUnduh.length) return;
+    unduhJalan = true;
+    var x = antreUnduh.shift(), url = URL.createObjectURL(x.file), a = document.createElement('a');
+    a.href = url; a.download = x.nama; a.style.display = 'none'; document.body.appendChild(a); a.click();
+    setTimeout(function () { a.remove(); URL.revokeObjectURL(url); unduhJalan = false; unduhBerikut(); }, 700);
+  }
+  var nomorUrut = {};
+  function rapikan(t, max) { return String(t || '').replace(/^(PSU_Fas_\d+_\d+_|PSU_|py_|pf_foto_|pf_|p\d_)/, '').replace(/[^\w\- ]+/g, ' ').trim().replace(/\s+/g, '-').slice(0, max || 40) || 'foto'; }
+  function simpanSalinan(file, fieldName, panelId) {
+    if (!salinanAktif() || !file || !/^image\//.test(file.type)) return;
+    // hanya foto yang BARU dipotret (bukan yang dipilih dari Galeri, karena itu sudah ada di HP)
+    if (file.lastModified && Date.now() - file.lastModified > 3 * 60 * 1000) return;
+    var P = document.getElementById(panelId), id = '', no = '';
+    if (P) P.querySelectorAll('[id$="_id_sikumbang"],[id$="_nomor_rumah"]').forEach(function (i) {
+      var v = String(i.value || '').trim(); if (!v || i.closest('.fs-card')) return;
+      if (/_id_sikumbang$/.test(i.id) && !id) id = v; if (/_nomor_rumah$/.test(i.id) && !no) no = v;
+    });
+    var dasar = [rapikan(id, 30) || 'tanpa-ID', no ? rapikan(no, 20) : '', rapikan(fieldName)].filter(String).join('_');
+    nomorUrut[dasar] = (nomorUrut[dasar] || 0) + 1;
+    var d = new Date(), jam = ('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2) + ('0' + d.getSeconds()).slice(-2);
+    var ext = (file.name.match(/\.\w+$/) || ['.jpg'])[0];
+    antreUnduh.push({ file: file, nama: dasar + '_' + nomorUrut[dasar] + '_' + jam + ext });
+    unduhBerikut();
+  }
+  function pasangSakelar() {
+    var main = document.querySelector('.main'); if (!main || document.getElementById('fa-salinan')) return;
+    var w = el('label', { cls: 'fa-salinan', id: 'fa-salinan' });
+    w.innerHTML = '<input type="checkbox"><span class="fa-sw"></span><span class="fa-st"><b>💾 Simpan salinan foto ke HP</b>'
+      + '<small>Foto yang dipotret lewat form ikut tersimpan di folder <b>Download</b> HP' + (iOS ? ' (di iPhone muncul konfirmasi tiap foto)' : '') + '.</small></span>';
+    var cb = w.querySelector('input'); cb.checked = salinanAktif();
+    cb.addEventListener('change', function () {
+      try { localStorage.setItem(KEY_SALINAN, cb.checked ? '1' : '0'); } catch (e) {}
+      showToast(cb.checked ? '💾 Salinan foto akan disimpan ke folder Download HP.' : 'Salinan foto ke HP dimatikan.');
+    });
+    var sw = main.querySelector('.mode-switch');
+    if (sw && sw.nextSibling) main.insertBefore(w, sw.nextSibling); else if (sw) main.appendChild(w); else main.insertBefore(w, main.firstChild);
+  }
 
   /* ---------- antrean unggah di latar belakang ---------- */
   // Form yang fotonya disimpan per unit rumah (perlu nomor rumah sebelum diunggah)
@@ -2212,6 +2268,7 @@ function resetFormFields(panelId) {
     chip();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai); else mulai();
+  if (document.readyState === 'complete') pasangSakelar(); else window.addEventListener('load', function () { setTimeout(pasangSakelar, 50); });
 
   function jeda(pid, on) { var i = TANPA_SIMPAN.indexOf(pid); if (on && i < 0) TANPA_SIMPAN.push(pid); if (!on && i > -1) TANPA_SIMPAN.splice(i, 1); }
   window.fotoAndal = { selesaikan: selesaikan, jeda: jeda, proses: proses, pulihkanFoto: pulihkanFoto, chip: chip,
