@@ -348,6 +348,36 @@
   .rlh-src{font-size:10px;color:var(--gray-400)}
   .rlh-note{font-size:10.5px;color:var(--gray-600);padding:0 16px 12px;line-height:1.45}
   #docPreviewModal img{max-height:90vh;overflow:auto}
+  #kirim-overlay{display:none}
+  #kirim-overlay.show{display:flex;position:fixed;inset:0;z-index:9999;background:rgba(10,30,40,.55);align-items:center;justify-content:center;padding:16px}
+  #kirim-overlay.show.page{background:var(--cream,#F4F1E6);align-items:flex-start;overflow:auto}
+  .ko-card{background:#fff;border-radius:20px;padding:28px 22px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .ko-card h2{font-family:'Plus Jakarta Sans',sans-serif;color:var(--navy);font-size:18px;margin:14px 0 6px}
+  .ko-step{font-size:13px;color:var(--gray-600);min-height:34px;word-break:break-word}
+  .ko-bar{height:8px;background:#EEE9DA;border-radius:99px;overflow:hidden;margin:10px 0 12px}.ko-bar i{display:block;height:100%;background:var(--navy);border-radius:99px;transition:width .4s}
+  .ko-warn{font-size:12px;color:#B45309;background:#FEF4E2;border-radius:10px;padding:8px 10px}
+  .ko-spin{width:46px;height:46px;border-radius:50%;border:4px solid #E7F1F4;border-top-color:var(--navy);margin:0 auto;animation:kospin 1s linear infinite}
+  @keyframes kospin{to{transform:rotate(360deg)}}
+  .ko-page{background:#fff;border-radius:22px;max-width:560px;width:100%;margin:6vh auto 24px;padding:34px 24px 26px;text-align:center;box-shadow:0 6px 24px rgba(60,50,20,.08);border-top:8px solid var(--navy)}
+  .ko-ok{width:76px;height:76px;border-radius:50%;background:#10B981;color:#fff;font-size:44px;font-weight:800;line-height:76px;margin:0 auto 14px}
+  .ko-ok.bad{background:#EF4444}
+  .ko-page h1{font-family:'Plus Jakarta Sans',sans-serif;color:var(--navy);font-size:22px;margin:0 0 8px}
+  .ko-lead{font-size:14px;color:var(--gray-800);line-height:1.55;margin:0 0 16px}
+  .ko-tbl{width:100%;border-collapse:collapse;text-align:left;font-size:13px;margin:0 0 14px}
+  .ko-tbl td{padding:9px 10px;border-bottom:1px solid #EEE9DA;vertical-align:top}.ko-tbl td:first-child{color:var(--gray-600);width:42%}
+  .ko-tbl code{font-size:12px;word-break:break-all}
+  .ko-note{font-size:12.5px;background:#FFFBF0;border:1px solid #EADFB8;border-radius:12px;padding:10px 12px;margin:0 0 16px;line-height:1.5}
+  .ko-note.ok{background:#E8F8F1;border-color:#A7E3CB}
+  .ko-btn{display:block;width:100%;min-height:48px;border:none;border-radius:14px;background:var(--navy);color:#fff;font:700 14px 'Plus Jakarta Sans',sans-serif;cursor:pointer;margin-top:8px}
+  .ko-btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+  body.kirim-lock{overflow:hidden}
+  @keyframes kospin{to{transform:rotate(360deg)}}
+  #outbox-banner{position:fixed;left:12px;right:12px;bottom:84px;z-index:9000;background:#FFF4E5;border:1.5px solid #F5B54A;border-radius:16px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:13px;color:#7A4A00;max-width:560px;margin:0 auto}
+  #outbox-banner b{font-size:13.5px}
+  #outbox-banner .ob-item{display:flex;gap:8px;align-items:center;justify-content:space-between;border-top:1px dashed #F5B54A;padding:8px 0 0;margin-top:8px}
+  #outbox-banner .ob-item span{flex:1;min-width:0;line-height:1.35}
+  #outbox-banner button{border:none;border-radius:10px;background:#0E5B73;color:#fff;font-weight:700;padding:8px 12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  #outbox-banner button.ghost{background:transparent;color:#9A5B00;border:1px solid #F5B54A}
 </style>
 <base target="_blank">
 <!-- UI-MOBILE CSS START -->
@@ -1670,7 +1700,7 @@ function processAndUploadFiles(files, fieldName, panelId, previewEl, isDocMode) 
   var formName = getFormNameForPanel(panelId);
   var ts       = getSessionTimestamp(panelId);
   var list     = ensureFotoState(panelId);
-  Array.from(files).forEach(function(file) {
+  Array.from(files).forEach(function(file0) { kompresGambar_(file0).then(function(file){
     var isImg = file.type.startsWith('image/');
     var reader = new FileReader();
     reader.onload = function(e) {
@@ -1713,7 +1743,7 @@ function processAndUploadFiles(files, fieldName, panelId, previewEl, isDocMode) 
       doUpload();
     };
     reader.readAsDataURL(file);
-  });
+  }); });
 }
 function removeFromState(list, entry) { var idx=list.indexOf(entry); if(idx>-1) list.splice(idx,1); }
 function refreshFotoStatus(panelId) {
@@ -3041,6 +3071,243 @@ function resetFormFields(panelId) {
   clearDraft(panelId); // Hapus draft setelah data berhasil terkirim
 }
 
+function postGAS_(body, asForm) {
+  var ctl = ('AbortController' in window) ? new AbortController() : null;
+  var tm = ctl ? setTimeout(function(){ ctl.abort(); }, 6 * 60 * 1000) : null;
+  var opt = { method:'POST', redirect:'follow', signal: ctl ? ctl.signal : undefined };
+  if (asForm) { opt.body = new URLSearchParams({ payload: JSON.stringify(body) }); }
+  else { opt.body = JSON.stringify(body); opt.headers = { 'Content-Type':'text/plain;charset=utf-8' }; }
+  return fetch(GAS_URL, opt).then(function(r){
+    if (tm) clearTimeout(tm);
+    if (!r.ok) throw new Error('Server membalas ' + r.status);
+    return r.text();
+  }).then(function(t){
+    try { return JSON.parse(t); } catch(e) { throw new Error('Balasan server tidak dikenali.'); }
+  }, function(err){
+    if (tm) clearTimeout(tm);
+    throw new Error(err && err.name === 'AbortError' ? 'Waktu pengiriman habis (sinyal lemah?).' : 'Koneksi internet terputus atau server tidak dapat dihubungi.');
+  });
+}
+function bukanAksiDikenal_(res) { return res && res.ok === false && /Unknown action|Request tidak dikenali/i.test(res.message || ''); }
+
+function overlayKirim_(mode, opt) {
+  var ov = document.getElementById('kirim-overlay');
+  if (!ov) {
+    ov = el('div'); ov.id = 'kirim-overlay'; document.body.appendChild(ov);
+  }
+  opt = opt || {};
+  document.body.classList.toggle('kirim-lock', mode !== 'tutup');
+  if (mode === 'tutup') { ov.className = ''; ov.innerHTML = ''; return; }
+  if (mode === 'proses') {
+    ov.className = 'show';
+    ov.innerHTML = '<div class="ko-card"><div class="ko-spin"></div><h2>Mengirim data…</h2>'
+      + '<p class="ko-step" id="ko-step">' + (opt.step || 'Menyiapkan') + '</p>'
+      + '<div class="ko-bar"><i id="ko-bar" style="width:' + (opt.pct || 3) + '%"></i></div>'
+      + '<p class="ko-warn">Jangan tutup atau pindah halaman sampai muncul konfirmasi.</p></div>';
+    return;
+  }
+  if (mode === 'progres') {
+    var st = document.getElementById('ko-step'), br = document.getElementById('ko-bar');
+    if (st) st.textContent = opt.step; if (br) br.style.width = Math.max(3, Math.min(100, opt.pct)) + '%';
+    return;
+  }
+  if (mode === 'sukses') {
+    ov.className = 'show page';
+    ov.innerHTML = '<div class="ko-page"><div class="ko-ok">✓</div>'
+      + '<h1>' + esc_(opt.judul || 'Data Berhasil Terkirim') + '</h1>'
+      + '<p class="ko-lead">' + esc_(opt.lead || 'Terima kasih. Data Anda sudah tersimpan di database Direktorat Pembiayaan Perumahan Perdesaan, Kementerian PKP.') + '</p>'
+      + '<table class="ko-tbl">'
+      + (opt.baris || [['Nama Perumahan', '<b>' + esc_(opt.nama || '-') + '</b>'], ['ID SIKUMBANG', '<b>' + esc_(opt.id || '-') + '</b>'],
+                       ['Diisi oleh', esc_(opt.pengisi || '-')], ['Waktu kirim', esc_(opt.waktu)],
+                       ['Dokumen terunggah', opt.jmlDok + ' file'], ['Nomor referensi', '<code>' + esc_(opt.ref) + '</code>']])
+          .map(function(b){ return '<tr><td>' + b[0] + '</td><td>' + b[1] + '</td></tr>'; }).join('')
+      + '</table>'
+      + '<p class="ko-note">📸 Simpan tangkapan layar (screenshot) halaman ini sebagai bukti pengiriman.</p>'
+      + '<button type="button" class="ko-btn" id="ko-baru">' + esc_(opt.tombol || 'Isi Form untuk Perumahan Lain') + '</button></div>';
+    document.getElementById('ko-baru').onclick = function(){ overlayKirim_('tutup'); if (opt.setelah) opt.setelah(); window.scrollTo({top:0}); };
+    window.scrollTo({top:0});
+    return;
+  }
+  if (mode === 'gagal') {
+    ov.className = 'show page';
+    ov.innerHTML = '<div class="ko-page"><div class="ko-ok bad">!</div>'
+      + '<h1>Data Belum Terkirim</h1>'
+      + '<p class="ko-lead">' + esc_(opt.pesan || 'Terjadi kendala saat mengirim.') + '</p>'
+      + '<p class="ko-note ok">✓ Isian dan dokumen Anda <b>masih tersimpan</b> di halaman ini. Jangan tutup halaman, lalu tekan <b>Coba Kirim Lagi</b>' + (opt.sudahUpload ? ' (' + opt.sudahUpload + ' dokumen yang sudah terunggah tidak akan diunggah ulang)' : '') + '.</p>'
+      + '<button type="button" class="ko-btn" id="ko-ulang">Coba Kirim Lagi</button>'
+      + '<button type="button" class="ko-btn ghost" id="ko-kembali">Kembali ke Form</button></div>';
+    document.getElementById('ko-ulang').onclick = function(){ overlayKirim_('tutup'); opt.ulang(); };
+    document.getElementById('ko-kembali').onclick = function(){ overlayKirim_('tutup'); };
+    return;
+  }
+}
+function esc_(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+
+/* ================================================================
+   PENGIRIMAN ANDAL (18 Nov 2026)
+   - Foto dikompres di HP (sisi terpanjang maks 1920 px) supaya cepat terkirim.
+   - Foto diunggah SATU PER SATU dengan coba ulang otomatis, lalu data dikirim.
+   - Halaman "Data Berhasil Terkirim" hanya muncul bila server menyatakan tersimpan.
+   - Gagal? Isian TIDAK dihapus. Salinan isian juga disimpan di HP ("kotak keluar")
+     dan bisa dipulihkan walau halaman sempat tertutup.
+   ================================================================ */
+var OUTBOX_KEY = 'flpp_kotak_keluar_' + location.pathname.split('/').pop();
+function outboxBaca_(){ try { return JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]') || []; } catch(e) { return []; } }
+function outboxTulis_(arr){ try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(arr.slice(-30))); } catch(e) {} }
+function outboxSimpan_(item){ var a = outboxBaca_().filter(function(x){ return x.kid !== item.kid; }); a.push(item); outboxTulis_(a); }
+function outboxHapus_(kid){ outboxTulis_(outboxBaca_().filter(function(x){ return x.kid !== kid; })); }
+function labelUnit_(d){
+  var id = '', nama = '', no = '';
+  Object.keys(d || {}).forEach(function(k){
+    if (!id && /_id_sikumbang$/.test(k) && d[k]) id = d[k];
+    if (!nama && /_nama_perumahan$/.test(k) && d[k]) nama = d[k];
+    if (!no && /_nomor_rumah$/.test(k) && d[k]) no = d[k];
+  });
+  return (nama || id || 'Tanpa ID') + (no ? ' · No. ' + no : '');
+}
+function tampilkanOutbox_(){
+  var b = document.getElementById('outbox-banner'); if (b) b.remove();
+  var a = outboxBaca_(); if (!a.length) return;
+  b = el('div'); b.id = 'outbox-banner';
+  b.innerHTML = '⚠️ <b>Ada ' + a.length + ' isian yang belum terkonfirmasi terkirim di HP ini.</b> Pulihkan, lalu tekan Kirim lagi.';
+  a.slice().reverse().forEach(function(x){
+    var r = el('div', {cls:'ob-item'});
+    r.innerHTML = '<span><b>' + esc_(labelUnit_(x.data)) + '</b><br><small>' + esc_(x.formName) + ' · ' + esc_(x.savedAt) + (x.nFotoDrive ? ' · ' + x.nFotoDrive + ' foto sudah di Drive' : '') + '</small></span>';
+    var bp = el('button', {type:'button', text:'Pulihkan'});
+    bp.onclick = function(){ pulihkanOutbox_(x.kid); };
+    var bh = el('button', {type:'button', cls:'ghost', text:'Hapus'});
+    bh.onclick = function(){ if (confirm('Hapus salinan isian "' + labelUnit_(x.data) + '" dari HP ini? Pastikan datanya sudah ada di database.')) { outboxHapus_(x.kid); tampilkanOutbox_(); } };
+    r.appendChild(bp); r.appendChild(bh); b.appendChild(r);
+  });
+  var tutup = el('button', {type:'button', cls:'ghost', text:'Nanti saja'}); tutup.style.marginTop = '8px';
+  tutup.onclick = function(){ b.remove(); };
+  b.appendChild(tutup);
+  document.body.appendChild(b);
+}
+function pulihkanOutbox_(kid){
+  var x = outboxBaca_().filter(function(i){ return i.kid === kid; })[0]; if (!x) return;
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.form-panel'));
+  var idx = panels.map(function(p){ return p.id; }).indexOf(x.panelId);
+  if (idx > -1 && typeof switchTab === 'function') switchTab(idx);
+  resetFotoState(x.panelId);
+  restoreDraft(x.panelId, x.data);
+  if (typeof sessionTime !== 'undefined' && x.data.Timestamp) sessionTime[x.panelId] = x.data.Timestamp;
+  var list = ensureFotoState(x.panelId);
+  Object.keys(x.fotoUrls || {}).forEach(function(f){ (x.fotoUrls[f] || []).forEach(function(u){ list.push({fieldName:f, fileName:'(sudah di Drive)', mimeType:'', base64:'', status:'success', url:u}); }); });
+  refreshFotoStatus(x.panelId);
+  var sv = document.getElementById(x.surveyorId); if (sv && x.data['Nama Surveyor']) sv.value = x.data['Nama Surveyor'];
+  var b = document.getElementById('outbox-banner'); if (b) b.remove();
+  (window.__outboxAktif = window.__outboxAktif || {})[x.panelId] = x.kid;
+  showToast('✅ Isian dipulihkan.' + (x.nFotoBelum ? ' ' + x.nFotoBelum + ' foto yang belum terunggah perlu dipilih ulang.' : '') + ' Periksa lalu tekan Kirim Data.');
+  window.scrollTo({top:0});
+}
+if (document.readyState === 'complete') setTimeout(tampilkanOutbox_, 1500); else window.addEventListener('load', function(){ setTimeout(tampilkanOutbox_, 1500); });
+
+/* Kompres foto (bukan dokumen) sebelum disimpan */
+function kompresGambar_(file){
+  return new Promise(function(resolve){
+    if (!file || !/^image\/(jpeg|jpg|png|webp)$/i.test(file.type) || file.size < 700 * 1024) return resolve(file);
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function(){
+      try {
+        var MAX = 1920, w = img.naturalWidth, h = img.naturalHeight, s = Math.min(1, MAX / Math.max(w, h));
+        var c = document.createElement('canvas'); c.width = Math.round(w * s); c.height = Math.round(h * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function(b){
+          if (!b || b.size >= file.size) return resolve(file);
+          try { resolve(new File([b], file.name.replace(/\.\w+$/, '') + '.jpg', {type:'image/jpeg'})); }
+          catch(e) { b.name = file.name.replace(/\.\w+$/, '') + '.jpg'; resolve(b); }
+        }, 'image/jpeg', 0.85);
+      } catch(e) { URL.revokeObjectURL(url); resolve(file); }
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+async function kirimAndal(panelId, surveyorId, formName, btn, data) {
+  var resetBtn = function(){ btn.textContent = 'Kirim Data'; btn.disabled = false; };
+  window.__outboxAktif = window.__outboxAktif || {};
+  var kid = window.__outboxAktif[panelId] || (panelId + '|' + data['Timestamp'] + '|' + Date.now());
+  window.__outboxAktif[panelId] = kid;
+  var simpanOutbox = function(){
+    var fp0 = buildFotoPayload(panelId);
+    outboxSimpan_({ kid: kid, panelId: panelId, surveyorId: surveyorId, formName: formName, data: data,
+                    fotoUrls: fp0.fotoUrls, nFotoDrive: fp0.total - fp0.fotos.length, nFotoBelum: fp0.fotos.length,
+                    savedAt: new Date().toLocaleString('id-ID') });
+  };
+  simpanOutbox();
+  try { localStorage.setItem(DRAFT_KEY_PREFIX + panelId, JSON.stringify({ data: data, savedAt: new Date().toLocaleString('id-ID') })); } catch(e) {}
+  var list = (fotoState[panelId] || []);
+  var antre = list.filter(function(it){ return !(it.status === 'success' && it.url); });
+  var kunci = { 'Form': formName };
+  Object.keys(data).forEach(function(k){ if (/_(id_sikumbang|nama_perumahan|nomor_rumah)$/.test(k)) kunci[k] = data[k]; });
+  var modeLama = false;
+  overlayKirim_('proses', { step: antre.length ? 'Menyiapkan ' + antre.length + ' foto…' : 'Mengirim data…', pct: 3 });
+  try {
+    for (var i = 0; i < antre.length && !modeLama; i++) {
+      var it = antre[i];
+      overlayKirim_('progres', { step: 'Mengunggah foto ' + (i+1) + ' dari ' + antre.length + ': ' + it.fileName, pct: 5 + 80 * i / antre.length });
+      var res = null, errTerakhir = null;
+      for (var coba = 1; coba <= 4; coba++) {
+        try {
+          res = await postGAS_({ action:'uploadFile', formName: formName, data: kunci,
+                                 file: { fieldName: it.fieldName, fileName: it.fileName, mimeType: it.mimeType, base64: it.base64 } });
+          if (res && res.ok) break;
+          if (bukanAksiDikenal_(res)) break;
+          errTerakhir = new Error(res && res.message ? res.message : 'Gagal mengunggah ' + it.fileName);
+        } catch(e) { errTerakhir = e; }
+        if (coba < 4) await new Promise(function(r){ setTimeout(r, 2000 * coba); });
+      }
+      if (bukanAksiDikenal_(res)) { modeLama = true; break; }
+      if (!res || !res.ok) throw errTerakhir || new Error('Gagal mengunggah ' + it.fileName);
+      it.status = 'success'; it.url = res.url;
+      simpanOutbox();   // catat foto yang sudah masuk Drive
+    }
+    overlayKirim_('progres', { step: 'Menyimpan data ke database…', pct: 90 });
+    var fp = buildFotoPayload(panelId);
+    var hasil = null;
+    for (var c2 = 1; c2 <= 3; c2++) {
+      try {
+        if (!modeLama) {
+          hasil = await postGAS_({ action:'submit', payload: { data: data, fotoUrls: fp.fotoUrls, fotos: [] } });
+          if (bukanAksiDikenal_(hasil)) modeLama = true;
+        }
+        if (modeLama) hasil = await postGAS_({ data: data, fotoUrls: fp.fotoUrls, fotos: fp.fotos }, true);
+        if (hasil && (hasil.success === true || hasil.ok === true)) break;
+        if (!(hasil && /sibuk|busy|simultaneous|Service invoked too many/i.test(hasil.message || ''))) break;
+      } catch(e) { if (c2 === 3) throw e; }
+      if (c2 === 3) break;
+      overlayKirim_('progres', { step: 'Server sedang ramai, mencoba lagi (' + (c2+1) + ')…', pct: 92 });
+      await new Promise(function(r){ setTimeout(r, 3000 * c2); });
+    }
+    if (!(hasil && (hasil.success === true || hasil.ok === true))) {
+      throw new Error((hasil && hasil.message) ? hasil.message : 'Server tidak mengonfirmasi data tersimpan.');
+    }
+    var nFoto = (fotoState[panelId] || []).length;
+    var label = labelUnit_(data);
+    outboxHapus_(kid); delete window.__outboxAktif[panelId];
+    resetFormFields(panelId);
+    resetBtn();
+    overlayKirim_('sukses', {
+      lead: 'Terima kasih. Data survei sudah tersimpan di database Direktorat Pembiayaan Perumahan Perdesaan, Kementerian PKP.',
+      baris: [['Formulir', esc_(formName)], ['Perumahan / Unit', '<b>' + esc_(label) + '</b>'],
+              ['Surveyor', esc_(data['Nama Surveyor'] || '-')],
+              ['Waktu kirim', esc_(new Date().toLocaleString('id-ID', {dateStyle:'long', timeStyle:'short'}) + ' WIB')],
+              ['Foto terunggah', nFoto + ' foto'], ['Nomor referensi', '<code>' + esc_(data['Timestamp']) + '</code>']],
+      tombol: 'Lanjut Isi Data Berikutnya'
+    });
+  } catch (err) {
+    resetBtn();
+    simpanOutbox();
+    var sudah = (fotoState[panelId] || []).filter(function(x){ return x.status === 'success' && x.url; }).length;
+    overlayKirim_('gagal', { pesan: (err && err.message ? err.message : String(err)) + ' Data belum masuk ke database.',
+                             sudahUpload: sudah, ulang: function(){ submitForm(panelId, surveyorId, formName, btn); } });
+  }
+}
+
 async function submitForm(panelId, surveyorId, formName, btn) {
   var surveyor = document.getElementById(surveyorId);
   if (!surveyor || !surveyor.value.trim()) { showToast('⚠️ Harap isi nama surveyor terlebih dahulu!', true); if(surveyor) surveyor.focus(); return; }
@@ -3074,13 +3341,7 @@ async function submitForm(panelId, surveyorId, formName, btn) {
     } else {
       var gsUrl = GAS_URL;
       if (!gsUrl || gsUrl.indexOf('GANTI_DENGAN_URL_ANDA') > -1) { showToast('⚠️ URL Apps Script belum dikonfigurasi.', true); btn.textContent='Kirim Data'; btn.disabled=false; return; }
-      var iid='ifr_'+Date.now(); var ifr=el('iframe'); ifr.name=iid; ifr.style.display='none';
-      var frm=el('form'); frm.method='POST'; frm.action=gsUrl; frm.target=iid; frm.style.display='none';
-      var inp2=el('input'); inp2.type='hidden'; inp2.name='payload'; inp2.value=JSON.stringify(payload);
-      frm.appendChild(inp2); document.body.appendChild(ifr); document.body.appendChild(frm);
-      ifr.onload=function(){ var fp2=buildFotoPayload(panelId); var fTotal2=fp2.total; var fMsg2=fTotal2>0?(' + '+fTotal2+' foto terkirim'):''; showToast('✅ Data berhasil dikirim'+fMsg2+'!'); btn.textContent='Kirim Data'; btn.disabled=false; resetFormFields(panelId); window.scrollTo({top:0,behavior:'smooth'}); setTimeout(function(){try{document.body.removeChild(frm);document.body.removeChild(ifr);}catch(e){}},1000); };
-      setTimeout(function(){try{document.body.removeChild(frm);document.body.removeChild(ifr);}catch(e){} var fp3=buildFotoPayload(panelId); var fTotal3=fp3.total; var fMsg3=fTotal3>0?(' + '+fTotal3+' foto terkirim'):''; showToast('✅ Data terkirim'+fMsg3+'!'); btn.textContent='Kirim Data'; btn.disabled=false; resetFormFields(panelId); },30000);
-      frm.submit();
+      kirimAndal(panelId, surveyorId, formName, btn, data);
     }
   } catch(err) { console.error(err); showToast('❌ Gagal: '+err.message,true); btn.textContent='Kirim Data'; btn.disabled=false; }
 }
