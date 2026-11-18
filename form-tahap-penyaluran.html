@@ -380,6 +380,23 @@
   #outbox-banner button.ghost{background:transparent;color:#9A5B00;border:1px solid #F5B54A}
 </style>
 <base target="_blank">
+<!-- FOTO-ANDAL CSS START -->
+<style>
+  /* ===== FOTO ANDAL (18 Nov 2026) ===== */
+  #fa-chip{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:8500;max-width:min(560px,calc(100vw - 24px));width:max-content;
+    padding:9px 14px;border-radius:99px;font:600 12.5px/1.35 'Plus Jakarta Sans',system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.18);cursor:pointer;text-align:center}
+  #fa-chip.show{display:block}
+  #fa-chip.busy{background:#0E5B73;color:#fff}
+  #fa-chip.wait{background:#F4F1E6;color:#5A4A1A;border:1px solid #E3D9B8}
+  #fa-chip.warn{background:#FFF4E5;color:#7A4A00;border:1.5px solid #F5B54A}
+  #fa-chip.ok{background:#E8F8F1;color:#047857;border:1px solid #A7E3CB}
+  @media(min-width:900px){#fa-chip{bottom:24px}}
+  .foto-thumb .fa-del{position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:50%;background:#fff;color:#B91C1C;border:1px solid #F8C9C9;
+    font-size:12px;line-height:20px;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+  .fa-cadangan{border:1.5px dashed #F5B54A;background:#FFFBF0;border-radius:14px;padding:10px 12px;margin:0 0 12px;font-size:13px}
+  .fa-cadangan .fa-cad-sub{font-size:11.5px;color:#7A6A40;margin:2px 0 6px}
+</style>
+<!-- FOTO-ANDAL CSS END -->
 <!-- UI-MOBILE CSS START -->
 <style id="ui-mobile-css">
 /* ================================================================
@@ -3247,7 +3264,13 @@ async function kirimAndal(panelId, surveyorId, formName, btn, data) {
   var modeLama = false;
   overlayKirim_('proses', { step: antre.length ? 'Menyiapkan ' + antre.length + ' foto…' : 'Mengirim data…', pct: 3 });
   try {
-    for (var i = 0; i < antre.length && !modeLama; i++) {
+    if (window.fotoAndal) {
+      var hs = await fotoAndal.selesaikan(panelId, kunci, function(d, n, nama){
+        overlayKirim_('progres', { step: n ? 'Menunggu foto/dokumen selesai diunggah: ' + d + ' dari ' + n + (nama ? ' — ' + nama : '') : 'Mengirim data…', pct: 5 + 80 * (n ? d / n : 1) }); });
+      if (hs.modeLama) modeLama = true;
+      else if (!hs.ok) throw new Error(hs.pesan || 'Ada foto yang gagal diunggah.');
+    } else
+    { for (var i = 0; i < antre.length && !modeLama; i++) {
       var it = antre[i];
       overlayKirim_('progres', { step: 'Mengunggah foto ' + (i+1) + ' dari ' + antre.length + ': ' + it.fileName, pct: 5 + 80 * i / antre.length });
       var res = null, errTerakhir = null;
@@ -3265,7 +3288,8 @@ async function kirimAndal(panelId, surveyorId, formName, btn, data) {
       if (!res || !res.ok) throw errTerakhir || new Error('Gagal mengunggah ' + it.fileName);
       it.status = 'success'; it.url = res.url;
       simpanOutbox();   // catat foto yang sudah masuk Drive
-    }
+    } }
+    simpanOutbox();
     overlayKirim_('progres', { step: 'Menyimpan data ke database…', pct: 90 });
     var fp = buildFotoPayload(panelId);
     var hasil = null;
@@ -3603,6 +3627,335 @@ window.addEventListener('load', function() {
 })();
 </script>
 
+<!-- FOTO-ANDAL JS START -->
+<script>
+/* ================================================================
+   FOTO ANDAL (18 Nov 2026)
+   - Foto/dokumen disimpan di HP (IndexedDB) begitu dipilih, jadi tidak hilang
+     walau halaman tertutup, HP mati, atau sinyal putus.
+   - Foto langsung diunggah di latar belakang satu per satu (setelah ID SIKUMBANG
+     — dan nomor rumah untuk form per unit — terisi), dengan coba ulang otomatis.
+   - Penanda di bawah layar: berapa foto sedang/menunggu diunggah, gagal, atau selesai.
+   - Isian disimpan otomatis sebagai draft; saat draft dimuat, fotonya ikut kembali.
+   - Saat Kirim ditekan, form menunggu semua foto selesai diunggah dulu.
+   Bergantung pada fungsi form: el, fotoState, ensureFotoState, refreshFotoStatus,
+   getFormNameForPanel, postGAS_, bukanAksiDikenal_, showToast, collectData,
+   DRAFT_KEY_PREFIX, loadDraftIfExists, restoreDraft, clearDraft.
+   ================================================================ */
+(function () {
+  var HAL = (location.pathname.split('/').pop() || 'form').replace(/\W+/g, '_');
+  var DBN = 'flpp_foto_andal', ST = 'foto';
+  var TANPA_SIMPAN = window.FOTO_ANDAL_TANPA_SIMPAN || ['panel-susulan'];
+  var modeLama = false, sibuk = false, paksaKunci = {}, siap = {}, ditolak = {}, sedangPulih = {};
+
+  /* ---------- IndexedDB ---------- */
+  var dbP = null;
+  function db() {
+    if (dbP) return dbP;
+    dbP = new Promise(function (res, rej) {
+      if (!window.indexedDB) return rej(new Error('no idb'));
+      var r = indexedDB.open(DBN, 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore(ST, { keyPath: 'key' }); };
+      r.onsuccess = function () { res(r.result); };
+      r.onerror = function () { rej(r.error); };
+    });
+    dbP.catch(function () {});
+    return dbP;
+  }
+  function tx(mode, fn) {
+    return db().then(function (d) {
+      return new Promise(function (res) {
+        var t = d.transaction(ST, mode), s = t.objectStore(ST), out = fn(s);
+        t.oncomplete = function () { res(out && out.result !== undefined ? out.result : true); };
+        t.onerror = t.onabort = function () { res(null); };
+      });
+    }).catch(function () { return null; });
+  }
+  function idbPut(rec) { return tx('readwrite', function (s) { return s.put(rec); }); }
+  function idbDel(key) { return tx('readwrite', function (s) { return s.delete(key); }); }
+  function idbAmbil(panelId) {
+    return tx('readonly', function (s) { return s.getAll(); }).then(function (all) {
+      return (all || []).filter(function (r) { return r.halaman === HAL && r.panelId === panelId; })
+                        .sort(function (a, b) { return a.t - b.t; });
+    });
+  }
+  function idbUbah(entry) {
+    if (!entry.key || TANPA_SIMPAN.indexOf(entry.panelId) > -1) return;
+    tx('readwrite', function (s) {
+      var g = s.get(entry.key);
+      g.onsuccess = function () { var r = g.result; if (r) { r.status = entry.status === 'success' ? 'success' : 'pending'; r.url = entry.url || ''; s.put(r); } };
+      return g;
+    });
+  }
+  function buang(panelId, kecuali) {
+    kecuali = kecuali || {};
+    return idbAmbil(panelId).then(function (rs) { rs.forEach(function (r) { if (!kecuali[r.key]) idbDel(r.key); }); });
+  }
+
+  /* ---------- tampilan item ---------- */
+  function setBadge(e) {
+    var b = e._badge; if (!b) return;
+    b.onclick = null; b.style.cursor = 'default';
+    if (e.status === 'success') { b.textContent = '✅'; b.title = 'Tersimpan di Google Drive'; }
+    else if (e.status === 'uploading') { b.textContent = '⏳'; b.title = 'Sedang diunggah…'; }
+    else if (e.status === 'error') {
+      b.textContent = '❌'; b.title = 'Gagal diunggah — ketuk untuk coba lagi'; b.style.cursor = 'pointer';
+      b.onclick = function (ev) { ev.stopPropagation(); e.retryAt = 0; proses(); };
+    } else { b.textContent = '🕓'; b.title = 'Tersimpan di HP, menunggu diunggah'; }
+  }
+  function render(e, previewEl, dataUrl) {
+    var isImg = /^image\//.test(e.mimeType), item, del;
+    if (e.isDocMode) {
+      item = el('div', { cls: 'doc-item' });
+      if (isImg) { var im = el('img'); im.src = dataUrl; item.appendChild(im); }
+      else item.appendChild(el('span', { text: /\.pdf$/i.test(e.fileName) ? '📄' : '📊', style: 'font-size:20px' }));
+      var nm = e.fileName.length > 18 ? e.fileName.substring(0, 16) + '…' : e.fileName;
+      item.appendChild(el('span', { text: nm, style: 'color:var(--gray-600);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px' }));
+      e._badge = el('span', { text: '🕓', style: 'font-size:12px' }); item.appendChild(e._badge);
+      del = el('span', { cls: 'doc-del', text: '✕' }); item.appendChild(del);
+    } else {
+      item = el('div', { cls: 'foto-thumb' }); item.style.position = 'relative';
+      var im2 = el('img'); im2.src = dataUrl; item.appendChild(im2);
+      e._badge = el('span', { cls: 'foto-badge', text: '🕓' }); item.appendChild(e._badge);
+      del = el('span', { cls: 'fa-del', text: '✕' }); item.appendChild(del);
+    }
+    del.title = 'Hapus foto ini';
+    del.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (e.status === 'uploading') { showToast('⏳ Tunggu sebentar, foto ini sedang diunggah.', true); return; }
+      item.remove();
+      var l = fotoState[e.panelId] || [], i = l.indexOf(e); if (i > -1) l.splice(i, 1);
+      if (e.key) idbDel(e.key);
+      refreshFotoStatus(e.panelId); chip();
+    });
+    e._el = item;
+    previewEl.appendChild(item);
+    setBadge(e);
+  }
+  function semuaPreview(panelId) {
+    var P = document.getElementById(panelId);
+    return P ? Array.prototype.slice.call(P.querySelectorAll('.foto-preview,.foto-preview-inline,.doc-preview')) : [];
+  }
+  function previewCadangan(panelId) {
+    var P = document.getElementById(panelId), box = document.getElementById('fa-cadangan-' + panelId);
+    if (!box && P) {
+      box = el('div', { cls: 'fa-cadangan', id: 'fa-cadangan-' + panelId });
+      box.innerHTML = '<b>📷 Foto dipulihkan</b><div class="fa-cad-sub">Tempat asalnya belum muncul di form; foto tetap terkirim dengan keterangannya.</div>';
+      var pv = el('div', { cls: 'foto-preview-inline' }); box.appendChild(pv);
+      var body = P.querySelector('.panel-body') || P; body.insertBefore(box, body.firstChild);
+    }
+    return box.querySelector('.foto-preview-inline');
+  }
+  function bacaDataUrl(blob) {
+    return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(blob); });
+  }
+
+  /* ---------- pilih file (menggantikan processAndUploadFiles bawaan form) ---------- */
+  window.processAndUploadFiles = function (files, fieldName, panelId, previewEl, isDocMode) {
+    var list = ensureFotoState(panelId);
+    Array.prototype.slice.call(files).forEach(function (file0) {
+      if (typeof MAX_FILE_MB !== 'undefined' && file0.size > MAX_FILE_MB * 1024 * 1024) {
+        var wrap = previewEl && previewEl.closest ? previewEl.closest('.doc-wrapper') : null;
+        var linkInp = wrap ? wrap.querySelector('input[id$="_link"]') : null;
+        showToast('📎 File "' + file0.name + '" (' + (file0.size / 1048576).toFixed(0) + ' MB) terlalu besar untuk diunggah lewat form. Unggah ke Google Drive/Dropbox, lalu tempel link-nya di kolom "Link File".', true);
+        if (linkInp) { var f = linkInp.closest('.field'); if (f) f.classList.add('link-sorot'); setTimeout(function () { linkInp.scrollIntoView({ behavior: 'smooth', block: 'center' }); linkInp.focus(); }, 300); }
+        return;
+      }
+      var siapFile = (typeof kompresGambar_ === 'function' && window.FOTO_KOMPRES !== false) ? kompresGambar_(file0) : Promise.resolve(file0);
+      siapFile.then(function (file) {
+        return bacaDataUrl(file).then(function (dataUrl) {
+          var e = { key: HAL + '|' + panelId + '|' + Date.now() + '|' + Math.random().toString(36).slice(2, 7),
+                    panelId: panelId, fieldName: fieldName, fileName: file.name || file0.name, mimeType: file.type || file0.type || 'image/jpeg',
+                    base64: dataUrl.split(',')[1], status: 'pending', url: null, isDocMode: !!isDocMode, retryAt: 0, coba: 0 };
+          list.push(e);
+          render(e, previewEl, dataUrl);
+          if (TANPA_SIMPAN.indexOf(panelId) === -1) {
+            var idx = semuaPreview(panelId).indexOf(previewEl);
+            idbPut({ key: e.key, halaman: HAL, panelId: panelId, fieldName: fieldName, fileName: e.fileName, mimeType: e.mimeType,
+                     isDocMode: e.isDocMode, idx: idx, blob: file, status: 'pending', url: '', t: Date.now() });
+            simpanOtomatis(panelId, true);
+          }
+          refreshFotoStatus(panelId); chip(); proses();
+        });
+      }).catch(function (err) { showToast('❌ Gagal membaca file ' + file0.name + ': ' + (err && err.message || err), true); });
+    });
+  };
+
+  /* ---------- antrean unggah di latar belakang ---------- */
+  function kunciPanel(panelId) {
+    if (paksaKunci[panelId]) return paksaKunci[panelId];
+    if (typeof window.fotoAndalKunci === 'function') { var k0 = window.fotoAndalKunci(panelId); if (k0 !== undefined) return k0; }
+    var P = document.getElementById(panelId); if (!P) return null;
+    var k = { 'Form': getFormNameForPanel(panelId) }, adaId = false, perluNo = false, adaNo = false;
+    P.querySelectorAll('input[id],select[id]').forEach(function (i) {
+      var m = /_(id_sikumbang|nama_perumahan|nomor_rumah)$/.exec(i.id); if (!m) return;
+      var v = String(i.value || '').trim();
+      if (m[1] === 'nomor_rumah') { perluNo = true; if (v) adaNo = true; }
+      if (v) { k[i.id] = v; if (m[1] === 'id_sikumbang') adaId = true; }
+    });
+    return (adaId && (!perluNo || adaNo)) ? k : null;
+  }
+  function semuaEntri() {
+    var out = [];
+    Object.keys(fotoState || {}).forEach(function (p) { (fotoState[p] || []).forEach(function (e) { if (!e.panelId) e.panelId = p; out.push(e); }); });
+    return out;
+  }
+  function proses() {
+    if (sibuk || modeLama) return;
+    if (navigator.onLine === false) { chip(); return; }
+    var now = Date.now(), e = null, kunci = null;
+    var cands = semuaEntri().filter(function (x) { return (x.status === 'pending' || x.status === 'error') && x.base64 && (x.retryAt || 0) <= now; });
+    for (var i = 0; i < cands.length; i++) { var k = kunciPanel(cands[i].panelId); if (k) { e = cands[i]; kunci = k; break; } }
+    if (!e) { chip(); return; }
+    sibuk = true; e.status = 'uploading'; setBadge(e); refreshFotoStatus(e.panelId); chip();
+    postGAS_({ action: 'uploadFile', formName: kunci['Form'] || getFormNameForPanel(e.panelId), data: kunci,
+               file: { fieldName: e.fieldName, fileName: e.fileName, mimeType: e.mimeType, base64: e.base64 } })
+      .then(function (res) {
+        if (bukanAksiDikenal_(res)) { modeLama = true; e.status = 'pending'; return; }
+        if (res && res.ok && res.url) { e.status = 'success'; e.url = res.url; e.err = ''; idbUbah(e); return; }
+        throw new Error(res && res.message || 'Gagal mengunggah');
+      })
+      .catch(function (err) {
+        e.status = 'error'; e.err = err && err.message || String(err); e.coba = (e.coba || 0) + 1; e.cobaSesi = (e.cobaSesi || 0) + 1;
+        e.retryAt = Date.now() + Math.min(60000, 2000 * Math.pow(2, Math.min(e.coba, 5)));
+      })
+      .then(function () { sibuk = false; setBadge(e); refreshFotoStatus(e.panelId); chip(); setTimeout(proses, 300); });
+  }
+  setInterval(proses, 4000);
+  window.addEventListener('online', function () { semuaEntri().forEach(function (x) { x.retryAt = 0; }); proses(); });
+  window.addEventListener('offline', chip);
+
+  /* Dipanggil saat Kirim: tunggu semua foto panel ini selesai diunggah */
+  function selesaikan(panelId, kunci, onProg) {
+    if (kunci) paksaKunci[panelId] = kunci;
+    var L = function () { return fotoState[panelId] || []; };
+    L().forEach(function (x) { x.cobaSesi = 0; if (x.status === 'error') x.retryAt = 0; });
+    return new Promise(function (res) {
+      (function cek() {
+        var l = L(), done = l.filter(function (x) { return x.status === 'success' && x.url; }).length;
+        var jalan = l.filter(function (x) { return x.status === 'uploading'; })[0];
+        if (onProg) onProg(done, l.length, jalan ? jalan.fileName : '');
+        if (done === l.length) { delete paksaKunci[panelId]; return res({ ok: true }); }
+        if (modeLama && !jalan) { delete paksaKunci[panelId]; return res({ ok: false, modeLama: true }); }
+        var mati = l.filter(function (x) { return x.status === 'error' && x.cobaSesi >= 4; });
+        if (mati.length && !jalan) { delete paksaKunci[panelId];
+          return res({ ok: false, pesan: (navigator.onLine === false ? 'HP sedang tidak ada sinyal internet. ' : '') + 'Foto "' + mati[0].fileName + '" gagal diunggah (' + (mati[0].err || '') + ').' }); }
+        l.forEach(function (x) { if (x.status === 'error' && x.cobaSesi < 4) x.retryAt = Math.min(x.retryAt || 0, Date.now() + 2500 * x.cobaSesi); });
+        proses(); setTimeout(cek, 500);
+      })();
+    });
+  }
+
+  /* ---------- penanda status di bawah layar ---------- */
+  var chipT = null;
+  function panelAktif() { var p = document.querySelector('.form-panel.active'); return p ? p.id : null; }
+  function chip() {
+    var c = document.getElementById('fa-chip');
+    if (!c) { c = el('div', { id: 'fa-chip' }); document.body.appendChild(c);
+      c.addEventListener('click', function () { semuaEntri().forEach(function (x) { if (x.status === 'error') x.retryAt = 0; }); proses(); }); }
+    var pid = panelAktif(), l = pid ? (fotoState[pid] || []) : [];
+    var n = l.length, ok = l.filter(function (x) { return x.status === 'success'; }).length;
+    var up = l.filter(function (x) { return x.status === 'uploading'; }).length;
+    var gagal = l.filter(function (x) { return x.status === 'error'; }).length;
+    var tunggu = n - ok - up - gagal;
+    var txt = '', cls = '', K = window.FOTO_ANDAL_KATA || 'foto';
+    if (!n) { c.className = ''; return; }
+    if (navigator.onLine === false && ok < n) { txt = '📵 Tidak ada sinyal — ' + (n - ok) + ' ' + K + ' aman di HP, diunggah otomatis saat sinyal kembali'; cls = 'warn'; }
+    else if (gagal) { txt = '⚠️ ' + gagal + ' ' + K + ' gagal diunggah — ketuk untuk coba lagi (' + ok + '/' + n + ' selesai)'; cls = 'warn'; }
+    else if (up || (tunggu && !modeLama && kunciPanel(pid))) { txt = '⏳ Mengunggah ' + K + '… ' + ok + ' dari ' + n + ' selesai. Jangan tutup halaman.'; cls = 'busy'; }
+    else if (tunggu) { txt = modeLama ? '🕓 ' + tunggu + ' ' + K + ' akan diunggah saat Kirim Data' :
+                       '🕓 ' + tunggu + ' ' + K + ' tersimpan di HP — diunggah setelah ID SIKUMBANG' + (document.querySelector('#' + pid + ' [id$="_nomor_rumah"]') ? ' & nomor rumah' : '') + ' diisi'; cls = 'wait'; }
+    else { txt = '✅ Semua ' + K + ' (' + n + ') sudah tersimpan di Google Drive'; cls = 'ok'; }
+    c.textContent = txt; c.className = 'show ' + cls;
+    clearTimeout(chipT);
+    if (cls === 'ok') chipT = setTimeout(function () { c.className = ''; }, 3500);
+  }
+  document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.tab-btn,.mode-switch button')) setTimeout(chip, 50); }, true);
+
+  window.addEventListener('beforeunload', function (ev) {
+    var belum = semuaEntri().filter(function (x) { return x.status !== 'success'; }).length;
+    if (belum) { ev.preventDefault(); ev.returnValue = 'Masih ada ' + belum + ' file yang belum selesai diunggah.'; return ev.returnValue; }
+  });
+
+  /* ---------- draft otomatis + foto ikut dipulihkan ---------- */
+  function adaDraft(panelId) { try { return !!localStorage.getItem(DRAFT_KEY_PREFIX + panelId); } catch (e) { return false; } }
+  var tSimpan = {};
+  function simpanOtomatis(panelId, segera) {
+    if (!siap[panelId] || TANPA_SIMPAN.indexOf(panelId) > -1 || !document.getElementById(panelId)) return;
+    clearTimeout(tSimpan[panelId]);
+    tSimpan[panelId] = setTimeout(function () {
+      try {
+        var savedAt = new Date().toLocaleString('id-ID');
+        localStorage.setItem(DRAFT_KEY_PREFIX + panelId, JSON.stringify({ data: collectData(panelId), savedAt: savedAt, otomatis: true }));
+        if (typeof updateDraftInfo === 'function') updateDraftInfo(panelId, savedAt + ' (otomatis)');
+      } catch (e) {}
+      if (ditolak[panelId]) {     // draft lama ditolak: foto lama dibuang, foto baru dipertahankan
+        ditolak[panelId] = false;
+        var keep = {}; (fotoState[panelId] || []).forEach(function (x) { if (x.key) keep[x.key] = true; });
+        buang(panelId, keep);
+      }
+    }, segera ? 200 : 1500);
+  }
+  function panelDari(t) { var p = t && t.closest ? t.closest('.form-panel') : null; return p ? p.id : null; }
+  ['input', 'change'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) {
+      if (!e.isTrusted) return;
+      var pid = panelDari(e.target); if (pid) { simpanOtomatis(pid); setTimeout(proses, 600); }
+    }, true);
+  });
+
+  function pulihkanFoto(panelId) {
+    return idbAmbil(panelId).then(function (rs) {
+      if (!rs.length) return 0;
+      var list = ensureFotoState(panelId), ada = {}, prevs = semuaPreview(panelId);
+      list.forEach(function (x) { if (x.key) ada[x.key] = true; });
+      var jobs = rs.filter(function (r) { return !ada[r.key] && r.blob; }).map(function (r) {
+        return bacaDataUrl(r.blob).then(function (dataUrl) {
+          var e = { key: r.key, panelId: panelId, fieldName: r.fieldName, fileName: r.fileName, mimeType: r.mimeType,
+                    base64: dataUrl.split(',')[1], status: r.status === 'success' && r.url ? 'success' : 'pending', url: r.url || null,
+                    isDocMode: r.isDocMode, retryAt: 0, coba: 0 };
+          list.push(e);
+          var pv = prevs[r.idx];
+          render(e, pv || previewCadangan(panelId), dataUrl);
+        });
+      });
+      return Promise.all(jobs).then(function () { refreshFotoStatus(panelId); chip(); proses(); return jobs.length; });
+    });
+  }
+
+  var asliLoad = window.loadDraftIfExists, asliRestore = window.restoreDraft, asliClear = window.clearDraft, asliSave = window.saveDraft;
+  window.restoreDraft = function (panelId) { sedangPulih[panelId] = true; return asliRestore.apply(this, arguments); };
+  window.loadDraftIfExists = function (panelId) {
+    var punya = adaDraft(panelId); sedangPulih[panelId] = false;
+    var r = asliLoad.apply(this, arguments);
+    siap[panelId] = true;
+    if (sedangPulih[panelId]) pulihkanFoto(panelId).then(function (n) { if (n) showToast('✅ Draft dimuat beserta ' + n + ' foto/dokumen.'); });
+    else if (punya) ditolak[panelId] = true;
+    sedangPulih[panelId] = false;
+    return r;
+  };
+  window.clearDraft = function (panelId) { var r = asliClear.apply(this, arguments); buang(panelId); return r; };
+  if (asliSave) window.saveDraft = function (panelId) {
+    var r = asliSave.apply(this, arguments);
+    var n = (fotoState[panelId] || []).length;
+    if (n) setTimeout(function () { showToast('💾 Draft tersimpan di HP, termasuk ' + n + ' foto/dokumen.'); }, 50);
+    return r;
+  };
+
+  function mulai() {
+    document.querySelectorAll('.form-panel[id]').forEach(function (p) {
+      if (TANPA_SIMPAN.indexOf(p.id) > -1) return;
+      if (!adaDraft(p.id) && siap[p.id] === undefined) { siap[p.id] = true; buang(p.id, (function(){ var k = {}; (fotoState[p.id] || []).forEach(function (x) { if (x.key) k[x.key] = true; }); return k; })()); }
+    });
+    chip();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai); else mulai();
+
+  window.fotoAndal = { selesaikan: selesaikan, proses: proses, pulihkanFoto: pulihkanFoto, chip: chip,
+                       modeLama: function () { return modeLama; } };
+})();
+</script>
+<!-- FOTO-ANDAL JS END -->
 <!-- UI-MOBILE JS START -->
 <script id="ui-mobile-js">
 /* ================================================================
